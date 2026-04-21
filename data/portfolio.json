@@ -1,0 +1,86 @@
+{
+  "contact": {
+    "company": "peter hoff design ab",
+    "name": "peter hoff",
+    "address": "p o hallmans gata 5",
+    "city": "112 69 stockholm",
+    "phone": "+46 70 869 56 08",
+    "email": "peter@peterhoffdesign.com",
+    "website": "peterhoffdesign.com"
+  },
+  "categories": [
+    { "id": "graphic-design",  "label": "Graphic Design"  },
+    { "id": "object-design",   "label": "Object Design"   },
+    { "id": "architecture",    "label": "Architecture"    },
+    { "id": "exhibitions",     "label": "Exhibitions"     },
+    { "id": "interiors",       "label": "Interiors"       },
+    { "id": "film",            "label": "Film"            },
+    { "id": "images",          "label": "Images"          },
+    { "id": "interfaces",      "label": "Interfaces"      }
+  ],
+  "projects": [
+    { "name": "Abba",              "category": "graphic-design" },
+    { "name": "Absolut",           "category": "graphic-design" },
+    { "name": "Ago",               "category": "graphic-design" },
+    { "name": "Contur",            "category": "graphic-design" },
+    { "name": "Eurothai",          "category": "graphic-design" },
+    { "name": "Expo Skåne",        "category": "graphic-design" },
+    { "name": "Kohmak",            "category": "graphic-design" },
+    { "name": "Lindex",            "category": "graphic-design" },
+    { "name": "Linssen",           "category": "graphic-design" },
+    { "name": "Peab",              "category": "graphic-design" },
+    { "name": "Skanska",           "category": "graphic-design" },
+    { "name": "Smartq",            "category": "graphic-design" },
+    { "name": "Swedish Match",     "category": "graphic-design" },
+    { "name": "Spaceport",         "category": "graphic-design" },
+    { "name": "Sportbladet",       "category": "graphic-design" },
+    { "name": "Swe Handboll 2016", "category": "graphic-design" },
+    { "name": "Tele 2",            "category": "graphic-design" },
+    { "name": "Visit Sweden",      "category": "graphic-design" },
+    { "name": "SV Bibliotek",      "category": "graphic-design" },
+
+    { "name": "Choose Earth Awards", "category": "object-design" },
+    { "name": "Infogate",            "category": "object-design" },
+    { "name": "Seacube",             "category": "object-design" },
+    { "name": "Skype",               "category": "object-design" },
+
+    { "name": "The Barn",        "category": "architecture" },
+    { "name": "Coffee Room",     "category": "architecture" },
+    { "name": "Etage",           "category": "architecture" },
+    { "name": "Flow",            "category": "architecture" },
+    { "name": "House Ps",        "category": "architecture" },
+    { "name": "Pontonjargatan",  "category": "architecture" },
+    { "name": "Swt",             "category": "architecture" },
+    { "name": "Tuborg",          "category": "architecture" },
+    { "name": "Villa",           "category": "architecture" },
+    { "name": "Flat",            "category": "architecture" },
+    { "name": "Cliffhouse",      "category": "architecture" },
+    { "name": "Velamsund",       "category": "architecture" },
+
+    { "name": "Abu Dhabi Sports Council", "category": "exhibitions" },
+    { "name": "American Express",         "category": "exhibitions" },
+    { "name": "Carlsberg",                "category": "exhibitions" },
+    { "name": "Ericsson",                 "category": "exhibitions" },
+    { "name": "Friends Arena",            "category": "exhibitions" },
+    { "name": "Mölnlycke",               "category": "exhibitions" },
+    { "name": "Volvo",                    "category": "exhibitions" },
+    { "name": "UEFA",                     "category": "exhibitions" },
+    { "name": "TV4",                      "category": "exhibitions" },
+
+    { "name": "Hilmer Belysning",           "category": "interiors" },
+    { "name": "Microsoft",                  "category": "interiors" },
+    { "name": "Volvo Construction Equipment","category": "interiors" },
+    { "name": "Vodafone",                   "category": "interiors" },
+
+    { "name": "Ericsson — Choose", "category": "film" },
+
+    { "name": "Liseberg", "category": "images" },
+
+    { "name": "Audi",         "category": "interfaces" },
+    { "name": "Box",          "category": "interfaces" },
+    { "name": "Brandfactory", "category": "interfaces" },
+    { "name": "Investor",     "category": "interfaces" },
+    { "name": "Skolfoto",     "category": "interfaces" },
+    { "name": "Your Design",  "category": "interfaces" }
+  ]
+}

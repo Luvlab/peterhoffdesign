@@ -1,0 +1,8 @@
+{
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/api/contact",    "destination": "/api/contact.js"    },
+    { "source": "/api/categories", "destination": "/api/categories.js" },
+    { "source": "/api/projects",   "destination": "/api/projects.js"   }
+  ]
+}
