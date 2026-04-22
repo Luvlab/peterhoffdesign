@@ -158,6 +158,10 @@ body {
 }
 .gate-input.shake { animation: shake .4s ease; }
 
+@media (max-width: 479px) {
+  .gate-logo { max-width: 128px; }
+}
+
 @media (min-width: 480px) {
   .gate-title { font-size: 15px; }
 }
