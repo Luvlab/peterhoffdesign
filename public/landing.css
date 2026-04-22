@@ -34,7 +34,7 @@ body {
 /* ── Logo ── */
 .gate-logo {
   width: 100%;
-  max-width: 340px;
+  max-width: 255px;
   height: auto;
   display: block;
   margin: 0 auto 24px;
