@@ -180,8 +180,7 @@ function renderContact(c) {
       <span><a href="tel:${c.phone.replace(/\s/g,'')}">${c.phone}</a></span>
       <span><a href="mailto:${c.email}">${c.email}</a></span>
       <span><a href="https://${c.website}" target="_blank" rel="noopener">${c.website}</a></span>
-    </div>
-  `
+    </div>`
 }
 
 init()
