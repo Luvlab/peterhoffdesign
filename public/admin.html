@@ -46,46 +46,77 @@
     <p class="adm-empty" id="admEmpty" hidden>No projects yet.</p>
   </main>
 
-  <!-- Modal -->
+  <!-- Edit / Add Modal -->
   <div class="modal-overlay" id="modalOverlay" hidden>
-    <div class="modal">
+    <div class="modal modal--wide">
       <div class="modal-header">
         <h2 class="modal-title" id="modalTitle">Add Project</h2>
         <button class="modal-close" id="modalClose">&#10005;</button>
       </div>
+
+      <div class="modal-tabs">
+        <button class="modal-tab active" data-tab="details">Details</button>
+        <button class="modal-tab" data-tab="images">Images <span class="tab-count" id="tabImgCount"></span></button>
+      </div>
+
       <div class="modal-body">
-        <input type="hidden" id="editId" />
-        <div class="field">
-          <label>Name <span class="req">*</span></label>
-          <input type="text" id="fName" placeholder="Project name" />
+        <!-- Details tab -->
+        <div class="tab-panel" id="tabDetails">
+          <input type="hidden" id="editId" />
+          <div class="field">
+            <label>Name <span class="req">*</span></label>
+            <input type="text" id="fName" placeholder="Project name" />
+          </div>
+          <div class="field">
+            <label>Category <span class="req">*</span></label>
+            <select id="fCat"></select>
+          </div>
+          <div class="field">
+            <label>Slug <small>(auto-generated if blank)</small></label>
+            <input type="text" id="fSlug" placeholder="my-project" />
+          </div>
+          <div class="field">
+            <label>Description</label>
+            <textarea id="fDesc" rows="3" placeholder="Optional description"></textarea>
+          </div>
+          <div class="field field--inline">
+            <label>Visible on site</label>
+            <label class="toggle">
+              <input type="checkbox" id="fVisible" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
         </div>
-        <div class="field">
-          <label>Category <span class="req">*</span></label>
-          <select id="fCat"></select>
-        </div>
-        <div class="field">
-          <label>Slug <small>(auto-generated if blank)</small></label>
-          <input type="text" id="fSlug" placeholder="my-project" />
-        </div>
-        <div class="field">
-          <label>Description</label>
-          <textarea id="fDesc" rows="3" placeholder="Optional description"></textarea>
-        </div>
-        <div class="field">
-          <label>Image URLs <small>(one per line)</small></label>
-          <textarea id="fImages" rows="8" placeholder="https://peterhoffdesign.com/…"></textarea>
-        </div>
-        <div class="field field--inline">
-          <label>Visible on site</label>
-          <label class="toggle">
-            <input type="checkbox" id="fVisible" checked />
-            <span class="toggle-slider"></span>
-          </label>
+
+        <!-- Images tab -->
+        <div class="tab-panel" id="tabImages" hidden>
+          <div class="img-manager">
+            <!-- Upload area -->
+            <div class="img-upload-zone" id="uploadZone">
+              <input type="file" id="imgFileInput" multiple accept="image/*" hidden />
+              <label for="imgFileInput" class="upload-label">
+                <span class="upload-icon">↑</span>
+                <span class="upload-text">Click to upload images</span>
+                <span class="upload-hint">or drag &amp; drop here · JPG, PNG, WebP</span>
+              </label>
+            </div>
+
+            <!-- Upload progress -->
+            <div class="upload-progress" id="uploadProgress" hidden>
+              <div class="upload-bar-wrap"><div class="upload-bar" id="uploadBar"></div></div>
+              <p class="upload-status" id="uploadStatus">Uploading…</p>
+            </div>
+
+            <!-- Image grid -->
+            <div class="img-grid" id="imgGrid"></div>
+            <p class="img-empty" id="imgEmpty" hidden>No images yet. Upload some above.</p>
+          </div>
         </div>
       </div>
+
       <div class="modal-footer">
         <button class="adm-btn adm-btn--outline" id="modalCancel">Cancel</button>
-        <button class="adm-btn adm-btn--primary" id="modalSave">Save</button>
+        <button class="adm-btn adm-btn--primary" id="modalSave">Save Details</button>
       </div>
     </div>
   </div>
@@ -94,14 +125,14 @@
   <div class="modal-overlay" id="confirmOverlay" hidden>
     <div class="modal modal--sm">
       <div class="modal-header">
-        <h2 class="modal-title">Delete project?</h2>
+        <h2 class="modal-title" id="confirmTitle">Confirm</h2>
       </div>
       <div class="modal-body">
-        <p id="confirmMsg">This cannot be undone.</p>
+        <p id="confirmMsg"></p>
       </div>
       <div class="modal-footer">
         <button class="adm-btn adm-btn--outline" id="confirmNo">Cancel</button>
-        <button class="adm-btn adm-btn--danger"   id="confirmYes">Delete</button>
+        <button class="adm-btn adm-btn--danger"  id="confirmYes">Delete</button>
       </div>
     </div>
   </div>
