@@ -80,7 +80,7 @@ body {
 }
 .project-card:active .card-thumb img { opacity: .85; }
 .card-thumb {
-  aspect-ratio: 2/3;
+  aspect-ratio: 3/2;
   overflow: hidden;
   background: var(--teal);
   flex-shrink: 0;
