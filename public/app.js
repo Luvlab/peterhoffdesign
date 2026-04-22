@@ -170,6 +170,15 @@ document.addEventListener('keydown', e => {
   }
 })
 
+// Touch swipe for lightbox
+let _touchX = 0
+const lb = document.getElementById('lightbox')
+lb.addEventListener('touchstart', e => { _touchX = e.touches[0].clientX }, { passive: true })
+lb.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - _touchX
+  if (Math.abs(dx) > 50) lbStep(dx < 0 ? 1 : -1)
+}, { passive: true })
+
 // ── footer ────────────────────────────────────────────────────────────────────
 function renderContact(c) {
   document.getElementById('siteFooter').innerHTML = `
