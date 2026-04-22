@@ -4,7 +4,7 @@ const multer  = require('multer')
 const db      = require('../lib/db')
 
 const app    = express()
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } })
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } })
 
 // JSON body for non-multipart requests
 app.use((req, res, next) => {
@@ -22,7 +22,10 @@ app.get('/api/contact',    (req, res) => res.json(db.getContact()))
 app.get('/api/categories', (req, res) => res.json(db.getCategories()))
 
 app.get('/api/projects', wrap(async (req, res) => {
-  const projects = await db.getProjects({ category: req.query.category })
+  const projects = await db.getProjects({
+    category: req.query.category,
+    featured:  req.query.featured === 'true' ? true : undefined
+  })
   res.json(projects)
 }))
 

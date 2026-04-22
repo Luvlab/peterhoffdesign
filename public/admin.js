@@ -92,6 +92,7 @@ function renderTable() {
       <td class="col-cat"><span class="cat-badge">${esc(catLabel(proj.category))}</span></td>
       <td class="col-imgs"><span class="img-count">${(proj.images || []).length}</span></td>
       <td class="col-actions">
+        <button class="adm-btn--ghost star-btn ${proj.featured ? 'starred' : ''}" data-id="${proj.id}" title="${proj.featured ? 'Remove from featured' : 'Add to featured'}">★</button>
         <button class="adm-btn--ghost edit-btn" data-id="${proj.id}">Edit</button>
         <button class="adm-btn--ghost del del-btn" data-id="${proj.id}">✕</button>
       </td>`
@@ -100,6 +101,9 @@ function renderTable() {
 
   body.querySelectorAll('.vis-toggle').forEach(cb =>
     cb.addEventListener('change', () => toggleVisibility(cb.dataset.id, cb.checked))
+  )
+  body.querySelectorAll('.star-btn').forEach(btn =>
+    btn.addEventListener('click', () => toggleFeatured(btn.dataset.id))
   )
   body.querySelectorAll('.edit-btn').forEach(btn =>
     btn.addEventListener('click', () => openEdit(btn.dataset.id))
@@ -270,6 +274,23 @@ async function doDelete() {
   } catch (err) { toast('Error: ' + err.message) }
 }
 
+/* ── Featured toggle ───────────────────────────────────────────────────────── */
+async function toggleFeatured(id) {
+  const proj = allProjects.find(p => p.id === id)
+  if (!proj) return
+  const newVal = !proj.featured
+  try {
+    await apiFetch('PUT', `/api/admin/projects/${id}`, { featured: newVal })
+    proj.featured = newVal
+    const btn = document.querySelector(`#admBody tr[data-id="${id}"] .star-btn`)
+    if (btn) {
+      btn.classList.toggle('starred', newVal)
+      btn.title = newVal ? 'Remove from featured' : 'Add to featured'
+    }
+    toast(newVal ? '★ Added to featured' : '☆ Removed from featured')
+  } catch (err) { toast('Error: ' + err.message) }
+}
+
 /* ── Image tab ─────────────────────────────────────────────────────────────── */
 function resetImageTab() {
   document.getElementById('imgGrid').innerHTML = ''
@@ -298,15 +319,20 @@ function renderImageTab(proj) {
   })
 }
 
+function isVideo(url) { return /\.mp4(\?|$)/i.test(url) }
+
 function makeThumb(url, projId) {
   const div = document.createElement('div')
   div.className = 'img-thumb'
   div.dataset.url = url
+  const media = isVideo(url)
+    ? `<video src="${esc(url)}" muted loop playsinline preload="metadata"></video>`
+    : `<img src="${esc(url)}" loading="lazy" alt="" />`
   div.innerHTML = `
-    <img src="${esc(url)}" loading="lazy" alt="" />
+    ${media}
     <div class="img-thumb-overlay">
       <span class="img-thumb-handle" title="Drag to reorder">⠿</span>
-      <button class="img-thumb-del" title="Delete image">✕</button>
+      <button class="img-thumb-del" title="Delete">✕</button>
     </div>`
   div.querySelector('.img-thumb-del').addEventListener('click', () => deleteImage(projId, url))
   return div
@@ -349,7 +375,7 @@ uploadZone.addEventListener('drop', e => {
   e.preventDefault()
   uploadZone.classList.remove('drag-over')
   if (!editingId) { toast('Save the project first'); return }
-  const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'))
+  const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/') || f.type === 'video/mp4')
   if (files.length) uploadImages(editingId, files)
 })
 
