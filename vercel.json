@@ -1,8 +1,9 @@
 {
+  "version": 2,
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/api/contact",    "destination": "/api/contact.js"    },
-    { "source": "/api/categories", "destination": "/api/categories.js" },
-    { "source": "/api/projects",   "destination": "/api/projects.js"   }
+    { "source": "/api/:path*",     "destination": "/api/index"  },
+    { "source": "/project/:path*", "destination": "/index.html" },
+    { "source": "/admin",          "destination": "/admin.html" }
   ]
 }

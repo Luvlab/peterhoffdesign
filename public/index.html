@@ -9,7 +9,7 @@
 <body>
 
   <header class="site-header">
-    <img src="phd-logo.jpg" alt="Peter Hoff Design AB" class="logo" />
+    <a href="/" class="logo-link"><img src="phd-logo.jpg" alt="Peter Hoff Design AB" class="logo" /></a>
     <h1 class="site-title">Peter Hoff Design</h1>
     <p class="site-sub">Multidisciplinary Design Studio &mdash; Stockholm</p>
   </header>
@@ -22,9 +22,27 @@
     <p class="loading">Loading&hellip;</p>
   </main>
 
-  <footer class="site-footer" id="siteFooter">
-    <p class="loading">Loading&hellip;</p>
-  </footer>
+  <!-- Project detail overlay -->
+  <div class="detail-overlay" id="detailOverlay" hidden>
+    <div class="detail-header">
+      <button class="detail-back" id="detailBack">&#8592; Back</button>
+      <div class="detail-meta">
+        <h2 class="detail-name" id="detailName"></h2>
+        <span class="detail-cat" id="detailCat"></span>
+      </div>
+    </div>
+    <div class="detail-gallery" id="detailGallery"></div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lb-close" id="lbClose">&#10005;</button>
+    <button class="lb-prev"  id="lbPrev">&#8592;</button>
+    <button class="lb-next"  id="lbNext">&#8594;</button>
+    <img class="lb-img" id="lbImg" src="" alt="" />
+  </div>
+
+  <footer class="site-footer" id="siteFooter"></footer>
 
   <script src="app.js"></script>
 </body>

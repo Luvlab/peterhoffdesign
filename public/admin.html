@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CMS — Peter Hoff Design</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <header class="adm-header">
+    <div class="adm-header-left">
+      <img src="phd-logo.jpg" alt="" class="adm-logo" />
+      <div>
+        <h1 class="adm-title">CMS</h1>
+        <p class="adm-sub">Peter Hoff Design AB</p>
+      </div>
+    </div>
+    <div class="adm-header-right">
+      <span class="adm-stats" id="admStats"></span>
+      <a href="/" class="adm-btn adm-btn--outline" target="_blank">View Site ↗</a>
+    </div>
+  </header>
+
+  <div class="adm-toolbar">
+    <div class="adm-cats" id="admCats">
+      <button class="cat-tab active" data-cat="all">All</button>
+    </div>
+    <button class="adm-btn adm-btn--primary" id="addBtn">+ Add Project</button>
+  </div>
+
+  <main class="adm-main">
+    <table class="adm-table" id="admTable">
+      <thead>
+        <tr>
+          <th class="col-drag"></th>
+          <th class="col-vis">Visible</th>
+          <th class="col-name">Project</th>
+          <th class="col-cat">Category</th>
+          <th class="col-imgs">Images</th>
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody id="admBody"></tbody>
+    </table>
+    <p class="adm-empty" id="admEmpty" hidden>No projects yet.</p>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Add Project</h2>
+        <button class="modal-close" id="modalClose">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editId" />
+        <div class="field">
+          <label>Name <span class="req">*</span></label>
+          <input type="text" id="fName" placeholder="Project name" />
+        </div>
+        <div class="field">
+          <label>Category <span class="req">*</span></label>
+          <select id="fCat"></select>
+        </div>
+        <div class="field">
+          <label>Slug <small>(auto-generated if blank)</small></label>
+          <input type="text" id="fSlug" placeholder="my-project" />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="fDesc" rows="3" placeholder="Optional description"></textarea>
+        </div>
+        <div class="field">
+          <label>Image URLs <small>(one per line)</small></label>
+          <textarea id="fImages" rows="8" placeholder="https://peterhoffdesign.com/…"></textarea>
+        </div>
+        <div class="field field--inline">
+          <label>Visible on site</label>
+          <label class="toggle">
+            <input type="checkbox" id="fVisible" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="adm-btn adm-btn--outline" id="modalCancel">Cancel</button>
+        <button class="adm-btn adm-btn--primary" id="modalSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm dialog -->
+  <div class="modal-overlay" id="confirmOverlay" hidden>
+    <div class="modal modal--sm">
+      <div class="modal-header">
+        <h2 class="modal-title">Delete project?</h2>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMsg">This cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="adm-btn adm-btn--outline" id="confirmNo">Cancel</button>
+        <button class="adm-btn adm-btn--danger"   id="confirmYes">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
