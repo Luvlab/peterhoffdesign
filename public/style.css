@@ -129,8 +129,8 @@ body {
 @media (max-width: 420px) { .detail-brand { display: none; } }
 
 .detail-footer {
-  flex-shrink: 0;
-  padding: 14px 24px;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 5;
+  padding: 10px 24px;
   text-align: center;
   font-size: 10px; letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--muted);
@@ -140,7 +140,7 @@ body {
 
 /* ── Gallery ── */
 .detail-gallery {
-  padding: 8px 0 48px;
+  padding: 8px 0 56px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 8px;
