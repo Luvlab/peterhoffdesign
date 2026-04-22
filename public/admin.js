@@ -78,18 +78,18 @@ function renderTable() {
     tr.dataset.id = proj.id
     if (!proj.visible) tr.classList.add('hidden-row')
     tr.innerHTML = `
-      <td><span class="drag-handle" title="Drag to reorder">⠿</span></td>
-      <td>
+      <td class="col-drag"><span class="drag-handle" title="Drag to reorder">⠿</span></td>
+      <td class="col-vis">
         <label class="toggle">
           <input type="checkbox" class="vis-toggle" data-id="${proj.id}" ${proj.visible ? 'checked' : ''} />
           <span class="toggle-slider"></span>
         </label>
       </td>
-      <td>
+      <td class="col-name">
         <div class="proj-name">${esc(proj.name)}</div>
         <div class="proj-slug">${esc(proj.slug)}</div>
       </td>
-      <td><span class="cat-badge">${esc(catLabel(proj.category))}</span></td>
+      <td class="col-cat"><span class="cat-badge">${esc(catLabel(proj.category))}</span></td>
       <td class="col-imgs"><span class="img-count">${(proj.images || []).length}</span></td>
       <td class="col-actions">
         <button class="adm-btn--ghost edit-btn" data-id="${proj.id}">Edit</button>

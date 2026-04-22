@@ -128,11 +128,13 @@ body {
 .adm-table tbody tr.hidden-row td { opacity: .45; }
 
 .col-drag    { width: 32px; }
-.col-vis     { width: 52px; }
-.col-name    { min-width: 0; }
+.col-vis     { width: 56px; }
+.col-name    { width: 100%; }
 .col-cat     { width: 140px; }
 .col-imgs    { width: 64px; text-align: center; }
-.col-actions { width: 90px; text-align: right; white-space: nowrap; }
+.col-actions { width: 80px; text-align: right; white-space: nowrap; }
+
+.proj-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 
 /* hide less-critical columns on narrow screens */
 .col-drag, .col-cat, .col-imgs { display: none; }
