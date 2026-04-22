@@ -11,6 +11,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; }
 
 body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -25,17 +26,17 @@ body {
 .adm-header {
   background: var(--white);
   border-bottom: 2px solid var(--teal);
-  padding: 10px 16px;
+  padding: 0 16px 10px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
-.adm-header-left  { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.adm-logo         { width: 32px; height: auto; flex-shrink: 0; }
+.adm-header-left  { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+.adm-logo         { width: 32px; height: auto; flex-shrink: 0; display: block; line-height: 0; font-size: 0; margin: 0; vertical-align: top; }
 .adm-title        { font-size: 13px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
 .adm-sub          { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; margin-top: 1px; display: none; }
-.adm-header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.adm-header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; padding-top: 6px; }
 .adm-stats        { font-size: 11px; color: var(--muted); display: none; }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────────── */
@@ -101,7 +102,7 @@ body {
 .cat-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
 
 /* ── Table ───────────────────────────────────────────────────────────────────── */
-.adm-main  { padding: 16px; }
+.adm-main  { padding: 16px; overflow-x: auto; }
 .adm-empty { color: var(--muted); text-align: center; padding: 48px; }
 
 .adm-table {
@@ -135,6 +136,9 @@ body {
 
 /* hide less-critical columns on narrow screens */
 .col-drag, .col-cat, .col-imgs { display: none; }
+
+.add-label-long { display: none; }
+.add-label-short { display: inline; }
 
 .drag-handle {
   cursor: grab; color: var(--border); font-size: 18px;
@@ -356,13 +360,15 @@ body {
 
 /* ── Tablet & up ─────────────────────────────────────────────────────────────── */
 @media (min-width: 600px) {
-  .adm-header  { padding: 12px 24px; }
+  .adm-header  { padding: 0 24px 12px; }
   .adm-logo    { width: 36px; }
   .adm-title   { font-size: 15px; }
   .adm-sub     { display: block; }
   .adm-stats   { display: block; }
   .adm-toolbar { padding: 12px 24px; }
   .adm-main    { padding: 20px 24px; }
+  .add-label-long  { display: inline; }
+  .add-label-short { display: none; }
 
   .col-vis  { width: 64px; }
   .col-imgs { display: table-cell; }
@@ -387,7 +393,7 @@ body {
 }
 
 @media (min-width: 900px) {
-  .adm-header  { padding: 16px 32px; }
+  .adm-header  { padding: 0 32px 16px; }
   .adm-logo    { width: 40px; }
   .adm-title   { font-size: 18px; }
   .adm-toolbar { padding: 12px 32px; }

@@ -9,6 +9,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; }
 
 body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -29,8 +30,8 @@ body {
   background: var(--white);
   border-bottom: 1px solid var(--border);
 }
-.logo-link { flex-shrink: 0; display: block; }
-.logo { width: 48px; height: auto; display: block; }
+.logo-link { flex-shrink: 0; display: block; line-height: 0; font-size: 0; }
+.logo { width: 48px; height: auto; display: block; margin: 0; vertical-align: top; }
 .site-header-text { padding-top: 10px; }
 .site-title {
   font-size: 13px; font-weight: 400;
