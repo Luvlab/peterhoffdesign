@@ -97,6 +97,14 @@ function openProject(proj) {
   gallery.innerHTML = ''
   lbImages = proj.images
 
+  const n = proj.images.length
+  gallery.style.gridTemplateColumns =
+    n === 1 ? '1fr' :
+    n === 2 ? 'repeat(2, 1fr)' :
+    n === 3 ? 'repeat(3, 1fr)' :
+    n === 4 ? 'repeat(2, 1fr)' :
+    `repeat(auto-fill, minmax(${n <= 10 ? 340 : 260}px, 1fr))`
+
   proj.images.forEach((src, i) => {
     const wrap = document.createElement('div')
     wrap.className = 'gallery-img-wrap'
