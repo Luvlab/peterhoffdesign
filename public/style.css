@@ -113,6 +113,16 @@ body {
 }
 .gallery-img-wrap img:hover { opacity: .88; }
 
+.detail-gallery.is-single {
+  padding: 24px;
+  justify-items: center;
+}
+.detail-gallery.is-single .gallery-img-wrap img {
+  width: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 120px);
+}
+
 /* ── Lightbox ── */
 .lightbox {
   position: fixed; inset: 0; z-index: 200;
