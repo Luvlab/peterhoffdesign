@@ -21,22 +21,23 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 40px 24px;
+  padding: 0 24px 40px;
 }
 
 /* ── Card ── */
 .gate {
   width: 100%;
-  max-width: 420px;
+  max-width: 480px;
   text-align: center;
 }
 
 /* ── Logo ── */
 .gate-logo {
-  width: 72px;
+  width: 100%;
+  max-width: 340px;
   height: auto;
   display: block;
-  margin: 0 auto 20px;
+  margin: 0 auto 24px;
 }
 
 /* ── Title ── */
@@ -158,6 +159,5 @@ body {
 .gate-input.shake { animation: shake .4s ease; }
 
 @media (min-width: 480px) {
-  .gate-logo { width: 88px; }
   .gate-title { font-size: 15px; }
 }
