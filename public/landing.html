@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Peter Hoff Design AB</title>
+  <link rel="stylesheet" href="landing.css" />
+  <script>
+    // Already authenticated — skip gate
+    (function() {
+      if (localStorage.getItem('phd_auth')) {
+        var next = new URLSearchParams(location.search).get('next')
+        location.replace(next === 'admin' ? '/admin' : '/')
+      }
+    })()
+  </script>
+</head>
+<body>
+
+  <div class="gate">
+    <img src="phd-logo.jpg" alt="Peter Hoff Design AB" class="gate-logo" />
+    <h1 class="gate-title">Peter Hoff Design</h1>
+    <p class="gate-sub">Multidisciplinary Design Studio &mdash; Stockholm</p>
+    <span class="gate-badge">Site under construction</span>
+
+    <div class="gate-contacts" id="gateContacts">
+      <!-- populated by JS -->
+    </div>
+
+    <form class="gate-form" id="gateForm" autocomplete="off">
+      <input
+        type="password"
+        class="gate-input"
+        id="gatePwd"
+        placeholder="Password"
+        autocomplete="current-password"
+        autofocus
+      />
+      <button type="submit" class="gate-btn">Enter</button>
+      <p class="gate-error" id="gateError" hidden>Incorrect password — try again.</p>
+    </form>
+  </div>
+
+  <script>
+    // Load contact info
+    fetch('/api/contact').then(r => r.json()).then(c => {
+      document.getElementById('gateContacts').innerHTML =
+        `<span>${c.name}</span>` +
+        `<span>${c.address}, ${c.city}</span>` +
+        `<span><a href="tel:${c.phone.replace(/\s/g,'')}">${c.phone}</a></span>` +
+        `<span><a href="mailto:${c.email}">${c.email}</a></span>` +
+        `<span><a href="https://${c.website}" target="_blank" rel="noopener">${c.website}</a></span>`
+    }).catch(() => {})
+
+    // Password check
+    document.getElementById('gateForm').addEventListener('submit', function(e) {
+      e.preventDefault()
+      var pwd  = document.getElementById('gatePwd').value
+      var err  = document.getElementById('gateError')
+      if (pwd === 'phd123!') {
+        localStorage.setItem('phd_auth', '1')
+        var next = new URLSearchParams(location.search).get('next')
+        location.replace(next === 'admin' ? '/admin' : '/')
+      } else {
+        err.hidden = false
+        document.getElementById('gatePwd').value = ''
+        document.getElementById('gatePwd').focus()
+        // shake animation
+        document.getElementById('gatePwd').classList.add('shake')
+        setTimeout(function() {
+          document.getElementById('gatePwd').classList.remove('shake')
+        }, 400)
+      }
+    })
+  </script>
+</body>
+</html>
