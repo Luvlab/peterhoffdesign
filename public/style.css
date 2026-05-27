@@ -27,9 +27,10 @@ body {
 /* ── Header ─────────────────────────────────────────────────────────────────── */
 .site-header {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  padding: 28px var(--page-pad) 0;
+  justify-content: space-between;
+  padding: 18px var(--page-pad);
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
@@ -37,21 +38,19 @@ body {
 .logo-link {
   display: block;
   line-height: 0;
-  margin-bottom: 18px;
 }
 
 .logo {
   width: auto;
-  height: 56px;
+  height: 44px;
   display: block;
 }
 
-/* ── Site nav (below logo, above border) ─────────────────────────────────── */
+/* ── Site nav ────────────────────────────────────────────────────────────── */
 .site-nav {
   display: flex;
   align-items: center;
   gap: 32px;
-  padding-bottom: 16px;
 }
 
 .site-nav a {
