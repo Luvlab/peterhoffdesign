@@ -160,6 +160,7 @@ function openAdd() {
   document.getElementById('fDesc').value      = ''
   document.getElementById('fLocation').value  = ''
   document.getElementById('fVisible').checked = true
+  updateLocationMapPreview('')
   if (currentCat !== 'all') document.getElementById('fCat').value = currentCat
   else if (allCategories.length) document.getElementById('fCat').value = allCategories[0].id
   showModalTab('details')
@@ -180,6 +181,7 @@ function openEdit(id) {
   document.getElementById('fDesc').value             = proj.description || ''
   document.getElementById('fLocation').value         = proj.location || ''
   document.getElementById('fVisible').checked        = proj.visible
+  updateLocationMapPreview(proj.location || '')
   showModalTab('details')
   renderImageTab(proj)
   document.getElementById('modalOverlay').hidden = false
@@ -510,6 +512,24 @@ function toast(msg) {
 function esc(s) {
   return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
 }
+
+/* ── Location map preview ───────────────────────────────────────────────────── */
+function updateLocationMapPreview(loc) {
+  const preview = document.getElementById('locationMapPreview')
+  if (!preview) return
+  if (loc && loc.trim()) {
+    const src = 'https://maps.google.com/maps?q=' + encodeURIComponent(loc.trim()) + '&output=embed&z=14'
+    preview.innerHTML = `<iframe src="${src}" loading="lazy" allowfullscreen title="Karta"></iframe>`
+    preview.hidden = false
+  } else {
+    preview.hidden = true
+    preview.innerHTML = ''
+  }
+}
+
+document.getElementById('fLocation').addEventListener('blur', function() {
+  updateLocationMapPreview(this.value)
+})
 
 /* ── Wire events ───────────────────────────────────────────────────────────── */
 document.getElementById('addBtn').addEventListener('click', openAdd)
