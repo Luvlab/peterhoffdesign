@@ -339,14 +339,16 @@ function makeThumb(url, projId, credit) {
     <div class="img-thumb-media">
       ${media}
       <div class="img-thumb-overlay">
-        <span class="img-thumb-handle" title="Drag to reorder">⠿</span>
         <button class="img-thumb-del" title="Delete">✕</button>
       </div>
     </div>
-    <input class="img-credit-input" type="text"
-      placeholder="Fotograf / kredit"
-      value="${esc(credit || '')}"
-      data-url="${esc(url)}" />`
+    <div class="img-thumb-footer">
+      <span class="img-thumb-handle" title="Dra för att sortera">⠿</span>
+      <input class="img-credit-input" type="text"
+        placeholder="Fotograf / kredit"
+        value="${esc(credit || '')}"
+        data-url="${esc(url)}" />
+    </div>`
   div.querySelector('.img-thumb-del').addEventListener('click', () => deleteImage(projId, url))
   div.querySelector('.img-credit-input').addEventListener('blur', () => saveCredits(projId))
   return div

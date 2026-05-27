@@ -339,26 +339,13 @@ body {
   width: 100%; height: 100%;
   object-fit: cover; display: block;
 }
-/* always show overlay on touch devices */
+/* delete overlay — top-right corner, shown on hover (desktop) / always (touch) */
 .img-thumb-overlay {
   position: absolute; inset: 0;
-  background: rgba(0,0,0,.35);
+  background: rgba(0,0,0,.18);
   opacity: 1;
-  display: flex; align-items: flex-start; justify-content: space-between;
+  display: flex; align-items: flex-start; justify-content: flex-end;
   padding: 6px;
-}
-.img-credit-input {
-  width: 100%; border: none; border-top: 1px solid var(--border);
-  padding: 5px 8px; font-size: 10px; line-height: 1.4;
-  color: var(--text); background: #fff; outline: none;
-  font-family: inherit;
-}
-.img-credit-input::placeholder { color: var(--muted); }
-.img-credit-input:focus { background: #f5f5f5; }
-.img-thumb-handle {
-  color: #fff; font-size: 16px; cursor: grab; padding: 4px;
-  line-height: 1; user-select: none;
-  min-width: 30px; min-height: 30px; display: flex; align-items: center;
 }
 .img-thumb-del {
   background: rgba(220,50,50,.9); color: #fff;
@@ -368,6 +355,33 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .img-thumb-del:hover, .img-thumb-del:active { background: #c00; }
+
+/* always-visible footer: drag handle + credit input */
+.img-thumb-footer {
+  display: flex; align-items: stretch;
+  border-top: 1px solid var(--border);
+  background: #fff; min-height: 34px;
+}
+.img-thumb-handle {
+  flex-shrink: 0;
+  color: #ccc; font-size: 18px; cursor: grab;
+  min-width: 32px; min-height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none; touch-action: none;
+  border-right: 1px solid var(--border);
+}
+.img-thumb-handle:hover  { color: var(--muted); }
+.img-thumb-handle:active { cursor: grabbing; color: var(--text); }
+
+.img-credit-input {
+  flex: 1; border: none;
+  padding: 6px 8px; font-size: 10px; line-height: 1.4;
+  color: var(--text); background: transparent; outline: none;
+  font-family: inherit; min-width: 0;
+}
+.img-credit-input::placeholder { color: var(--muted); }
+.img-credit-input:focus { background: #f9f9f9; }
+
 .img-thumb.uploading { opacity: .6; cursor: wait; }
 .img-thumb.uploading::after {
   content: '';
@@ -377,7 +391,7 @@ body {
 
 .img-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 24px 0; }
 
-.sortable-img-ghost { opacity: .4; }
+.sortable-img-ghost { opacity: .35; }
 
 /* ── Toast ───────────────────────────────────────────────────────────────────── */
 .toast {
