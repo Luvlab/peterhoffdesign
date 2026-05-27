@@ -312,7 +312,8 @@ function renderImageTab(proj) {
 
   const grid = document.getElementById('imgGrid')
   grid.innerHTML = ''
-  images.forEach(url => grid.appendChild(makeThumb(url, proj.id)))
+  const credits = proj.credits || {}
+  images.forEach(url => grid.appendChild(makeThumb(url, proj.id, credits[url])))
 
   if (imgSortable) imgSortable.destroy()
   imgSortable = Sortable.create(grid, {
@@ -325,7 +326,7 @@ function renderImageTab(proj) {
 
 function isVideo(url) { return /\.mp4(\?|$)/i.test(url) }
 
-function makeThumb(url, projId) {
+function makeThumb(url, projId, credit) {
   const div = document.createElement('div')
   div.className = 'img-thumb'
   div.dataset.url = url
@@ -333,21 +334,48 @@ function makeThumb(url, projId) {
     ? `<video src="${esc(url)}" muted loop playsinline preload="metadata"></video>`
     : `<img src="${esc(url)}" loading="lazy" alt="" />`
   div.innerHTML = `
-    ${media}
-    <div class="img-thumb-overlay">
-      <span class="img-thumb-handle" title="Drag to reorder">⠿</span>
-      <button class="img-thumb-del" title="Delete">✕</button>
-    </div>`
+    <div class="img-thumb-media">
+      ${media}
+      <div class="img-thumb-overlay">
+        <span class="img-thumb-handle" title="Drag to reorder">⠿</span>
+        <button class="img-thumb-del" title="Delete">✕</button>
+      </div>
+    </div>
+    <input class="img-credit-input" type="text"
+      placeholder="Fotograf / kredit"
+      value="${esc(credit || '')}"
+      data-url="${esc(url)}" />`
   div.querySelector('.img-thumb-del').addEventListener('click', () => deleteImage(projId, url))
+  div.querySelector('.img-credit-input').addEventListener('blur', () => saveCredits(projId))
   return div
 }
 
-async function saveImageOrder(projId) {
-  const urls = [...document.querySelectorAll('#imgGrid .img-thumb')].map(el => el.dataset.url)
+function getCreditsFromGrid() {
+  const credits = {}
+  document.querySelectorAll('#imgGrid .img-credit-input').forEach(inp => {
+    const val = inp.value.trim()
+    if (val) credits[inp.dataset.url] = val
+  })
+  return credits
+}
+
+async function saveCredits(projId) {
+  const credits = getCreditsFromGrid()
   try {
-    const updated = await apiFetch('PUT', `/api/admin/projects/${projId}/images`, { images: urls })
+    const updated = await apiFetch('PUT', `/api/admin/projects/${projId}`, { credits })
     const p = allProjects.find(p => p.id === projId)
-    if (p) p.images = updated.images || urls
+    if (p) p.credits = updated.credits || {}
+    toast('Kredit sparad')
+  } catch (err) { toast('Error: ' + err.message) }
+}
+
+async function saveImageOrder(projId) {
+  const urls    = [...document.querySelectorAll('#imgGrid .img-thumb')].map(el => el.dataset.url)
+  const credits = getCreditsFromGrid()
+  try {
+    const updated = await apiFetch('PUT', `/api/admin/projects/${projId}`, { images: urls, credits })
+    const p = allProjects.find(p => p.id === projId)
+    if (p) { p.images = updated.images || urls; p.credits = updated.credits || {} }
     renderTable()
   } catch (err) { toast('Reorder failed: ' + err.message) }
 }

@@ -1,6 +1,7 @@
 let allProjects   = []
 let allCategories = []
 let lbImages      = []
+let lbCredits     = []
 let lbIndex       = 0
 
 // ── bootstrap ────────────────────────────────────────────────────────────────
@@ -130,8 +131,9 @@ function openProject(proj) {
   const gallery = document.getElementById('detailGallery')
   gallery.innerHTML = ''
 
-  // build lbImages from non-video items only
-  lbImages = (proj.images || []).filter(u => !isVideo(u))
+  // build lbImages + lbCredits from non-video items only
+  lbImages  = (proj.images || []).filter(u => !isVideo(u))
+  lbCredits = lbImages.map(u => (proj.credits || {})[u] || '')
   let lbIdx = 0  // tracks index within lbImages
 
   const n = proj.images.length
@@ -164,6 +166,13 @@ function openProject(proj) {
       const capturedIdx = lbIdx++
       img.addEventListener('click', () => openLightbox(capturedIdx))
       wrap.appendChild(img)
+      const credit = (proj.credits || {})[src]
+      if (credit) {
+        const cap = document.createElement('div')
+        cap.className   = 'gallery-caption'
+        cap.textContent = credit
+        wrap.appendChild(cap)
+      }
     }
     gallery.appendChild(wrap)
   })
@@ -225,16 +234,22 @@ window.addEventListener('popstate', () => {
 })
 
 // ── lightbox ──────────────────────────────────────────────────────────────────
+function setLbCaption(i) {
+  const el = document.getElementById('lbCaption')
+  if (el) el.textContent = lbCredits[i] || ''
+}
 function openLightbox(index) {
   lbIndex = index
   document.getElementById('lightbox').hidden = false
   document.getElementById('lbImg').src = lbImages[lbIndex]
+  setLbCaption(lbIndex)
 }
 function closeLightbox() { document.getElementById('lightbox').hidden = true }
 function lbStep(dir) {
   if (!lbImages.length) return
   lbIndex = (lbIndex + dir + lbImages.length) % lbImages.length
   document.getElementById('lbImg').src = lbImages[lbIndex]
+  setLbCaption(lbIndex)
 }
 
 document.getElementById('lbClose').addEventListener('click', closeLightbox)

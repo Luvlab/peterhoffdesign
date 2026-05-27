@@ -447,6 +447,15 @@ body {
 }
 .gallery-img-wrap img:hover { opacity: 0.9; }
 
+.gallery-caption {
+  padding: 5px 10px 6px;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  background: var(--bg);
+  line-height: 1.4;
+}
+
 .detail-gallery.is-single {
   padding: 40px;
   background: var(--bg);
@@ -496,6 +505,18 @@ body {
 .lb-close { top: 16px; right: 16px; font-size: 18px; }
 .lb-prev  { left: 0; top: 50%; transform: translateY(-50%); font-size: 22px; padding: 20px; }
 .lb-next  { right: 0; top: 50%; transform: translateY(-50%); font-size: 22px; padding: 20px; }
+
+.lb-caption {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.55);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  pointer-events: none;
+}
 
 /* ── Site footer ─────────────────────────────────────────────────────────────── */
 .site-footer {
