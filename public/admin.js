@@ -154,10 +154,11 @@ function openAdd() {
   editingId = null
   document.getElementById('modalTitle').textContent = 'Add Project'
   document.getElementById('modalSave').textContent  = 'Create Project'
-  document.getElementById('editId').value    = ''
-  document.getElementById('fName').value     = ''
-  document.getElementById('fSlug').value     = ''
-  document.getElementById('fDesc').value     = ''
+  document.getElementById('editId').value     = ''
+  document.getElementById('fName').value      = ''
+  document.getElementById('fSlug').value      = ''
+  document.getElementById('fDesc').value      = ''
+  document.getElementById('fLocation').value  = ''
   document.getElementById('fVisible').checked = true
   if (currentCat !== 'all') document.getElementById('fCat').value = currentCat
   else if (allCategories.length) document.getElementById('fCat').value = allCategories[0].id
@@ -177,6 +178,7 @@ function openEdit(id) {
   document.getElementById('fCat').value              = proj.category
   document.getElementById('fSlug').value             = proj.slug
   document.getElementById('fDesc').value             = proj.description || ''
+  document.getElementById('fLocation').value         = proj.location || ''
   document.getElementById('fVisible').checked        = proj.visible
   showModalTab('details')
   renderImageTab(proj)
@@ -219,6 +221,7 @@ async function saveDetails() {
   const category = document.getElementById('fCat').value
   const slug     = document.getElementById('fSlug').value.trim()
   const desc     = document.getElementById('fDesc').value.trim()
+  const location = document.getElementById('fLocation').value.trim()
   const visible  = document.getElementById('fVisible').checked
 
   if (!name || !category) { toast('Name and category are required'); return }
@@ -227,6 +230,7 @@ async function saveDetails() {
     name, category,
     slug: slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     description: desc,
+    location,
     visible
   }
 

@@ -76,7 +76,7 @@ app.get('/api/admin/projects', requireAdmin, wrap(async (req, res) => {
 }))
 
 app.post('/api/admin/projects', requireAdmin, wrap(async (req, res) => {
-  const { name, category, slug, description, images, visible } = req.body
+  const { name, category, slug, description, location, images, visible } = req.body
   if (!name || !category) return res.status(400).json({ error: 'name and category required' })
   const existing = await db.getProjects({ category, visibleOnly: false })
   const maxOrder  = existing.length ? Math.max(...existing.map(p => p.order)) : -1
@@ -87,6 +87,7 @@ app.post('/api/admin/projects', requireAdmin, wrap(async (req, res) => {
     category,
     slug: slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     description: description || '',
+    location: location || '',
     images: images || [],
     visible: visible !== false,
     order: maxOrder + 1

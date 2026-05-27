@@ -168,9 +168,39 @@ function openProject(proj) {
     gallery.appendChild(wrap)
   })
 
+  // ── Location map ────────────────────────────────────────────────────────────
+  const mapSection = document.getElementById('detailMap')
+  if (proj.location && proj.location.trim()) {
+    const mapUrl = 'https://maps.google.com/maps?q=' + encodeURIComponent(proj.location.trim()) + '&output=embed&z=15'
+    mapSection.innerHTML = `
+      <div class="map-label">
+        <svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor" aria-hidden="true">
+          <path d="M6 0C2.69 0 0 2.69 0 6c0 4.5 6 10 6 10s6-5.5 6-10c0-3.31-2.69-6-6-6zm0 8.5A2.5 2.5 0 1 1 6 3.5a2.5 2.5 0 0 1 0 5z"/>
+        </svg>
+        ${esc(proj.location)}
+      </div>
+      <div class="map-wrap">
+        <iframe
+          src="${mapUrl}"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Karta: ${esc(proj.location)}">
+        </iframe>
+      </div>`
+    mapSection.hidden = false
+  } else {
+    mapSection.hidden = true
+    mapSection.innerHTML = ''
+  }
+
   document.getElementById('detailOverlay').hidden = false
   document.getElementById('projectsGrid').style.display = 'none'
   window.scrollTo(0, 0)
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
 }
 
 function showGrid() {
