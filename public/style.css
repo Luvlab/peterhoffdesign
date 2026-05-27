@@ -123,6 +123,8 @@ body {
   display: block;
 }
 
+.filter-nav .filter-btn:first-child { padding-left: 0; }
+
 .filter-btn {
   flex-shrink: 0;
   padding: 14px 20px;
