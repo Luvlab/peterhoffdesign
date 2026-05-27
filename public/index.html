@@ -19,15 +19,16 @@
 
   <!-- filter-bar: scrollable nav + sticky logo (shown on scroll) + ratio picker -->
   <div class="filter-bar" id="filterBar">
+
+    <!-- logo left-aligned, appears when header scrolls out of view -->
+    <a href="/" class="filter-bar-logo" id="filterBarLogo" title="Peter Hoff Design AB">
+      <img src="phd-logo.png" alt="Peter Hoff Design AB" />
+    </a>
+
     <nav class="filter-nav" id="filterNav">
       <button class="filter-btn active" data-filter="featured">Featured</button>
       <button class="filter-btn" data-filter="all">All</button>
     </nav>
-
-    <!-- logo appears here when header scrolls out of view -->
-    <a href="/" class="filter-bar-logo" id="filterBarLogo" title="Peter Hoff Design AB">
-      <img src="phd-logo.png" alt="Peter Hoff Design AB" />
-    </a>
 
     <div class="ratio-picker" id="ratioPicker">
       <button class="ratio-btn active" data-ratio="1/1" title="1:1">

@@ -95,22 +95,32 @@ body {
   display: flex;
   align-items: center;
   padding: 0 14px;
-  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
   text-decoration: none;
+  /* Collapse to zero width when hidden so it doesn't push filter buttons */
+  max-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border-right-width: 0;
+  transition: opacity 0.25s ease, max-width 0.25s ease, padding 0.25s ease, border-right-width 0s 0.25s;
+}
+
+.filter-bar.is-scrolled .filter-bar-logo {
+  opacity: 1;
+  pointer-events: auto;
+  max-width: 80px;
+  padding: 0 14px;
+  border-right-width: 1px;
+  transition: opacity 0.25s ease, max-width 0.25s ease, padding 0.25s ease;
 }
 
 .filter-bar-logo img {
   height: 30px;
   width: auto;
   display: block;
-}
-
-.filter-bar.is-scrolled .filter-bar-logo {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .filter-btn {

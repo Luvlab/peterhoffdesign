@@ -309,6 +309,18 @@ function renderContact(c) {
   obs.observe(header)
 })()
 
+// ── filter nav swipe hint (mobile only, runs once) ────────────────────────────
+;(function() {
+  if (window.matchMedia('(hover: hover)').matches) return  // skip desktop
+  const nav = document.getElementById('filterNav')
+  if (!nav) return
+  setTimeout(() => {
+    if (nav.scrollWidth <= nav.clientWidth + 10) return  // not scrollable, skip
+    nav.scrollTo({ left: 72, behavior: 'smooth' })
+    setTimeout(() => nav.scrollTo({ left: 0, behavior: 'smooth' }), 540)
+  }, 900)
+})()
+
 // ── ratio picker ──────────────────────────────────────────────────────────────
 ;(function() {
   const STORAGE_KEY = 'phd_thumb_ratio'
