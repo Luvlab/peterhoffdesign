@@ -258,14 +258,14 @@ body {
 
 /* Label below (shown on mobile / always for accessibility) */
 .card-label {
-  padding: 8px 0 0;
-  background: var(--bg);
+  padding: 7px 0 0;
+  text-align: left;
 }
 
 .project-name {
   font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--text);
   line-height: 1.4;
@@ -273,15 +273,10 @@ body {
 
 .project-cat {
   font-size: 9px;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
   margin-top: 2px;
-}
-
-/* Hide below-label on hover-capable devices (overlay handles it) */
-@media (hover: hover) {
-  .card-label { display: none; }
 }
 
 /* ── Detail overlay ──────────────────────────────────────────────────────────── */
