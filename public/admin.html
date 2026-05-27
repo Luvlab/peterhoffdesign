@@ -66,7 +66,22 @@
     <div class="adm-cats" id="admCats">
       <button class="cat-tab active" data-cat="all">All</button>
     </div>
-    <button class="adm-btn adm-btn--primary" id="addBtn"><span class="add-label-long">+ Add Project</span><span class="add-label-short">+</span></button>
+    <div class="adm-toolbar-right">
+      <button class="adm-btn adm-btn--outline" id="bioBtn">Bio / Intro</button>
+      <button class="adm-btn adm-btn--primary" id="addBtn"><span class="add-label-long">+ Add Project</span><span class="add-label-short">+</span></button>
+    </div>
+  </div>
+
+  <!-- Bio / Intro panel -->
+  <div class="bio-panel" id="bioPanel" hidden>
+    <div class="bio-panel-inner">
+      <label class="bio-panel-label">Bio / Introductionstext <small>Visas i footern på sidan</small></label>
+      <textarea id="bioTextarea" rows="5" placeholder="Skriv en kort presentation av Peter Hoff Design…"></textarea>
+      <div class="bio-panel-actions">
+        <button class="adm-btn adm-btn--outline" id="bioCancelBtn">Avbryt</button>
+        <button class="adm-btn adm-btn--primary" id="bioSaveBtn">Spara</button>
+      </div>
+    </div>
   </div>
 
   <main class="adm-main">

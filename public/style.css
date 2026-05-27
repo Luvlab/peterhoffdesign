@@ -533,6 +533,14 @@ body {
   gap: 16px;
 }
 
+.contact-bio {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  max-width: 560px;
+  text-align: center;
+}
+
 .contact-company {
   font-size: 10px;
   letter-spacing: 0.18em;

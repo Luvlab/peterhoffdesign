@@ -55,6 +55,25 @@ app.get('/api/config', (req, res) => {
 app.get('/api/contact',    (req, res) => res.json(db.getContact()))
 app.get('/api/categories', (req, res) => res.json(db.getCategories()))
 
+app.get('/api/settings', wrap(async (req, res) => {
+  const { data } = await supabase.from('site_settings').select('key,value')
+  const obj = {}
+  ;(data || []).forEach(r => { obj[r.key] = r.value })
+  res.json(obj)
+}))
+
+// ── admin — settings ──────────────────────────────────────────────────────────
+app.put('/api/admin/settings', requireAdmin, wrap(async (req, res) => {
+  const entries = Object.entries(req.body || {})
+  if (!entries.length) return res.status(400).json({ error: 'No settings provided' })
+  await Promise.all(
+    entries.map(([key, value]) =>
+      supabase.from('site_settings').upsert({ key, value: String(value) })
+    )
+  )
+  res.json({ ok: true })
+}))
+
 app.get('/api/projects', wrap(async (req, res) => {
   const projects = await db.getProjects({
     category: req.query.category,

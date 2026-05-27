@@ -6,16 +6,17 @@ let lbIndex       = 0
 
 // ── bootstrap ────────────────────────────────────────────────────────────────
 async function init() {
-  const [categories, projects, contact] = await Promise.all([
+  const [categories, projects, contact, settings] = await Promise.all([
     fetch('/api/categories').then(r => r.json()),
     fetch('/api/projects').then(r => r.json()),
-    fetch('/api/contact').then(r => r.json())
+    fetch('/api/contact').then(r => r.json()),
+    fetch('/api/settings').then(r => r.json()).catch(() => ({}))
   ])
   allProjects   = projects
   allCategories = categories
 
   renderNav(categories, projects)
-  renderContact(contact)
+  renderContact(contact, settings)
 
   // route on load
   const match = location.pathname.match(/^\/project\/([^/]+)\/([^/]+)/)
@@ -276,10 +277,12 @@ lb.addEventListener('touchend',   e => {
 }, { passive: true })
 
 // ── footer ────────────────────────────────────────────────────────────────────
-function renderContact(c) {
+function renderContact(c, settings) {
   const footer = document.getElementById('siteFooter')
   footer.id = 'contact'   // anchor for nav link
+  const bio = (settings && settings.bio) ? settings.bio.trim() : ''
   footer.innerHTML = `
+    ${bio ? `<p class="contact-bio">${bio.replace(/\n/g, '<br>')}</p>` : ''}
     <p class="contact-company">${c.company}</p>
     <div class="contact-details">
       <span>${c.name}</span>

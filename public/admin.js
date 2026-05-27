@@ -8,15 +8,18 @@ let imgSortable   = null
 
 /* ── Bootstrap ─────────────────────────────────────────────────────────────── */
 async function init() {
-  const [cats, projs] = await Promise.all([
+  const [cats, projs, settings] = await Promise.all([
     fetch('/api/categories').then(r => r.json()),
-    fetch('/api/admin/projects').then(r => r.json())
+    fetch('/api/admin/projects').then(r => r.json()),
+    fetch('/api/settings').then(r => r.json()).catch(() => ({}))
   ])
   allCategories = cats
   allProjects   = projs
   buildCatTabs()
   buildCatSelect()
   renderTable()
+  // Pre-fill bio textarea
+  document.getElementById('bioTextarea').value = settings.bio || ''
 }
 
 /* ── Category tabs ─────────────────────────────────────────────────────────── */
@@ -531,6 +534,23 @@ function updateLocationMapPreview(loc) {
 
 document.getElementById('fLocation').addEventListener('blur', function() {
   updateLocationMapPreview(this.value)
+})
+
+/* ── Bio panel ─────────────────────────────────────────────────────────────── */
+document.getElementById('bioBtn').addEventListener('click', () => {
+  const panel = document.getElementById('bioPanel')
+  panel.hidden = !panel.hidden
+})
+document.getElementById('bioCancelBtn').addEventListener('click', () => {
+  document.getElementById('bioPanel').hidden = true
+})
+document.getElementById('bioSaveBtn').addEventListener('click', async () => {
+  const bio = document.getElementById('bioTextarea').value.trim()
+  try {
+    await apiFetch('PUT', '/api/admin/settings', { bio })
+    document.getElementById('bioPanel').hidden = true
+    toast('Bio sparad')
+  } catch (err) { toast('Error: ' + err.message) }
 })
 
 /* ── Wire events ───────────────────────────────────────────────────────────── */
