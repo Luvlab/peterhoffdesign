@@ -2,9 +2,17 @@ require('dotenv').config()
 const express = require('express')
 const multer  = require('multer')
 const db      = require('../lib/db')
+const { createClient } = require('@supabase/supabase-js')
 
 const app    = express()
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } })
+
+// Supabase client using service key (server-side only)
+const supabase = require('../lib/supabase')
+
+// Allowed admin emails (comma-separated in env)
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
+  .split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
 
 // JSON body for non-multipart requests
 app.use((req, res, next) => {
@@ -15,6 +23,32 @@ app.use((req, res, next) => {
 const wrap = fn => (req, res) => fn(req, res).catch(err => {
   console.error(err)
   res.status(500).json({ error: err.message })
+})
+
+// ── auth middleware ──────────────────────────────────────────────────────────
+async function requireAdmin(req, res, next) {
+  const auth = req.headers['authorization'] || ''
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null
+  if (!token) return res.status(401).json({ error: 'No token' })
+
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+  if (error || !user) return res.status(401).json({ error: 'Invalid token' })
+
+  const email = (user.email || '').toLowerCase()
+  if (!ADMIN_EMAILS.includes(email)) {
+    return res.status(403).json({ error: 'Not an admin' })
+  }
+
+  req.adminUser = user
+  next()
+}
+
+// ── public config (anon key safe to expose) ──────────────────────────────────
+app.get('/api/config', (req, res) => {
+  res.json({
+    supabaseUrl:  process.env.SUPABASE_URL  || '',
+    supabaseKey:  process.env.SUPABASE_ANON_KEY || ''
+  })
 })
 
 // ── public ───────────────────────────────────────────────────────────────────
@@ -36,12 +70,12 @@ app.get('/api/project', wrap(async (req, res) => {
 }))
 
 // ── admin — projects ─────────────────────────────────────────────────────────
-app.get('/api/admin/projects', wrap(async (req, res) => {
+app.get('/api/admin/projects', requireAdmin, wrap(async (req, res) => {
   const projects = await db.getProjects({ category: req.query.category, visibleOnly: false })
   res.json(projects)
 }))
 
-app.post('/api/admin/projects', wrap(async (req, res) => {
+app.post('/api/admin/projects', requireAdmin, wrap(async (req, res) => {
   const { name, category, slug, description, images, visible } = req.body
   if (!name || !category) return res.status(400).json({ error: 'name and category required' })
   const existing = await db.getProjects({ category, visibleOnly: false })
@@ -60,13 +94,12 @@ app.post('/api/admin/projects', wrap(async (req, res) => {
   res.status(201).json(project)
 }))
 
-app.put('/api/admin/projects/:id', wrap(async (req, res) => {
+app.put('/api/admin/projects/:id', requireAdmin, wrap(async (req, res) => {
   const updated = await db.updateProject(req.params.id, req.body)
   res.json(updated)
 }))
 
-app.delete('/api/admin/projects/:id', wrap(async (req, res) => {
-  // Also delete all images from storage
+app.delete('/api/admin/projects/:id', requireAdmin, wrap(async (req, res) => {
   try {
     const proj = await db.getProject({ id: req.params.id })
     await Promise.all((proj.images || []).map(url => db.deleteImage(url)))
@@ -75,16 +108,14 @@ app.delete('/api/admin/projects/:id', wrap(async (req, res) => {
   res.json({ ok: true })
 }))
 
-app.put('/api/admin/reorder', wrap(async (req, res) => {
+app.put('/api/admin/reorder', requireAdmin, wrap(async (req, res) => {
   if (!Array.isArray(req.body)) return res.status(400).json({ error: 'Array expected' })
   await db.reorderProjects(req.body)
   res.json({ ok: true })
 }))
 
 // ── admin — images ────────────────────────────────────────────────────────────
-
-// Upload one or more images; add to project's images array
-app.post('/api/admin/projects/:id/images', upload.array('images', 50), wrap(async (req, res) => {
+app.post('/api/admin/projects/:id/images', requireAdmin, upload.array('images', 50), wrap(async (req, res) => {
   const { id } = req.params
   if (!req.files?.length) return res.status(400).json({ error: 'No files uploaded' })
 
@@ -99,8 +130,7 @@ app.post('/api/admin/projects/:id/images', upload.array('images', 50), wrap(asyn
   res.json(updated)
 }))
 
-// Delete a single image by URL
-app.delete('/api/admin/projects/:id/images', wrap(async (req, res) => {
+app.delete('/api/admin/projects/:id/images', requireAdmin, wrap(async (req, res) => {
   const { id } = req.params
   const { url }  = req.body
   if (!url) return res.status(400).json({ error: 'url required' })
@@ -112,8 +142,7 @@ app.delete('/api/admin/projects/:id/images', wrap(async (req, res) => {
   res.json(updated)
 }))
 
-// Save reordered image array
-app.put('/api/admin/projects/:id/images', wrap(async (req, res) => {
+app.put('/api/admin/projects/:id/images', requireAdmin, wrap(async (req, res) => {
   const { images } = req.body
   if (!Array.isArray(images)) return res.status(400).json({ error: 'images array required' })
   const updated = await db.updateProject(req.params.id, { images })

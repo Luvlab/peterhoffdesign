@@ -397,6 +397,7 @@ function uploadImages(projId, files) {
 
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `/api/admin/projects/${projId}/images`)
+    xhr.setRequestHeader('Authorization', 'Bearer ' + getToken())
 
     xhr.upload.addEventListener('progress', e => {
       if (!e.lengthComputable) return
@@ -433,13 +434,23 @@ function uploadImages(projId, files) {
 }
 
 /* ── API helper ────────────────────────────────────────────────────────────── */
+function getToken() {
+  return localStorage.getItem('phd_sb_token') || ''
+}
+
 async function apiFetch(method, path, body) {
-  const opts = { method, headers: {} }
+  const opts = { method, headers: { 'Authorization': 'Bearer ' + getToken() } }
   if (body !== undefined) {
     opts.headers['Content-Type'] = 'application/json'
     opts.body = JSON.stringify(body)
   }
   const res = await fetch(path, opts)
+  if (res.status === 401 || res.status === 403) {
+    // Token expired or invalid — re-auth
+    localStorage.removeItem('phd_sb_token')
+    location.replace('/admin-login')
+    return
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err.error || `HTTP ${res.status}`)
@@ -482,6 +493,13 @@ document.getElementById('confirmNo').addEventListener('click', () => {
 document.getElementById('confirmYes').addEventListener('click', doDelete)
 document.getElementById('confirmOverlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) document.getElementById('confirmOverlay').hidden = true
+})
+
+/* ── Logout ────────────────────────────────────────────────────────────────── */
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  if (window._sb) await window._sb.auth.signOut()
+  localStorage.removeItem('phd_sb_token')
+  location.replace('/admin-login')
 })
 
 /* ── Start ─────────────────────────────────────────────────────────────────── */

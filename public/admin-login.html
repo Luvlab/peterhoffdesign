@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — Peter Hoff Design</title>
+  <link rel="stylesheet" href="landing.css" />
+  <style>
+    .magic-hint {
+      font-size: 10px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--muted);
+      max-width: 280px;
+      text-align: center;
+      line-height: 1.7;
+    }
+    .magic-success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      max-width: 300px;
+      text-align: center;
+    }
+    .magic-success-icon {
+      font-size: 28px;
+      margin-bottom: 4px;
+    }
+    .magic-success h2 {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .magic-success p {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      line-height: 1.7;
+    }
+    .gate-form .gate-input[type="email"] {
+      text-align: center;
+      letter-spacing: 0.06em;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <img src="phd-logo.png" alt="Peter Hoff Design AB" class="gate-logo" />
+  </header>
+
+  <main class="gate">
+    <h1 class="gate-title">Admin Access</h1>
+    <p class="gate-sub">Peter Hoff Design AB — CMS</p>
+    <span class="gate-badge">Magic Link Login</span>
+
+    <!-- Login form -->
+    <form class="gate-form" id="loginForm" autocomplete="off" style="margin-top: 0;">
+      <input
+        type="email"
+        class="gate-input"
+        id="emailInput"
+        placeholder="your@email.com"
+        autocomplete="email"
+        autofocus
+        required
+      />
+      <button type="submit" class="gate-btn" id="sendBtn">Send Magic Link</button>
+      <p class="gate-error" id="loginError" hidden></p>
+      <p class="magic-hint">A one-time login link will be sent to your email. Only authorised admin addresses can access the CMS.</p>
+    </form>
+
+    <!-- Success state -->
+    <div class="magic-success" id="successState">
+      <div class="magic-success-icon">✉️</div>
+      <h2>Check your inbox</h2>
+      <p>A magic link has been sent to<br /><strong id="sentTo"></strong></p>
+      <p class="magic-hint" style="margin-top: 8px;">Click the link in the email to log in. It expires in 1 hour.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2025 Peter Hoff Design AB</p>
+  </footer>
+
+  <script>
+    let sb = null
+
+    // Load Supabase config from server, then init client
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(({ supabaseUrl, supabaseKey }) => {
+        // Load Supabase SDK
+        const s = document.createElement('script')
+        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+        s.onload = () => {
+          sb = supabase.createClient(supabaseUrl, supabaseKey)
+
+          // If already logged in → go straight to admin
+          sb.auth.getSession().then(({ data: { session } }) => {
+            if (session) location.replace('/admin')
+          })
+        }
+        document.head.appendChild(s)
+      })
+      .catch(console.error)
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault()
+      if (!sb) return
+
+      const email   = document.getElementById('emailInput').value.trim()
+      const errEl   = document.getElementById('loginError')
+      const btn     = document.getElementById('sendBtn')
+
+      errEl.hidden = true
+      btn.disabled = true
+      btn.textContent = 'Sending…'
+
+      const redirectTo = location.origin + '/admin'
+
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: redirectTo }
+      })
+
+      btn.disabled = false
+      btn.textContent = 'Send Magic Link'
+
+      if (error) {
+        errEl.textContent = error.message || 'Something went wrong — try again.'
+        errEl.hidden = false
+        return
+      }
+
+      // Show success state
+      document.getElementById('loginForm').style.display = 'none'
+      document.getElementById('sentTo').textContent = email
+      document.getElementById('successState').style.display = 'flex'
+    })
+  </script>
+</body>
+</html>

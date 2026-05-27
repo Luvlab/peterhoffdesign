@@ -97,9 +97,14 @@ function renderProjects(projects) {
     card.innerHTML = `
       <div class="card-thumb">
         ${thumbSrc ? `<img src="${thumbSrc}" alt="${proj.name}" loading="lazy" />` : ''}
+        <div class="card-overlay">
+          <div class="card-overlay-name">${proj.name}</div>
+          <div class="card-overlay-cat">${catLabel(proj.category)}</div>
+        </div>
       </div>
       <div class="card-label">
         <div class="project-name">${proj.name}</div>
+        <div class="project-cat">${catLabel(proj.category)}</div>
       </div>`
     card.addEventListener('click', () => openProject(proj))
     grid.appendChild(card)
@@ -227,7 +232,9 @@ lb.addEventListener('touchend',   e => {
 
 // ── footer ────────────────────────────────────────────────────────────────────
 function renderContact(c) {
-  document.getElementById('siteFooter').innerHTML = `
+  const footer = document.getElementById('siteFooter')
+  footer.id = 'contact'   // anchor for nav link
+  footer.innerHTML = `
     <p class="contact-company">${c.company}</p>
     <div class="contact-details">
       <span>${c.name}</span>
@@ -236,6 +243,46 @@ function renderContact(c) {
       <span><a href="mailto:${c.email}">${c.email}</a></span>
       <span><a href="https://${c.website}" target="_blank" rel="noopener">${c.website}</a></span>
     </div>`
+
+  // wire Kontakt nav link to scroll to footer
+  document.getElementById('contactLink')?.addEventListener('click', e => {
+    e.preventDefault()
+    footer.scrollIntoView({ behavior: 'smooth' })
+  })
 }
+
+// ── sticky header logo (appears when site-header scrolls out of view) ─────────
+;(function() {
+  const header    = document.querySelector('.site-header')
+  const filterBar = document.getElementById('filterBar')
+  if (!header || !filterBar) return
+
+  const obs = new IntersectionObserver(
+    ([entry]) => filterBar.classList.toggle('is-scrolled', !entry.isIntersecting),
+    { threshold: 0 }
+  )
+  obs.observe(header)
+})()
+
+// ── ratio picker ──────────────────────────────────────────────────────────────
+;(function() {
+  const STORAGE_KEY = 'phd_thumb_ratio'
+  const root = document.documentElement
+  const btns = document.querySelectorAll('.ratio-btn')
+
+  function applyRatio(ratio) {
+    root.style.setProperty('--thumb-ratio', ratio)
+    btns.forEach(b => b.classList.toggle('active', b.dataset.ratio === ratio))
+    localStorage.setItem(STORAGE_KEY, ratio)
+  }
+
+  // restore saved ratio on page load
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) applyRatio(saved)
+
+  btns.forEach(btn =>
+    btn.addEventListener('click', () => applyRatio(btn.dataset.ratio))
+  )
+})()
 
 init()

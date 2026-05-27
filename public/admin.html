@@ -4,10 +4,48 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CMS — Peter Hoff Design</title>
-  <script>if (!localStorage.getItem('phd_auth')) location.replace('/landing.html?next=admin')</script>
   <link rel="stylesheet" href="admin.css" />
+  <script>
+    // Auth guard — runs before anything renders.
+    // Loads Supabase, checks session, redirects if none.
+    (function() {
+      fetch('/api/config')
+        .then(r => r.json())
+        .then(function(cfg) {
+          var s = document.createElement('script')
+          s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+          s.onload = function() {
+            window._sb = supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey)
+            // Handle magic-link callback (token in URL hash or query)
+            window._sb.auth.onAuthStateChange(function(event, session) {
+              if (event === 'SIGNED_IN' && session) {
+                // Store token for API calls, clear URL hash
+                localStorage.setItem('phd_sb_token', session.access_token)
+                history.replaceState(null, '', '/admin')
+              }
+              if (event === 'SIGNED_OUT') {
+                localStorage.removeItem('phd_sb_token')
+                location.replace('/admin-login')
+              }
+            })
+            window._sb.auth.getSession().then(function(res) {
+              var session = res.data && res.data.session
+              if (!session) {
+                location.replace('/admin-login')
+              } else {
+                localStorage.setItem('phd_sb_token', session.access_token)
+                // Reveal body now that auth is confirmed
+                document.body.style.visibility = 'visible'
+              }
+            })
+          }
+          document.head.appendChild(s)
+        })
+        .catch(function() { location.replace('/admin-login') })
+    })()
+  </script>
 </head>
-<body>
+<body style="visibility:hidden">
 
   <header class="adm-header">
     <div class="adm-header-left">
@@ -20,6 +58,7 @@
     <div class="adm-header-right">
       <span class="adm-stats" id="admStats"></span>
       <a href="/" class="adm-btn adm-btn--outline" target="_blank">View Site ↗</a>
+      <button class="adm-btn adm-btn--outline" id="logoutBtn" title="Sign out">Sign out</button>
     </div>
   </header>
 

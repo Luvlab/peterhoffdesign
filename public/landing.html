@@ -17,11 +17,16 @@
 </head>
 <body>
 
-  <div class="gate">
+  <!-- Top header: logo centred, nav-style like peterpeterdesign.com -->
+  <header class="site-header">
     <img src="phd-logo.png" alt="Peter Hoff Design AB" class="gate-logo" />
+  </header>
+
+  <!-- Gate content -->
+  <main class="gate">
     <h1 class="gate-title">Peter Hoff Design</h1>
     <p class="gate-sub">Multidisciplinary Design Studio &mdash; Stockholm</p>
-    <span class="gate-badge">Site under construction</span>
+    <span class="gate-badge">Under construction</span>
 
     <div class="gate-contacts" id="gateContacts">
       <!-- populated by JS -->
@@ -39,7 +44,12 @@
       <button type="submit" class="gate-btn">Enter</button>
       <p class="gate-error" id="gateError" hidden>Incorrect password — try again.</p>
     </form>
-  </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>&copy; 2025 Peter Hoff Design AB</p>
+  </footer>
 
   <script>
     // Load contact info
@@ -55,9 +65,9 @@
     // Password check
     document.getElementById('gateForm').addEventListener('submit', function(e) {
       e.preventDefault()
-      var pwd  = document.getElementById('gatePwd').value
-      var err  = document.getElementById('gateError')
-      if (pwd === 'phd123!') {
+      var pwd = document.getElementById('gatePwd').value
+      var err = document.getElementById('gateError')
+      if (pwd === 'PHD19oneHoffa63') {
         localStorage.setItem('phd_auth', '1')
         var next = new URLSearchParams(location.search).get('next')
         location.replace(next === 'admin' ? '/admin' : '/')
