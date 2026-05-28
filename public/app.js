@@ -6,23 +6,45 @@ let lbIndex       = 0
 
 // ── i18n ──────────────────────────────────────────────────────────────────────
 const TRANSLATIONS = {
-  sv: { portfolio:'Portfolio', contact:'Kontakt',      all:'Alla',   loading:'Laddar…',      noProjects:'Inga projekt hittades.',        back:'← Tillbaka'  },
-  no: { portfolio:'Portfolio', contact:'Kontakt',      all:'Alle',   loading:'Laster…',      noProjects:'Ingen prosjekter funnet.',      back:'← Tilbake'   },
-  da: { portfolio:'Portfolio', contact:'Kontakt',      all:'Alle',   loading:'Indlæser…',    noProjects:'Ingen projekter fundet.',       back:'← Tilbage'   },
-  fi: { portfolio:'Portfolio', contact:'Yhteystiedot', all:'Kaikki', loading:'Ladataan…',    noProjects:'Projekteja ei löydy.',          back:'← Takaisin'  },
-  en: { portfolio:'Portfolio', contact:'Contact',      all:'All',    loading:'Loading…',     noProjects:'No projects found.',            back:'← Back'      },
-  fr: { portfolio:'Portfolio', contact:'Contact',      all:'Tout',   loading:'Chargement…',  noProjects:'Aucun projet trouvé.',          back:'← Retour'    },
-  es: { portfolio:'Portfolio', contact:'Contacto',     all:'Todo',   loading:'Cargando…',    noProjects:'No se encontraron proyectos.',  back:'← Volver'    },
-  pt: { portfolio:'Portfólio', contact:'Contacto',     all:'Todos',  loading:'A carregar…',  noProjects:'Nenhum projeto encontrado.',    back:'← Voltar'    },
+  sv: { contact:'Kontakt',      all:'Alla',   loading:'Laddar…',      noProjects:'Inga projekt hittades.',        back:'← Tillbaka'  },
+  no: { contact:'Kontakt',      all:'Alle',   loading:'Laster…',      noProjects:'Ingen prosjekter funnet.',      back:'← Tilbake'   },
+  da: { contact:'Kontakt',      all:'Alle',   loading:'Indlæser…',    noProjects:'Ingen projekter fundet.',       back:'← Tilbage'   },
+  fi: { contact:'Yhteystiedot', all:'Kaikki', loading:'Ladataan…',    noProjects:'Projekteja ei löydy.',          back:'← Takaisin'  },
+  en: { contact:'Contact',      all:'All',    loading:'Loading…',     noProjects:'No projects found.',            back:'← Back'      },
+  fr: { contact:'Contact',      all:'Tout',   loading:'Chargement…',  noProjects:'Aucun projet trouvé.',          back:'← Retour'    },
+  es: { contact:'Contacto',     all:'Todo',   loading:'Cargando…',    noProjects:'No se encontraron proyectos.',  back:'← Volver'    },
+  pt: { contact:'Contacto',     all:'Todos',  loading:'A carregar…',  noProjects:'Nenhum projeto encontrado.',    back:'← Voltar'    },
+}
+
+// Country → language (ISO 3166-1 alpha-2 → our lang code)
+const COUNTRY_LANG = {
+  SE:'sv',
+  NO:'no',
+  DK:'da',
+  FI:'fi',
+  FR:'fr', BE:'fr', LU:'fr', MC:'fr',
+  ES:'es', MX:'es', AR:'es', CO:'es', CL:'es', PE:'es', VE:'es',
+  EC:'es', BO:'es', PY:'es', UY:'es', CR:'es', PA:'es', DO:'es',
+  HN:'es', SV:'es', GT:'es', NI:'es', CU:'es', GQ:'es',
+  PT:'pt', BR:'pt', AO:'pt', MZ:'pt', CV:'pt',
 }
 
 function detectBrowserLang() {
-  const l = (navigator.language || 'sv').toLowerCase().split('-')[0]
+  const l = (navigator.language || 'en').toLowerCase().split('-')[0]
   if (l === 'nb' || l === 'nn') return 'no'
-  return TRANSLATIONS[l] ? l : 'sv'
+  return TRANSLATIONS[l] ? l : 'en'
 }
 
 let currentLang = localStorage.getItem('phd_lang') || detectBrowserLang()
+
+async function resolveGeoLang() {
+  if (localStorage.getItem('phd_lang')) return   // user has a saved preference — respect it
+  try {
+    const { country } = await fetch('/api/geo').then(r => r.json())
+    const lang = COUNTRY_LANG[country] || 'en'
+    currentLang = lang
+  } catch (_) { /* keep browser-detected lang */ }
+}
 
 function t(key) {
   return (TRANSLATIONS[currentLang] || TRANSLATIONS.sv)[key] || key
@@ -38,6 +60,7 @@ function applyTranslations() {
 
 // ── bootstrap ────────────────────────────────────────────────────────────────
 async function init() {
+  await resolveGeoLang()
   const [categories, projects, contact, settings] = await Promise.all([
     fetch('/api/categories').then(r => r.json()),
     fetch('/api/projects').then(r => r.json()),

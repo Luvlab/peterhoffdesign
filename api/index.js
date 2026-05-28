@@ -51,6 +51,12 @@ app.get('/api/config', (req, res) => {
   })
 })
 
+// ── geo language hint (uses Vercel's x-vercel-ip-country header) ─────────────
+app.get('/api/geo', (req, res) => {
+  const country = (req.headers['x-vercel-ip-country'] || '').toUpperCase()
+  res.json({ country })
+})
+
 // ── public ───────────────────────────────────────────────────────────────────
 app.get('/api/contact',    (req, res) => res.json(db.getContact()))
 app.get('/api/categories', (req, res) => res.json(db.getCategories()))
