@@ -46,6 +46,25 @@ body {
   display: block;
 }
 
+/* ── Header tagline ───────────────────────────────────────────────────────── */
+.header-tagline {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 12px;
+}
+
+@media (max-width: 600px) {
+  .header-tagline { display: none; }
+}
+
 /* ── Site nav ────────────────────────────────────────────────────────────── */
 .site-nav {
   display: flex;
