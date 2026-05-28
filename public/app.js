@@ -147,12 +147,15 @@ function renderProjects(projects) {
     return
   }
   projects.forEach(proj => {
-    const thumbSrc = proj.images?.[0] && !isVideo(proj.images[0]) ? proj.images[0] : null
+    const images = (proj.images || []).filter(u => !isVideo(u))
     const card = document.createElement('div')
     card.className = 'project-card'
+    const slidesHtml = images.map((src, i) =>
+      `<img src="${esc(src)}" class="thumb-slide${i === 0 ? ' active' : ''}" alt="${esc(proj.name)}" loading="${i === 0 ? 'eager' : 'lazy'}" />`
+    ).join('')
     card.innerHTML = `
       <div class="card-thumb">
-        ${thumbSrc ? `<img src="${thumbSrc}" alt="${proj.name}" loading="lazy" />` : ''}
+        ${slidesHtml}
         <div class="card-overlay">
           <div class="card-overlay-name">${proj.name}</div>
           <div class="card-overlay-cat">${catLabel(proj.category)}</div>
@@ -164,7 +167,36 @@ function renderProjects(projects) {
       </div>`
     card.addEventListener('click', () => openProject(proj))
     grid.appendChild(card)
+    if (images.length > 1) initCardSlideshow(card, images.length)
   })
+}
+
+// ── thumbnail slideshow ───────────────────────────────────────────────────────
+function initCardSlideshow(card, count) {
+  let current = 0
+  let timer   = null
+
+  function advance() {
+    const slides = card.querySelectorAll('.thumb-slide')
+    slides[current].classList.remove('active')
+    current = (current + 1) % count
+    slides[current].classList.add('active')
+    timer = setTimeout(advance, 6000)
+  }
+
+  // Start only when card enters viewport, pause when it leaves
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !timer) {
+        timer = setTimeout(advance, 6000)   // first advance after 6 s
+      } else if (!e.isIntersecting && timer) {
+        clearTimeout(timer)
+        timer = null
+      }
+    })
+  }, { threshold: 0.1 })
+
+  io.observe(card)
 }
 
 // ── detail view ───────────────────────────────────────────────────────────────
