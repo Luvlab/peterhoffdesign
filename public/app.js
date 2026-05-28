@@ -305,11 +305,20 @@ function renderContact(c, settings) {
   const filterBar = document.getElementById('filterBar')
   if (!header || !filterBar) return
 
-  function update() {
-    filterBar.classList.toggle('is-scrolled', header.getBoundingClientRect().bottom <= 0)
+  // Use scrollY vs a cached pixel threshold — immune to iOS URL-bar viewport shifts
+  let threshold = 0
+  function calcThreshold() {
+    threshold = header.offsetTop + header.offsetHeight
   }
-  window.addEventListener('scroll', update, { passive: true })
+  function update() {
+    filterBar.classList.toggle('is-scrolled', window.scrollY >= threshold)
+  }
+
+  calcThreshold()
   update()
+  window.addEventListener('scroll', update, { passive: true })
+  // Recalculate if header reflows (orientation change, resize)
+  window.addEventListener('resize', function() { calcThreshold(); update() }, { passive: true })
 })()
 
 // ── filter nav swipe hint (mobile only, runs once) ────────────────────────────
