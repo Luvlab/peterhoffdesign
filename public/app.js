@@ -6,14 +6,14 @@ let lbIndex       = 0
 
 // ── i18n ──────────────────────────────────────────────────────────────────────
 const TRANSLATIONS = {
-  sv: { portfolio:'Portfolio', konfigurator:'Konfigurator',    contact:'Kontakt',       featured:'Utvalda',    all:'Alla',   loading:'Laddar…',      noProjects:'Inga projekt hittades.',        back:'← Tillbaka'  },
-  no: { portfolio:'Portfolio', konfigurator:'Konfigurator',    contact:'Kontakt',       featured:'Utvalgte',   all:'Alle',   loading:'Laster…',      noProjects:'Ingen prosjekter funnet.',      back:'← Tilbake'   },
-  da: { portfolio:'Portfolio', konfigurator:'Konfigurator',    contact:'Kontakt',       featured:'Udvalgte',   all:'Alle',   loading:'Indlæser…',    noProjects:'Ingen projekter fundet.',       back:'← Tilbage'   },
-  fi: { portfolio:'Portfolio', konfigurator:'Konfiguraattori', contact:'Yhteystiedot',  featured:'Valikoidut', all:'Kaikki', loading:'Ladataan…',    noProjects:'Projekteja ei löydy.',          back:'← Takaisin'  },
-  en: { portfolio:'Portfolio', konfigurator:'Configurator',    contact:'Contact',       featured:'Featured',   all:'All',    loading:'Loading…',     noProjects:'No projects found.',            back:'← Back'      },
-  fr: { portfolio:'Portfolio', konfigurator:'Configurateur',   contact:'Contact',       featured:'Sélection',  all:'Tout',   loading:'Chargement…',  noProjects:'Aucun projet trouvé.',          back:'← Retour'    },
-  es: { portfolio:'Portfolio', konfigurator:'Configurador',    contact:'Contacto',      featured:'Destacados', all:'Todo',   loading:'Cargando…',    noProjects:'No se encontraron proyectos.',  back:'← Volver'    },
-  pt: { portfolio:'Portfólio', konfigurator:'Configurador',    contact:'Contacto',      featured:'Destaques',  all:'Todos',  loading:'A carregar…',  noProjects:'Nenhum projeto encontrado.',    back:'← Voltar'    },
+  sv: { portfolio:'Portfolio', contact:'Kontakt',      all:'Alla',   loading:'Laddar…',      noProjects:'Inga projekt hittades.',        back:'← Tillbaka'  },
+  no: { portfolio:'Portfolio', contact:'Kontakt',      all:'Alle',   loading:'Laster…',      noProjects:'Ingen prosjekter funnet.',      back:'← Tilbake'   },
+  da: { portfolio:'Portfolio', contact:'Kontakt',      all:'Alle',   loading:'Indlæser…',    noProjects:'Ingen projekter fundet.',       back:'← Tilbage'   },
+  fi: { portfolio:'Portfolio', contact:'Yhteystiedot', all:'Kaikki', loading:'Ladataan…',    noProjects:'Projekteja ei löydy.',          back:'← Takaisin'  },
+  en: { portfolio:'Portfolio', contact:'Contact',      all:'All',    loading:'Loading…',     noProjects:'No projects found.',            back:'← Back'      },
+  fr: { portfolio:'Portfolio', contact:'Contact',      all:'Tout',   loading:'Chargement…',  noProjects:'Aucun projet trouvé.',          back:'← Retour'    },
+  es: { portfolio:'Portfolio', contact:'Contacto',     all:'Todo',   loading:'Cargando…',    noProjects:'No se encontraron proyectos.',  back:'← Volver'    },
+  pt: { portfolio:'Portfólio', contact:'Contacto',     all:'Todos',  loading:'A carregar…',  noProjects:'Nenhum projeto encontrado.',    back:'← Voltar'    },
 }
 
 function detectBrowserLang() {
@@ -56,9 +56,7 @@ async function init() {
     const [, cat, slug] = match
     await openProjectBySlug(cat, slug)
   } else {
-    // default to featured; fall back to all if none are marked featured
-    const hasFeatured = projects.some(p => p.featured)
-    setFilter(hasFeatured ? 'featured' : 'all')
+    setFilter('all')
   }
   applyTranslations()
 }
