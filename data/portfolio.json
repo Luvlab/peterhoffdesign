@@ -10,36 +10,16 @@
   },
   "categories": [
     {
-      "id": "graphic-design",
-      "label": "Graphic Design"
+      "id": "formgivning",
+      "label": "Formgivning"
     },
     {
-      "id": "object-design",
-      "label": "Object Design"
+      "id": "arkitektur",
+      "label": "Arkitektur"
     },
     {
-      "id": "architecture",
-      "label": "Architecture"
-    },
-    {
-      "id": "exhibitions",
-      "label": "Exhibitions"
-    },
-    {
-      "id": "interiors",
-      "label": "Interiors"
-    },
-    {
-      "id": "film",
-      "label": "Film"
-    },
-    {
-      "id": "images",
-      "label": "Images"
-    },
-    {
-      "id": "interfaces",
-      "label": "Interfaces"
+      "id": "silversmide",
+      "label": "Silversmide"
     }
   ],
   "projects": [
