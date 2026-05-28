@@ -139,7 +139,7 @@
       try {
         const { error } = await sb.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: location.origin + '/admin' }
+          options: { emailRedirectTo: 'https://peterhoffdesign.com/admin' }
         })
 
         if (error) {

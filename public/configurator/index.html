@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Konfigurator — Peter Hoff Design AB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                primary: 'var(--brand-primary)',
+                secondary: 'var(--brand-secondary)',
+                bg: 'var(--brand-bg)',
+                text: 'var(--brand-text)',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root {
+        --brand-primary: #3b82f6;
+        --brand-secondary: #1e40af;
+        --brand-bg: #f3f4f6;
+        --brand-text: #111827;
+      }
+      body { margin: 0; overflow: hidden; }
+    </style>
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
+    "three": "https://esm.sh/three@0.170.0",
+    "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.17.10?external=react,react-dom,three",
+    "@react-three/drei": "https://esm.sh/@react-three/drei@9.117.0?external=react,react-dom,three,@react-three/fiber",
+    "three-stdlib": "https://esm.sh/three-stdlib@2.35.7?external=three,react,react-dom",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0"
+  }
+}
+    </script>
+    <script type="module" crossorigin src="/configurator/assets/index-DhcnHwTk.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
