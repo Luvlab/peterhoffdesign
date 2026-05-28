@@ -68,9 +68,9 @@ function renderNav(categories, projects) {
   // find which categories actually have visible projects
   const usedCats = new Set(projects.map(p => p.category))
 
-  // wire Featured + All buttons (already in HTML)
-  nav.querySelector('[data-filter="featured"]').addEventListener('click', () => setFilter('featured'))
-  nav.querySelector('[data-filter="all"]').addEventListener('click',      () => setFilter('all'))
+  // wire filter buttons (already in HTML)
+  nav.querySelector('[data-filter="featured"]')?.addEventListener('click', () => setFilter('featured'))
+  nav.querySelector('[data-filter="all"]')?.addEventListener('click',      () => setFilter('all'))
 
   // add category buttons only for categories that have projects
   categories.forEach(cat => {
