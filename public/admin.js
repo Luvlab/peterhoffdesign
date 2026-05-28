@@ -536,10 +536,29 @@ document.getElementById('fLocation').addEventListener('blur', function() {
   updateLocationMapPreview(this.value)
 })
 
+/* ── Help / Tutorial panel ─────────────────────────────────────────────────── */
+document.getElementById('helpBtn').addEventListener('click', () => {
+  const panel = document.getElementById('helpPanel')
+  const isOpen = !panel.hidden
+  panel.hidden = isOpen
+  // Close bio panel if help is opening
+  if (!isOpen) document.getElementById('bioPanel').hidden = true
+})
+
+// Accordion: click anywhere on the header div to toggle
+document.querySelectorAll('.help-section-hd').forEach(hd => {
+  hd.addEventListener('click', () => {
+    const section = hd.closest('.help-section')
+    section.classList.toggle('is-open')
+  })
+})
+
 /* ── Bio panel ─────────────────────────────────────────────────────────────── */
 document.getElementById('bioBtn').addEventListener('click', () => {
   const panel = document.getElementById('bioPanel')
   panel.hidden = !panel.hidden
+  // Close help panel if bio is opening
+  if (!panel.hidden) document.getElementById('helpPanel').hidden = true
 })
 document.getElementById('bioCancelBtn').addEventListener('click', () => {
   document.getElementById('bioPanel').hidden = true

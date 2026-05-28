@@ -67,7 +67,7 @@
       e.preventDefault()
       var pwd = document.getElementById('gatePwd').value
       var err = document.getElementById('gateError')
-      if (pwd === 'PHD19oneHoffa63') {
+      if (pwd === 'phd123!') {
         localStorage.setItem('phd_auth', '1')
         var next = new URLSearchParams(location.search).get('next')
         location.replace(next === 'admin' ? '/admin' : '/')

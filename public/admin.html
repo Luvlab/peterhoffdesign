@@ -9,13 +9,20 @@
     // Auth guard — runs before anything renders.
     // Loads Supabase, checks session, redirects if none.
     (function() {
+      function bail() { location.replace('/admin-login') }
+
       fetch('/api/config')
         .then(r => r.json())
         .then(function(cfg) {
+          if (!cfg.supabaseUrl || !cfg.supabaseKey) return bail()
           var s = document.createElement('script')
           s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+          s.onerror = bail
           s.onload = function() {
-            window._sb = supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey)
+            try {
+              window._sb = supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey)
+            } catch(e) { return bail() }
+
             // Handle magic-link callback (token in URL hash or query)
             window._sb.auth.onAuthStateChange(function(event, session) {
               if (event === 'SIGNED_IN' && session) {
@@ -31,17 +38,17 @@
             window._sb.auth.getSession().then(function(res) {
               var session = res.data && res.data.session
               if (!session) {
-                location.replace('/admin-login')
+                bail()
               } else {
                 localStorage.setItem('phd_sb_token', session.access_token)
                 // Reveal body now that auth is confirmed
                 document.body.style.visibility = 'visible'
               }
-            })
+            }).catch(bail)
           }
           document.head.appendChild(s)
         })
-        .catch(function() { location.replace('/admin-login') })
+        .catch(bail)
     })()
   </script>
 </head>
@@ -67,6 +74,7 @@
       <button class="cat-tab active" data-cat="all">All</button>
     </div>
     <div class="adm-toolbar-right">
+      <button class="adm-btn adm-btn--outline" id="helpBtn">Help</button>
       <button class="adm-btn adm-btn--outline" id="bioBtn">Bio / Intro</button>
       <button class="adm-btn adm-btn--primary" id="addBtn"><span class="add-label-long">+ Add Project</span><span class="add-label-short">+</span></button>
     </div>
@@ -81,6 +89,102 @@
         <button class="adm-btn adm-btn--outline" id="bioCancelBtn">Avbryt</button>
         <button class="adm-btn adm-btn--primary" id="bioSaveBtn">Spara</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Help / Tutorial panel -->
+  <div class="help-panel" id="helpPanel" hidden>
+    <div class="help-panel-inner">
+      <div class="help-panel-title">Help &amp; Tutorial</div>
+
+      <div class="help-section">
+        <div class="help-section-hd">
+          <span>Getting started</span>
+          <span class="help-chevron">›</span>
+        </div>
+        <div class="help-section-bd"><div class="help-section-bd-inner">
+          <p>Welcome to the Peter Hoff Design CMS. This panel lets you manage all portfolio projects visible on the public website.</p>
+          <p>Use the toolbar at the top to filter projects by category, add new projects, edit the site bio, or come back here for help.</p>
+          <p>All changes are saved to the database immediately — there is no draft mode. Toggle a project's <strong>Visible</strong> switch to hide it from the live site without deleting it.</p>
+        </div></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-hd">
+          <span>Adding &amp; editing projects</span>
+          <span class="help-chevron">›</span>
+        </div>
+        <div class="help-section-bd"><div class="help-section-bd-inner">
+          <p><strong>Add Project</strong> — Click the green button in the toolbar. Fill in the project name and choose a category (required). The slug is auto-generated from the name but can be edited manually.</p>
+          <p><strong>Edit</strong> — Click the pencil icon on any row to open the edit modal. Switch between the <em>Details</em> and <em>Images</em> tabs.</p>
+          <p><strong>Delete</strong> — Click the trash icon. This permanently removes the project and all its uploaded images. You will be asked to confirm.</p>
+          <p><strong>Reorder</strong> — Drag rows up or down using the ⠿ handle on the left. The order here matches the order on the live site.</p>
+        </div></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-hd">
+          <span>Uploading &amp; managing images</span>
+          <span class="help-chevron">›</span>
+        </div>
+        <div class="help-section-bd"><div class="help-section-bd-inner">
+          <p>Open a project → switch to the <em>Images</em> tab. Click the upload zone or drag files onto it. Supported formats: JPG, PNG, WebP, GIF, MP4.</p>
+          <p>Files up to 100 MB each. Multiple files can be selected at once.</p>
+          <p><strong>Reorder images</strong> — Drag thumbnails left/right using the ⠿ handle at the bottom of each thumbnail. The first image is used as the project cover on the grid.</p>
+          <p><strong>Photographer credit</strong> — Type a name in the credit field below each image. It appears as a caption on the detail page and in the lightbox.</p>
+          <p><strong>Delete image</strong> — Hover the thumbnail and click the ✕ button. The file is permanently deleted from storage.</p>
+        </div></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-hd">
+          <span>Categories</span>
+          <span class="help-chevron">›</span>
+        </div>
+        <div class="help-section-bd"><div class="help-section-bd-inner">
+          <p>Categories are predefined and managed in the database. Each project belongs to exactly one category.</p>
+          <p>The filter tabs on the toolbar and on the public site are built automatically from whichever categories have at least one visible project. Empty categories are hidden.</p>
+          <p>To add or rename a category, contact your developer — it requires a database change.</p>
+        </div></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-hd">
+          <span>Location map</span>
+          <span class="help-chevron">›</span>
+        </div>
+        <div class="help-section-bd"><div class="help-section-bd-inner">
+          <p>In the <em>Details</em> tab, the <strong>Plats / Adress</strong> field accepts any address or place name (e.g. "Stortorget 1, Malmö").</p>
+          <p>A live map preview appears below the field as you type. The same map is shown at the bottom of the project page on the public site.</p>
+          <p>Leave the field blank to hide the map section entirely.</p>
+        </div></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-hd">
+          <span>Bio / Intro text</span>
+          <span class="help-chevron">›</span>
+        </div>
+        <div class="help-section-bd"><div class="help-section-bd-inner">
+          <p>Click <strong>Bio / Intro</strong> in the toolbar to open the text editor. This text appears in the footer of the public website.</p>
+          <p>Use it for a short studio description, credentials, or any introductory copy. Line breaks are preserved.</p>
+          <p>Click <strong>Spara</strong> to save. The change is live immediately.</p>
+        </div></div>
+      </div>
+
+      <div class="help-section">
+        <div class="help-section-hd">
+          <span>Visibility &amp; the live site</span>
+          <span class="help-chevron">›</span>
+        </div>
+        <div class="help-section-bd"><div class="help-section-bd-inner">
+          <p>The <strong>Visible</strong> toggle in the project row (and in the Details tab) controls whether the project appears on the public site.</p>
+          <p>Hidden projects still exist in the database and can be made visible again at any time.</p>
+          <p>The <strong>View Site ↗</strong> link in the header opens the live public website in a new tab so you can check your changes.</p>
+          <p>The public site requires the password <strong>phd123!</strong> to enter during the under-construction phase.</p>
+        </div></div>
+      </div>
+
     </div>
   </div>
 

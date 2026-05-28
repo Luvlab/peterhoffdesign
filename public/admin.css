@@ -116,6 +116,63 @@ body {
 }
 .bio-panel textarea:focus { border-color: var(--teal); }
 .bio-panel-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── Help / Tutorial panel ───────────────────────────────────────────────────── */
+.help-panel {
+  background: #fafafa;
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px 20px;
+}
+.help-panel[hidden] { display: none; }
+.help-panel-inner { max-width: 720px; display: flex; flex-direction: column; gap: 0; }
+.help-panel-title {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.help-section {
+  border-bottom: 1px solid var(--border);
+}
+.help-section-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 4px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  transition: color .15s;
+}
+.help-section-hd:hover { color: var(--teal); }
+.help-chevron {
+  font-size: 18px; font-weight: 300; color: var(--muted);
+  line-height: 1; transition: transform .2s ease;
+  flex-shrink: 0;
+}
+.help-section.is-open .help-chevron {
+  transform: rotate(90deg);
+}
+.help-section-bd {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .22s ease;
+}
+.help-section.is-open .help-section-bd {
+  grid-template-rows: 1fr;
+}
+.help-section-bd > * {
+  overflow: hidden;
+}
+/* inner wrapper for padding during animation */
+.help-section-bd-inner {
+  padding: 0 4px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.help-section-bd-inner p {
+  font-size: 13px; color: var(--text); line-height: 1.6;
+}
+.help-section-bd-inner p strong { font-weight: 600; }
+.help-section-bd-inner p em { font-style: italic; }
+
 .adm-cats::-webkit-scrollbar { display: none; }
 .cat-tab {
   flex-shrink: 0;

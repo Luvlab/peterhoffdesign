@@ -305,11 +305,11 @@ function renderContact(c, settings) {
   const filterBar = document.getElementById('filterBar')
   if (!header || !filterBar) return
 
-  const obs = new IntersectionObserver(
-    ([entry]) => filterBar.classList.toggle('is-scrolled', !entry.isIntersecting),
-    { threshold: 0 }
-  )
-  obs.observe(header)
+  function update() {
+    filterBar.classList.toggle('is-scrolled', header.getBoundingClientRect().bottom <= 0)
+  }
+  window.addEventListener('scroll', update, { passive: true })
+  update()
 })()
 
 // ── filter nav swipe hint (mobile only, runs once) ────────────────────────────
