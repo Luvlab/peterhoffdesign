@@ -4,6 +4,38 @@ let lbImages      = []
 let lbCredits     = []
 let lbIndex       = 0
 
+// ── i18n ──────────────────────────────────────────────────────────────────────
+const TRANSLATIONS = {
+  sv: { portfolio:'Portfolio', konfigurator:'Konfigurator',    contact:'Kontakt',       featured:'Utvalda',    all:'Alla',   loading:'Laddar…',      noProjects:'Inga projekt hittades.',        back:'← Tillbaka'  },
+  no: { portfolio:'Portfolio', konfigurator:'Konfigurator',    contact:'Kontakt',       featured:'Utvalgte',   all:'Alle',   loading:'Laster…',      noProjects:'Ingen prosjekter funnet.',      back:'← Tilbake'   },
+  da: { portfolio:'Portfolio', konfigurator:'Konfigurator',    contact:'Kontakt',       featured:'Udvalgte',   all:'Alle',   loading:'Indlæser…',    noProjects:'Ingen projekter fundet.',       back:'← Tilbage'   },
+  fi: { portfolio:'Portfolio', konfigurator:'Konfiguraattori', contact:'Yhteystiedot',  featured:'Valikoidut', all:'Kaikki', loading:'Ladataan…',    noProjects:'Projekteja ei löydy.',          back:'← Takaisin'  },
+  en: { portfolio:'Portfolio', konfigurator:'Configurator',    contact:'Contact',       featured:'Featured',   all:'All',    loading:'Loading…',     noProjects:'No projects found.',            back:'← Back'      },
+  fr: { portfolio:'Portfolio', konfigurator:'Configurateur',   contact:'Contact',       featured:'Sélection',  all:'Tout',   loading:'Chargement…',  noProjects:'Aucun projet trouvé.',          back:'← Retour'    },
+  es: { portfolio:'Portfolio', konfigurator:'Configurador',    contact:'Contacto',      featured:'Destacados', all:'Todo',   loading:'Cargando…',    noProjects:'No se encontraron proyectos.',  back:'← Volver'    },
+  pt: { portfolio:'Portfólio', konfigurator:'Configurador',    contact:'Contacto',      featured:'Destaques',  all:'Todos',  loading:'A carregar…',  noProjects:'Nenhum projeto encontrado.',    back:'← Voltar'    },
+}
+
+function detectBrowserLang() {
+  const l = (navigator.language || 'sv').toLowerCase().split('-')[0]
+  if (l === 'nb' || l === 'nn') return 'no'
+  return TRANSLATIONS[l] ? l : 'sv'
+}
+
+let currentLang = localStorage.getItem('phd_lang') || detectBrowserLang()
+
+function t(key) {
+  return (TRANSLATIONS[currentLang] || TRANSLATIONS.sv)[key] || key
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n)
+  })
+  const picker = document.getElementById('langPicker')
+  if (picker) picker.value = currentLang
+}
+
 // ── bootstrap ────────────────────────────────────────────────────────────────
 async function init() {
   const [categories, projects, contact, settings] = await Promise.all([
@@ -28,6 +60,7 @@ async function init() {
     const hasFeatured = projects.some(p => p.featured)
     setFilter(hasFeatured ? 'featured' : 'all')
   }
+  applyTranslations()
 }
 
 // ── nav ───────────────────────────────────────────────────────────────────────
@@ -89,7 +122,7 @@ function renderProjects(projects) {
   const grid = document.getElementById('projectsGrid')
   grid.innerHTML = ''
   if (!projects.length) {
-    grid.innerHTML = '<p class="loading">No projects found.</p>'
+    grid.innerHTML = `<p class="loading" data-i18n="noProjects">${t('noProjects')}</p>`
     return
   }
   projects.forEach(proj => {
@@ -331,6 +364,18 @@ function renderContact(c, settings) {
     nav.scrollTo({ left: 72, behavior: 'smooth' })
     setTimeout(() => nav.scrollTo({ left: 0, behavior: 'smooth' }), 540)
   }, 900)
+})()
+
+// ── language picker ───────────────────────────────────────────────────────────
+;(function() {
+  const picker = document.getElementById('langPicker')
+  if (!picker) return
+  picker.value = currentLang
+  picker.addEventListener('change', () => {
+    currentLang = picker.value
+    localStorage.setItem('phd_lang', currentLang)
+    applyTranslations()
+  })
 })()
 
 // ── ratio picker ──────────────────────────────────────────────────────────────

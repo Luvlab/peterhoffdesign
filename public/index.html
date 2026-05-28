@@ -12,9 +12,21 @@
   <header class="site-header">
     <a href="/" class="logo-link"><img src="phd-logo.png" alt="Peter Hoff Design AB" class="logo" /></a>
     <nav class="site-nav">
-      <a href="/" id="portfolioLink">Portfolio</a>
-      <a href="/configurator" id="configuratorLink">Konfigurator</a>
-      <a href="#contact" id="contactLink">Kontakt</a>
+      <a href="/" id="portfolioLink" data-i18n="portfolio">Portfolio</a>
+      <a href="/configurator" id="configuratorLink" data-i18n="konfigurator">Konfigurator</a>
+      <a href="#contact" id="contactLink" data-i18n="contact">Kontakt</a>
+      <div class="lang-picker-wrap">
+        <select class="lang-picker" id="langPicker" title="Language / Språk">
+          <option value="sv">SV</option>
+          <option value="no">NO</option>
+          <option value="da">DA</option>
+          <option value="fi">FI</option>
+          <option value="en">EN</option>
+          <option value="fr">FR</option>
+          <option value="es">ES</option>
+          <option value="pt">PT</option>
+        </select>
+      </div>
     </nav>
   </header>
 
@@ -27,8 +39,8 @@
     </a>
 
     <nav class="filter-nav" id="filterNav">
-      <button class="filter-btn active" data-filter="featured">Featured</button>
-      <button class="filter-btn" data-filter="all">All</button>
+      <button class="filter-btn active" data-filter="featured" data-i18n="featured">Featured</button>
+      <button class="filter-btn" data-filter="all" data-i18n="all">All</button>
     </nav>
 
     <div class="ratio-picker" id="ratioPicker">
@@ -51,13 +63,13 @@
   </div>
 
   <main class="projects-grid" id="projectsGrid">
-    <p class="loading">Loading&hellip;</p>
+    <p class="loading" data-i18n="loading">Loading…</p>
   </main>
 
   <!-- Project detail overlay -->
   <div class="detail-overlay" id="detailOverlay" hidden>
     <div class="detail-header">
-      <button class="detail-back" id="detailBack">&#8592; Back</button>
+      <button class="detail-back" id="detailBack" data-i18n="back">← Back</button>
       <div class="detail-meta">
         <h2 class="detail-name" id="detailName"></h2>
         <span class="detail-cat" id="detailCat"></span>
