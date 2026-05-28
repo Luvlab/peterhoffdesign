@@ -87,6 +87,10 @@
   </footer>
 
   <script>
+    // Public keys — safe to embed (anon/publishable key is designed to be in frontend code)
+    var SUPA_URL = 'https://pjcjbiafivmbkudcnzax.supabase.co'
+    var SUPA_KEY = 'sb_publishable_k_HVbG5Nh7XsxIkohQrWRA_U7mZc-7v'
+
     let sb = null
     let sbReady = false
 
@@ -96,32 +100,23 @@
       errEl.removeAttribute('hidden')
     }
 
-    // Load Supabase config from server, then init client
-    fetch('/api/config')
-      .then(r => r.json())
-      .then(function(cfg) {
-        if (!cfg.supabaseUrl || !cfg.supabaseKey) {
-          showError('Login service unavailable — please try again shortly.')
-          return
-        }
-        const s = document.createElement('script')
-        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
-        s.onerror = function() { showError('Login service unavailable — please try again shortly.') }
-        s.onload = function() {
-          try {
-            sb = supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey)
-            sbReady = true
-            // If already logged in → go straight to admin
-            sb.auth.getSession().then(function(r) {
-              if (r.data && r.data.session) location.replace('/admin')
-            }).catch(function() {})
-          } catch(e) {
-            showError('Login service unavailable — please try again shortly.')
-          }
-        }
-        document.head.appendChild(s)
-      })
-      .catch(function() { showError('Login service unavailable — please try again shortly.') })
+    // Load Supabase SDK directly — no /api/config needed for login
+    var s = document.createElement('script')
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+    s.onerror = function() { showError('Login service unavailable — please try again shortly.') }
+    s.onload = function() {
+      try {
+        sb = supabase.createClient(SUPA_URL, SUPA_KEY)
+        sbReady = true
+        // If already logged in → go straight to admin
+        sb.auth.getSession().then(function(r) {
+          if (r.data && r.data.session) location.replace('/admin')
+        }).catch(function() {})
+      } catch(e) {
+        showError('Login service unavailable — please try again shortly.')
+      }
+    }
+    document.head.appendChild(s)
 
     document.getElementById('loginForm').addEventListener('submit', async function(e) {
       e.preventDefault()
