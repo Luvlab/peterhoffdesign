@@ -263,12 +263,12 @@ body {
 
 /* Thumb + overlay wrapper */
 .card-thumb {
-  aspect-ratio: var(--thumb-ratio);
+  height: 94vh;
+  height: 94svh; /* safe area aware on mobile */
   overflow: hidden;
   background: var(--hover-bg);
   flex-shrink: 0;
   position: relative;
-  transition: aspect-ratio 0.25s ease;
 }
 
 .card-thumb img {
