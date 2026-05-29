@@ -244,8 +244,8 @@ body {
 
 /* ── Projects grid ───────────────────────────────────────────────────────────── */
 .projects-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   padding: 32px var(--page-pad) 48px;
   background: var(--bg);
@@ -253,6 +253,7 @@ body {
 }
 
 .project-card {
+  flex: 0 0 calc(50% - 8px);   /* mobile default: 2 cols, gap 16px → 16/2=8 */
   background: var(--bg);
   cursor: pointer;
   overflow: hidden;
@@ -652,7 +653,7 @@ body {
   text-transform: uppercase;
   padding: 80px;
   text-align: center;
-  grid-column: 1 / -1;
+  width: 100%;
 }
 
 /* ── Tablet ──────────────────────────────────────────────────────────────────── */
@@ -661,7 +662,8 @@ body {
   .site-header { padding: 0 var(--page-pad); }
   .logo { height: 64px; }
   .site-nav { gap: 40px; }
-  .projects-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 40px var(--page-pad) 60px; }
+  .projects-grid { gap: 24px; padding: 40px var(--page-pad) 60px; }
+  .projects-grid .project-card { flex: 0 0 calc(33.333% - 16px); } /* 3 cols: (100% - 24*2)/3 */
   .contact-details {
     flex-direction: row;
     flex-wrap: wrap;
@@ -675,13 +677,13 @@ body {
 @media (min-width: 900px) {
   :root { --page-pad: 64px; }
   .logo { height: 72px; }
-  .projects-grid { grid-template-columns: repeat(4, 1fr); gap: 28px; padding: 48px var(--page-pad) 72px; }
+  .projects-grid { gap: 28px; padding: 48px var(--page-pad) 72px; }
+  .projects-grid .project-card { flex: 0 0 calc(25% - 21px); } /* 4 cols: (100% - 28*3)/4 */
   .detail-header { padding: 16px var(--page-pad); }
 }
 
 @media (min-width: 1200px) {
   :root { --page-pad: 80px; }
-  .projects-grid { grid-template-columns: repeat(5, 1fr); gap: 30px; padding: 56px var(--page-pad) 80px; }
 }
 
 /* ── Mobile overrides ────────────────────────────────────────────────────────── */
@@ -692,7 +694,8 @@ body {
   .site-nav { gap: 24px; }
   .filter-btn  { padding: 12px 10px; font-size: 9px; }
   .ratio-picker { padding: 0 10px; gap: 1px; }
-  .projects-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .projects-grid { gap: 12px; }
+  .projects-grid .project-card { flex: 0 0 calc(50% - 6px); } /* 2 cols: (100% - 12)/2 */
   .detail-gallery { grid-template-columns: 1fr 1fr !important; }
   .detail-gallery.is-single { grid-template-columns: 1fr !important; padding: 16px; }
   .detail-gallery.is-single .gallery-img-wrap img { max-height: calc(100vh - 100px); }
