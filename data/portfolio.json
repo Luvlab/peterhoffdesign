@@ -10,16 +10,24 @@
   },
   "categories": [
     {
-      "id": "formgivning",
-      "label": "Formgivning"
+      "id": "graphic-design",
+      "label": "Design"
     },
     {
-      "id": "arkitektur",
-      "label": "Arkitektur"
+      "id": "object-design",
+      "label": "Silversmithing"
     },
     {
-      "id": "silversmide",
-      "label": "Silversmide"
+      "id": "architecture",
+      "label": "Architecture"
+    },
+    {
+      "id": "exhibitions",
+      "label": "Exhibitions"
+    },
+    {
+      "id": "interiors",
+      "label": "Interiors"
     }
   ],
   "projects": [
