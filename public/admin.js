@@ -10,7 +10,7 @@ let imgSortable   = null
 async function init() {
   const [cats, projs, settings] = await Promise.all([
     fetch('/api/categories').then(r => r.json()),
-    fetch('/api/admin/projects').then(r => r.json()),
+    apiFetch('GET', '/api/admin/projects'),
     fetch('/api/settings').then(r => r.json()).catch(() => ({}))
   ])
   allCategories = cats

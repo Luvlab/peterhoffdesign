@@ -446,7 +446,7 @@ body {
 .gallery-img-wrap {
   background: var(--bg);
   overflow: hidden;
-  aspect-ratio: 3/2;
+  aspect-ratio: var(--thumb-ratio);
 }
 
 .gallery-img-wrap img,
