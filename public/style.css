@@ -264,12 +264,12 @@ body {
 
 /* Thumb + overlay wrapper */
 .card-thumb {
-  height: 94vh;
-  height: 94svh; /* safe area aware on mobile */
+  aspect-ratio: var(--thumb-ratio); /* controlled by ratio picker, default 1/1 */
   overflow: hidden;
   background: var(--hover-bg);
   flex-shrink: 0;
   position: relative;
+  width: 100%;
 }
 
 .card-thumb img {
@@ -560,8 +560,9 @@ body {
 .lightbox[hidden] { display: none; }
 
 .lb-img {
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 94vw;
+  max-height: 94vh;
+  max-height: 94svh; /* safe area aware on mobile */
   object-fit: contain;
 }
 
