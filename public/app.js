@@ -385,27 +385,8 @@ function renderContact(c, settings) {
   })
 }
 
-// ── sticky header logo (appears when site-header scrolls out of view) ─────────
-;(function() {
-  const header    = document.querySelector('.site-header')
-  const filterBar = document.getElementById('filterBar')
-  if (!header || !filterBar) return
-
-  // Use scrollY vs a cached pixel threshold — immune to iOS URL-bar viewport shifts
-  let threshold = 0
-  function calcThreshold() {
-    threshold = header.offsetTop + header.offsetHeight
-  }
-  function update() {
-    filterBar.classList.toggle('is-scrolled', window.scrollY >= threshold)
-  }
-
-  calcThreshold()
-  update()
-  window.addEventListener('scroll', update, { passive: true })
-  // Recalculate if header reflows (orientation change, resize)
-  window.addEventListener('resize', function() { calcThreshold(); update() }, { passive: true })
-})()
+// ── header is now sticky — no secondary logo needed, no-op retained for safety ──
+;(function() { /* filter-bar-logo logic removed: header is sticky */ })()
 
 // ── filter nav swipe hint (mobile only, runs once) ────────────────────────────
 ;(function() {

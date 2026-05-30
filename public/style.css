@@ -29,10 +29,13 @@ body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  gap: 0;
   padding: 0 var(--page-pad);
   background: var(--bg);
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .logo-link {
@@ -46,30 +49,13 @@ body {
   display: block;
 }
 
-/* ── Header tagline ───────────────────────────────────────────────────────── */
-.header-tagline {
-  flex: 1;
-  text-align: center;
-  font-size: 9px;
-  font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 12px;
-}
-
-@media (max-width: 600px) {
-  .header-tagline { display: none; }
-}
-
 /* ── Site nav ────────────────────────────────────────────────────────────── */
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 24px;
+  flex-shrink: 0;
+  padding-left: 16px;
 }
 
 .site-nav a {
@@ -113,66 +99,20 @@ body {
 }
 .lang-picker:focus { outline: none; }
 
-/* ── Filter bar (sticky wrapper) ─────────────────────────────────────────────── */
-.filter-bar {
-  display: flex;
-  align-items: stretch;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-/* ── Filter nav (scrollable, fills available width) ─────────────────────────── */
+/* ── Filter nav (centre of header, horizontally scrollable) ──────────────────── */
 .filter-nav {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 0 var(--page-pad);
+  padding: 0 8px;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
 .filter-nav::-webkit-scrollbar { display: none; }
-
-/* ── Filter-bar logo (appears when header scrolls out of view) ───────────────── */
-.filter-bar-logo {
-  flex-shrink: 0;
-  display: flex;
-  align-items: flex-start;
-  padding: 0 14px;
-  border-right: 1px solid var(--border);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  text-decoration: none;
-  /* Collapse to zero width when hidden so it doesn't push filter buttons */
-  max-width: 0;
-  overflow: hidden;
-  padding: 0;
-  border-right-width: 0;
-  transition: opacity 0.25s ease, max-width 0.25s ease, padding 0.25s ease, border-right-width 0s 0.25s;
-}
-
-.filter-bar.is-scrolled .filter-bar-logo {
-  opacity: 1;
-  pointer-events: auto;
-  max-width: 80px;
-  padding: 0 14px;
-  border-right-width: 1px;
-  transition: opacity 0.25s ease, max-width 0.25s ease, padding 0.25s ease;
-}
-
-.filter-bar-logo img {
-  height: 36px;
-  width: auto;
-  display: block;
-}
-
-.filter-nav .filter-btn:first-child { padding-left: 0; }
+.filter-nav .filter-btn:first-child { padding-left: 4px; }
 
 .filter-btn {
   flex-shrink: 0;
@@ -204,7 +144,7 @@ body {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 0 var(--page-pad) 0 14px;
+  padding-left: 16px;
   border-left: 1px solid var(--border);
 }
 
@@ -694,7 +634,8 @@ body {
   .logo { height: 44px; }
   .site-nav { gap: 24px; }
   .filter-btn  { padding: 12px 10px; font-size: 9px; }
-  .ratio-picker { padding: 0 10px; gap: 1px; }
+  .ratio-picker { padding-left: 8px; gap: 1px; }
+  .ratio-picker { display: none; } /* hide on small mobile — too crowded */
   .projects-grid { gap: 12px; }
   .projects-grid .project-card { flex: 0 0 calc(50% - 6px); } /* 2 cols: (100% - 12)/2 */
   .detail-gallery { grid-template-columns: 1fr 1fr !important; }
