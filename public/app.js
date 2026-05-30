@@ -6,14 +6,38 @@ let lbIndex       = 0
 
 // ── i18n ──────────────────────────────────────────────────────────────────────
 const TRANSLATIONS = {
-  sv: { contact:'Kontakt',      all:'Alla',   loading:'Laddar…',      noProjects:'Inga projekt hittades.',        back:'← Tillbaka'  },
-  no: { contact:'Kontakt',      all:'Alle',   loading:'Laster…',      noProjects:'Ingen prosjekter funnet.',      back:'← Tilbake'   },
-  da: { contact:'Kontakt',      all:'Alle',   loading:'Indlæser…',    noProjects:'Ingen projekter fundet.',       back:'← Tilbage'   },
-  fi: { contact:'Yhteystiedot', all:'Kaikki', loading:'Ladataan…',    noProjects:'Projekteja ei löydy.',          back:'← Takaisin'  },
-  en: { contact:'Contact',      all:'All',    loading:'Loading…',     noProjects:'No projects found.',            back:'← Back'      },
-  fr: { contact:'Contact',      all:'Tout',   loading:'Chargement…',  noProjects:'Aucun projet trouvé.',          back:'← Retour'    },
-  es: { contact:'Contacto',     all:'Todo',   loading:'Cargando…',    noProjects:'No se encontraron proyectos.',  back:'← Volver'    },
-  pt: { contact:'Contacto',     all:'Todos',  loading:'A carregar…',  noProjects:'Nenhum projeto encontrado.',    back:'← Voltar'    },
+  sv: {
+    contact:'Kontakt', all:'Alla', loading:'Laddar…', noProjects:'Inga projekt hittades.', back:'← Tillbaka',
+    'graphic-design':'Design', 'object-design':'Silversmide', 'architecture':'Arkitektur', 'exhibitions':'Utställningar', 'interiors':'Interiörer',
+  },
+  no: {
+    contact:'Kontakt', all:'Alle', loading:'Laster…', noProjects:'Ingen prosjekter funnet.', back:'← Tilbake',
+    'graphic-design':'Design', 'object-design':'Sølvsmie', 'architecture':'Arkitektur', 'exhibitions':'Utstillinger', 'interiors':'Interiører',
+  },
+  da: {
+    contact:'Kontakt', all:'Alle', loading:'Indlæser…', noProjects:'Ingen projekter fundet.', back:'← Tilbage',
+    'graphic-design':'Design', 'object-design':'Sølvsmede', 'architecture':'Arkitektur', 'exhibitions':'Udstillinger', 'interiors':'Interiører',
+  },
+  fi: {
+    contact:'Yhteystiedot', all:'Kaikki', loading:'Ladataan…', noProjects:'Projekteja ei löydy.', back:'← Takaisin',
+    'graphic-design':'Design', 'object-design':'Hopeasepäntyö', 'architecture':'Arkkitehtuuri', 'exhibitions':'Näyttelyt', 'interiors':'Sisustus',
+  },
+  en: {
+    contact:'Contact', all:'All', loading:'Loading…', noProjects:'No projects found.', back:'← Back',
+    'graphic-design':'Design', 'object-design':'Silversmithing', 'architecture':'Architecture', 'exhibitions':'Exhibitions', 'interiors':'Interiors',
+  },
+  fr: {
+    contact:'Contact', all:'Tout', loading:'Chargement…', noProjects:'Aucun projet trouvé.', back:'← Retour',
+    'graphic-design':'Design', 'object-design':'Argenterie', 'architecture':'Architecture', 'exhibitions':'Expositions', 'interiors':'Intérieurs',
+  },
+  es: {
+    contact:'Contacto', all:'Todo', loading:'Cargando…', noProjects:'No se encontraron proyectos.', back:'← Volver',
+    'graphic-design':'Diseño', 'object-design':'Platería', 'architecture':'Arquitectura', 'exhibitions':'Exposiciones', 'interiors':'Interiores',
+  },
+  pt: {
+    contact:'Contacto', all:'Todos', loading:'A carregar…', noProjects:'Nenhum projeto encontrado.', back:'← Voltar',
+    'graphic-design':'Design', 'object-design':'Ourivesaria', 'architecture':'Arquitectura', 'exhibitions':'Exposições', 'interiors':'Interiores',
+  },
 }
 
 // Country → language (ISO 3166-1 alpha-2 → our lang code)
@@ -47,7 +71,9 @@ async function resolveGeoLang() {
 }
 
 function t(key) {
-  return (TRANSLATIONS[currentLang] || TRANSLATIONS.sv)[key] || key
+  return (TRANSLATIONS[currentLang] || TRANSLATIONS.en)[key]
+      || TRANSLATIONS.en[key]
+      || key
 }
 
 function applyTranslations() {
@@ -100,9 +126,10 @@ function renderNav(categories, projects) {
     if (!usedCats.has(cat.id)) return
     const btn = document.createElement('button')
     btn.className = 'filter-btn'
-    btn.dataset.filter = 'cat'
+    btn.dataset.filter   = 'cat'
     btn.dataset.category = cat.id
-    btn.textContent = cat.label
+    btn.dataset.i18n     = cat.id          // translated by applyTranslations()
+    btn.textContent = t(cat.id)
     btn.addEventListener('click', () => setFilter('cat', cat.id))
     nav.appendChild(btn)
   })
@@ -158,12 +185,12 @@ function renderProjects(projects) {
         ${slidesHtml}
         <div class="card-overlay">
           <div class="card-overlay-name">${proj.name}</div>
-          <div class="card-overlay-cat">${catLabel(proj.category)}</div>
+          <div class="card-overlay-cat" data-i18n="${esc(proj.category)}">${t(proj.category)}</div>
         </div>
       </div>
       <div class="card-label">
         <div class="project-name">${proj.name}</div>
-        <div class="project-cat">${catLabel(proj.category)}</div>
+        <div class="project-cat" data-i18n="${esc(proj.category)}">${t(proj.category)}</div>
       </div>`
     card.addEventListener('click', () => openProject(proj))
     grid.appendChild(card)
@@ -212,8 +239,10 @@ async function openProjectBySlug(category, slug) {
 function openProject(proj) {
   history.pushState({ projId: proj.id }, '', `/project/${proj.category}/${proj.slug}`)
   document.title = `${proj.name} — Peter Hoff Design`
-  document.getElementById('detailName').textContent = proj.name
-  document.getElementById('detailCat').textContent  = catLabel(proj.category)
+  document.getElementById('detailName').textContent  = proj.name
+  const detailCatEl = document.getElementById('detailCat')
+  detailCatEl.dataset.i18n = proj.category
+  detailCatEl.textContent  = t(proj.category)
 
   const gallery = document.getElementById('detailGallery')
   gallery.innerHTML = ''
@@ -409,6 +438,16 @@ function renderContact(c, settings) {
     currentLang = picker.value
     localStorage.setItem('phd_lang', currentLang)
     applyTranslations()
+    // Re-render project cards so their inline category text updates
+    const overlay = document.getElementById('detailOverlay')
+    if (overlay && overlay.hidden) {
+      // grid is visible — re-render with current filter
+      const activeBtn = document.querySelector('.filter-btn.active')
+      if (activeBtn) {
+        if (activeBtn.dataset.filter === 'cat') setFilter('cat', activeBtn.dataset.category)
+        else setFilter(activeBtn.dataset.filter || 'all')
+      }
+    }
   })
 })()
 

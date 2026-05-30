@@ -6,6 +6,12 @@ let editingId     = null   // null = new project
 let rowSortable   = null
 let imgSortable   = null
 
+/* ── Panel helpers ──────────────────────────────────────────────────────────── */
+function closePanels() {
+  document.getElementById('helpPanel').hidden = true
+  document.getElementById('bioPanel').hidden  = true
+}
+
 /* ── Bootstrap ─────────────────────────────────────────────────────────────── */
 async function init() {
   const [cats, projs, settings] = await Promise.all([
@@ -37,6 +43,7 @@ function buildCatTabs() {
 }
 
 function setTab(catId) {
+  closePanels()
   currentCat = catId
   document.querySelectorAll('.cat-tab').forEach(b =>
     b.classList.toggle('active', b.dataset.cat === catId)
@@ -154,6 +161,7 @@ async function saveRowOrder() {
 
 /* ── Modal open/close ──────────────────────────────────────────────────────── */
 function openAdd() {
+  closePanels()
   editingId = null
   document.getElementById('modalTitle').textContent = 'Add Project'
   document.getElementById('modalSave').textContent  = 'Create Project'
@@ -172,6 +180,7 @@ function openAdd() {
 }
 
 function openEdit(id) {
+  closePanels()
   const proj = allProjects.find(p => p.id === id)
   if (!proj) return
   editingId = id
