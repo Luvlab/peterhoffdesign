@@ -71,8 +71,30 @@
     </div>
     <div class="adm-toolbar-right">
       <button class="adm-btn adm-btn--outline" id="helpBtn">Help</button>
+      <button class="adm-btn adm-btn--outline" id="appearBtn">Appearance</button>
       <button class="adm-btn adm-btn--outline" id="bioBtn">Bio / Intro</button>
       <button class="adm-btn adm-btn--primary" id="addBtn"><span class="add-label-long">+ Add Project</span><span class="add-label-short">+</span></button>
+    </div>
+  </div>
+
+  <!-- Appearance / CSS settings panel -->
+  <div class="appear-panel" id="appearPanel" hidden>
+    <div class="appear-panel-inner">
+
+      <div class="appear-row">
+        <div class="appear-label">Logo size <small>Affects all breakpoints proportionally</small></div>
+        <div class="size-presets" id="logoSizePresets">
+          <button class="size-btn" data-setting="logo-size" data-value="40">XS</button>
+          <button class="size-btn" data-setting="logo-size" data-value="52">S</button>
+          <button class="size-btn active" data-setting="logo-size" data-value="64">M</button>
+          <button class="size-btn" data-setting="logo-size" data-value="80">L</button>
+          <button class="size-btn" data-setting="logo-size" data-value="100">XL</button>
+        </div>
+        <div class="appear-preview">
+          <img src="phd-logo.png" alt="" class="appear-logo-preview" id="appearLogoPreview" />
+        </div>
+      </div>
+
     </div>
   </div>
 

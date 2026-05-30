@@ -9,6 +9,7 @@
   --border:     #e4e4e4;
   --hover-bg:   #f5f5f5;
   --thumb-ratio: 1/1;
+  --logo-h:     64px;   /* base logo height (tablet) — overridden by CMS appearance setting */
   --page-pad:   20px;   /* horizontal page padding — shared by header, filter bar, grid */
 }
 
@@ -45,7 +46,7 @@ body {
 
 .logo {
   width: auto;
-  height: 44px;
+  height: calc(var(--logo-h) * 0.75);  /* mobile: scales with CMS setting */
   display: block;
 }
 
@@ -601,7 +602,7 @@ body {
 @media (min-width: 540px) {
   :root { --page-pad: 48px; }
   .site-header { padding: 0 var(--page-pad); }
-  .logo { height: 64px; }
+  .logo { height: var(--logo-h); }
   .site-nav { gap: 40px; }
   .projects-grid { gap: 24px; padding: 40px var(--page-pad) 60px; }
   .projects-grid .project-card { flex: 0 0 calc(33.333% - 16px); } /* 3 cols: (100% - 24*2)/3 */
@@ -617,7 +618,7 @@ body {
 /* ── Desktop ─────────────────────────────────────────────────────────────────── */
 @media (min-width: 900px) {
   :root { --page-pad: 64px; }
-  .logo { height: 72px; }
+  .logo { height: calc(var(--logo-h) * 1.25); }
   .projects-grid { gap: 28px; padding: 48px var(--page-pad) 72px; }
   .projects-grid .project-card { flex: 0 0 calc(25% - 21px); } /* 4 cols: (100% - 28*3)/4 */
   .detail-header { padding: 16px var(--page-pad); }
@@ -631,7 +632,7 @@ body {
 @media (max-width: 539px) {
   :root { --page-pad: 16px; }
   .site-header { padding: 0 var(--page-pad); }
-  .logo { height: 44px; }
+  .logo { height: calc(var(--logo-h) * 0.75); }
   .site-nav { gap: 24px; }
   .filter-btn  { padding: 12px 10px; font-size: 9px; }
   .ratio-picker { padding-left: 8px; gap: 1px; }

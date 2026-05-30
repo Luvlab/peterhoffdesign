@@ -8,8 +8,9 @@ let imgSortable   = null
 
 /* ── Panel helpers ──────────────────────────────────────────────────────────── */
 function closePanels() {
-  document.getElementById('helpPanel').hidden = true
-  document.getElementById('bioPanel').hidden  = true
+  document.getElementById('helpPanel').hidden   = true
+  document.getElementById('bioPanel').hidden    = true
+  document.getElementById('appearPanel').hidden = true
 }
 
 /* ── Bootstrap ─────────────────────────────────────────────────────────────── */
@@ -26,6 +27,8 @@ async function init() {
   renderTable()
   // Pre-fill bio textarea
   document.getElementById('bioTextarea').value = settings.bio || ''
+  // Restore appearance settings
+  if (settings['logo-size']) applyLogoSize(settings['logo-size'], false)
 }
 
 /* ── Category tabs ─────────────────────────────────────────────────────────── */
@@ -547,11 +550,10 @@ document.getElementById('fLocation').addEventListener('blur', function() {
 
 /* ── Help / Tutorial panel ─────────────────────────────────────────────────── */
 document.getElementById('helpBtn').addEventListener('click', () => {
-  const panel = document.getElementById('helpPanel')
+  const panel  = document.getElementById('helpPanel')
   const isOpen = !panel.hidden
-  panel.hidden = isOpen
-  // Close bio panel if help is opening
-  if (!isOpen) document.getElementById('bioPanel').hidden = true
+  closePanels()
+  if (!isOpen) panel.hidden = false
 })
 
 // Accordion: click anywhere on the header div to toggle
@@ -562,12 +564,42 @@ document.querySelectorAll('.help-section-hd').forEach(hd => {
   })
 })
 
+/* ── Appearance panel ──────────────────────────────────────────────────────── */
+function applyLogoSize(value, save = true) {
+  const px = parseInt(value, 10)
+  if (!px) return
+  // Update preview image height
+  const preview = document.getElementById('appearLogoPreview')
+  if (preview) preview.style.height = px + 'px'
+  // Highlight active preset button
+  document.querySelectorAll('.size-btn[data-setting="logo-size"]').forEach(b =>
+    b.classList.toggle('active', b.dataset.value === String(px))
+  )
+  // Save to DB
+  if (save) {
+    apiFetch('PUT', '/api/admin/settings', { 'logo-size': String(px) })
+      .then(() => toast('Logo size saved'))
+      .catch(err => toast('Error: ' + err.message))
+  }
+}
+
+document.getElementById('appearBtn').addEventListener('click', () => {
+  const panel  = document.getElementById('appearPanel')
+  const isOpen = !panel.hidden
+  closePanels()
+  if (!isOpen) panel.hidden = false
+})
+
+document.querySelectorAll('.size-btn').forEach(btn =>
+  btn.addEventListener('click', () => applyLogoSize(btn.dataset.value))
+)
+
 /* ── Bio panel ─────────────────────────────────────────────────────────────── */
 document.getElementById('bioBtn').addEventListener('click', () => {
-  const panel = document.getElementById('bioPanel')
-  panel.hidden = !panel.hidden
-  // Close help panel if bio is opening
-  if (!panel.hidden) document.getElementById('helpPanel').hidden = true
+  const panel  = document.getElementById('bioPanel')
+  const isOpen = !panel.hidden
+  closePanels()
+  if (!isOpen) panel.hidden = false
 })
 document.getElementById('bioCancelBtn').addEventListener('click', () => {
   document.getElementById('bioPanel').hidden = true

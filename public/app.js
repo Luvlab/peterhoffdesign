@@ -96,6 +96,11 @@ async function init() {
   allProjects   = projects
   allCategories = categories
 
+  // Apply CMS appearance settings as CSS vars
+  if (settings['logo-size']) {
+    document.documentElement.style.setProperty('--logo-h', settings['logo-size'] + 'px')
+  }
+
   renderNav(categories, projects)
   renderContact(contact, settings)
 
