@@ -108,19 +108,36 @@
       try {
         sb = supabase.createClient(SUPA_URL, SUPA_KEY)
         sbReady = true
-        // Only auto-complete when this is a magic-link callback (?code=…).
-        // For normal visits we always show the form — the middleware on /admin
-        // already handles "already logged in" by checking the phd_auth cookie.
-        if (location.search.includes('code=')) {
+
+        // Supabase may use either PKCE (?code=…) or hash-based (#access_token=…) flow.
+        // Also surface any error returned in the hash (e.g. otp_expired).
+        var hashParams  = new URLSearchParams(location.hash.slice(1))
+        var hasError    = location.hash.includes('error=')
+        var isCallback  = location.search.includes('code=') ||
+                          location.hash.includes('access_token=')
+
+        if (hasError) {
+          // Show the error Supabase returned (e.g. expired / invalid link)
+          var desc = hashParams.get('error_description') || hashParams.get('error') || 'Login failed'
+          showError(desc.replace(/\+/g, ' '))
+          history.replaceState(null, '', '/admin-login')  // clean up URL
+
+        } else if (isCallback) {
+          // Exchange the code / token for a session, set cookie, enter admin
           sb.auth.getSession().then(function(r) {
             if (r.data && r.data.session) {
               var token = r.data.session.access_token
               localStorage.setItem('phd_sb_token', token)
               document.cookie = 'phd_auth=' + token + '; path=/; max-age=3600; SameSite=Lax; Secure'
               location.replace('/admin')
+            } else {
+              showError('Login failed — please request a new magic link.')
             }
-          }).catch(function() {})
+          }).catch(function() {
+            showError('Login failed — please request a new magic link.')
+          })
         }
+        // Otherwise: normal visit — just show the form, do nothing.
       } catch(e) {
         showError('Login service unavailable — please try again shortly.')
       }
