@@ -488,12 +488,18 @@ function uploadImages(projId, files) {
 
 /* ── API helper ────────────────────────────────────────────────────────────── */
 async function getToken() {
-  // Always fetch a live token from the Supabase client so auto-refreshed
-  // tokens are used automatically — no onAuthStateChange listener needed.
+  // Try to get a live token from the Supabase client first (handles auto-refresh).
+  // Also write it back to localStorage so the fallback is always current.
   if (window._sb) {
-    const { data } = await window._sb.auth.getSession()
-    if (data?.session?.access_token) return data.session.access_token
+    try {
+      const { data } = await window._sb.auth.getSession()
+      if (data?.session?.access_token) {
+        localStorage.setItem('phd_sb_token', data.session.access_token)
+        return data.session.access_token
+      }
+    } catch (_) { /* fall through to stored token */ }
   }
+  // Fallback: use the token stored at login / last successful refresh
   return localStorage.getItem('phd_sb_token') || ''
 }
 

@@ -45,11 +45,10 @@
           var session = res.data && res.data.session
           if (session) {
             if (hasMagicLink) history.replaceState(null, '', '/admin')
+            // Store token so apiFetch has a reliable fallback on every call
+            localStorage.setItem('phd_sb_token', session.access_token)
             document.body.style.visibility = 'visible'
             window._resolveAuth(session)   // ← unblocks admin.js init()
-            // No onAuthStateChange — admin.js apiFetch() reads a live token
-            // directly from window._sb.auth.getSession() and its 401 handler
-            // redirects to login if the session ever expires.
           } else {
             bail()
           }
