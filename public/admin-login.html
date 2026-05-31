@@ -108,9 +108,12 @@
       try {
         sb = supabase.createClient(SUPA_URL, SUPA_KEY)
         sbReady = true
-        // If already logged in → go straight to admin
+        // If already logged in → store token then go straight to admin
         sb.auth.getSession().then(function(r) {
-          if (r.data && r.data.session) location.replace('/admin')
+          if (r.data && r.data.session) {
+            localStorage.setItem('phd_sb_token', r.data.session.access_token)
+            location.replace('/admin')
+          }
         }).catch(function() {})
       } catch(e) {
         showError('Login service unavailable — please try again shortly.')
