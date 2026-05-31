@@ -538,17 +538,11 @@ function renderContact(c, settings) {
   })
 })()
 
-// ── ratio menu (dropdown) ─────────────────────────────────────────────────────
+// ── ratio menus (multiple instances: main header + detail header) ─────────────
 ;(function() {
   const STORAGE_KEY = 'phd_thumb_ratio'
-  const root        = document.documentElement
-  const trigger     = document.getElementById('ratioTrigger')
-  const dropdown    = document.getElementById('ratioDropdown')
-  const btns        = document.querySelectorAll('.ratio-btn')
+  const root = document.documentElement
 
-  if (!trigger || !dropdown) return
-
-  // SVG icons keyed by ratio — used to swap the trigger icon
   const ICONS = {
     '1/1':  '<svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="1"/></svg>',
     '4/3':  '<svg width="18" height="14" viewBox="0 0 18 14"><rect x="1" y="1" width="16" height="12" rx="1"/></svg>',
@@ -557,54 +551,65 @@ function renderContact(c, settings) {
     '9/16': '<svg width="12" height="20" viewBox="0 0 12 20"><rect x="1" y="1" width="10" height="18" rx="1"/></svg>',
   }
 
-  function closeDropdown() {
-    dropdown.hidden = true
-    trigger.setAttribute('aria-expanded', 'false')
+  // Close every open dropdown on the page
+  function closeAll() {
+    document.querySelectorAll('.ratio-dropdown').forEach(dd => {
+      dd.hidden = true
+    })
+    document.querySelectorAll('.ratio-trigger').forEach(t => {
+      t.setAttribute('aria-expanded', 'false')
+    })
   }
 
-  function openDropdown() {
-    dropdown.hidden = false
-    trigger.setAttribute('aria-expanded', 'true')
-  }
-
+  // Apply ratio: update CSS var, all buttons, all trigger icons
   function applyRatio(ratio) {
     root.style.setProperty('--thumb-ratio', ratio)
-    btns.forEach(b => b.classList.toggle('active', b.dataset.ratio === ratio))
-    // Update trigger icon to reflect active ratio
+    document.querySelectorAll('.ratio-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.ratio === ratio)
+    )
     if (ICONS[ratio]) {
-      trigger.innerHTML = ICONS[ratio]
+      document.querySelectorAll('.ratio-trigger').forEach(t => {
+        t.innerHTML = ICONS[ratio]
+      })
     }
-    trigger.classList.toggle('active', true) // mark trigger as having a selection
     localStorage.setItem(STORAGE_KEY, ratio)
   }
 
-  // Restore saved ratio on page load
-  const saved = localStorage.getItem(STORAGE_KEY) || '1/1'
-  applyRatio(saved)
+  // Wire each .ratio-menu independently
+  document.querySelectorAll('.ratio-menu').forEach(menu => {
+    const trigger  = menu.querySelector('.ratio-trigger')
+    const dropdown = menu.querySelector('.ratio-dropdown')
+    if (!trigger || !dropdown) return
 
-  // Toggle dropdown on trigger click
-  trigger.addEventListener('click', (e) => {
-    e.stopPropagation()
-    dropdown.hidden ? openDropdown() : closeDropdown()
+    trigger.addEventListener('click', e => {
+      e.stopPropagation()
+      const opening = dropdown.hidden
+      closeAll()
+      if (opening) {
+        dropdown.hidden = false
+        trigger.setAttribute('aria-expanded', 'true')
+      }
+    })
   })
 
-  // Select ratio on option click
-  btns.forEach(btn => btn.addEventListener('click', () => {
-    applyRatio(btn.dataset.ratio)
-    closeDropdown()
-  }))
+  // Ratio option clicks (all dropdowns)
+  document.querySelectorAll('.ratio-btn').forEach(btn =>
+    btn.addEventListener('click', () => {
+      applyRatio(btn.dataset.ratio)
+      closeAll()
+    })
+  )
 
-  // Close on outside click
-  document.addEventListener('click', (e) => {
-    if (!dropdown.hidden && !dropdown.contains(e.target) && e.target !== trigger) {
-      closeDropdown()
-    }
+  // Close on outside click or Escape
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.ratio-menu')) closeAll()
+  })
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeAll()
   })
 
-  // Close on Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeDropdown()
-  })
+  // Restore saved ratio on load
+  applyRatio(localStorage.getItem(STORAGE_KEY) || '1/1')
 })()
 
 init()

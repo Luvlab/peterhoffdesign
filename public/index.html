@@ -100,6 +100,19 @@
         <h2 class="detail-name" id="detailName"></h2>
         <span class="detail-cat" id="detailCat"></span>
       </div>
+      <!-- Ratio picker mirrored inside the detail view -->
+      <div class="ratio-menu">
+        <button class="ratio-trigger" aria-label="Aspect ratio" aria-expanded="false">
+          <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="1"/></svg>
+        </button>
+        <div class="ratio-dropdown" hidden>
+          <button class="ratio-btn" data-ratio="1/1"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="1"/></svg><span>1:1</span></button>
+          <button class="ratio-btn" data-ratio="4/3"><svg width="18" height="14" viewBox="0 0 18 14"><rect x="1" y="1" width="16" height="12" rx="1"/></svg><span>4:3</span></button>
+          <button class="ratio-btn" data-ratio="16/9"><svg width="20" height="12" viewBox="0 0 20 12"><rect x="1" y="1" width="18" height="10" rx="1"/></svg><span>16:9</span></button>
+          <button class="ratio-btn" data-ratio="3/4"><svg width="14" height="18" viewBox="0 0 14 18"><rect x="1" y="1" width="12" height="16" rx="1"/></svg><span>3:4</span></button>
+          <button class="ratio-btn" data-ratio="9/16"><svg width="12" height="20" viewBox="0 0 12 20"><rect x="1" y="1" width="10" height="18" rx="1"/></svg><span>9:16</span></button>
+        </div>
+      </div>
       <span class="detail-brand">Peter Hoff Design</span>
     </div>
     <div class="detail-gallery" id="detailGallery"></div>
