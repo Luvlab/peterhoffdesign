@@ -439,7 +439,8 @@ imgFileInput.addEventListener('change', () => {
   if (files.length) uploadImages(editingId, files)
 })
 
-function uploadImages(projId, files) {
+async function uploadImages(projId, files) {
+  const token = await getToken()
   return new Promise(resolve => {
     const form = new FormData()
     files.forEach(f => form.append('images', f))
@@ -450,7 +451,7 @@ function uploadImages(projId, files) {
 
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `/api/admin/projects/${projId}/images`)
-    xhr.setRequestHeader('Authorization', 'Bearer ' + getToken())
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token)
 
     xhr.upload.addEventListener('progress', e => {
       if (!e.lengthComputable) return
@@ -489,13 +490,15 @@ function uploadImages(projId, files) {
 /* ── API helper ────────────────────────────────────────────────────────────── */
 async function getToken() {
   // Try to get a live token from the Supabase client first (handles auto-refresh).
-  // Also write it back to localStorage so the fallback is always current.
+  // Write it back to localStorage AND refresh the auth cookie so middleware stays happy.
   if (window._sb) {
     try {
       const { data } = await window._sb.auth.getSession()
       if (data?.session?.access_token) {
-        localStorage.setItem('phd_sb_token', data.session.access_token)
-        return data.session.access_token
+        const token = data.session.access_token
+        localStorage.setItem('phd_sb_token', token)
+        document.cookie = 'phd_auth=' + token + '; path=/; max-age=3600; SameSite=Lax; Secure'
+        return token
       }
     } catch (_) { /* fall through to stored token */ }
   }
@@ -645,8 +648,10 @@ document.getElementById('confirmOverlay').addEventListener('click', e => {
 
 /* ── Logout ────────────────────────────────────────────────────────────────── */
 document.getElementById('logoutBtn').addEventListener('click', async () => {
-  if (window._sb) await window._sb.auth.signOut()
+  if (window._sb) await window._sb.auth.signOut().catch(() => {})
   localStorage.removeItem('phd_sb_token')
+  // Expire the auth cookie so middleware blocks /admin immediately
+  document.cookie = 'phd_auth=; path=/; max-age=0; SameSite=Lax; Secure'
   location.replace('/admin-login')
 })
 

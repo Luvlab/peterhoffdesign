@@ -108,10 +108,12 @@
       try {
         sb = supabase.createClient(SUPA_URL, SUPA_KEY)
         sbReady = true
-        // If already logged in → store token then go straight to admin
+        // If already logged in (or landing from magic-link ?code=…) → set cookie + go to admin
         sb.auth.getSession().then(function(r) {
           if (r.data && r.data.session) {
-            localStorage.setItem('phd_sb_token', r.data.session.access_token)
+            var token = r.data.session.access_token
+            localStorage.setItem('phd_sb_token', token)
+            document.cookie = 'phd_auth=' + token + '; path=/; max-age=3600; SameSite=Lax; Secure'
             location.replace('/admin')
           }
         }).catch(function() {})
@@ -142,7 +144,7 @@
       try {
         const { error } = await sb.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: 'https://peterhoffdesign.com/admin' }
+          options: { emailRedirectTo: 'https://peterhoffdesign.com/admin-login' }
         })
 
         if (error) {

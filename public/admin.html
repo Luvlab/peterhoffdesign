@@ -6,87 +6,24 @@
   <title>CMS — Peter Hoff Design</title>
   <link rel="stylesheet" href="admin.css" />
   <script>
-    // ── Auth guard ────────────────────────────────────────────────────────────
-    // Fast path:  valid JWT in localStorage → show page instantly, no CDN wait.
-    // Slow path:  token expired/missing or magic-link → load Supabase CDN,
-    //             exchange / refresh, then show or bail to login.
-    //
-    // This eliminates the "blank-page flash" caused by waiting for the CDN
-    // before revealing the body, and the redirect loop it triggered.
-    (function() {
+    // Auth is handled server-side by Edge Middleware (middleware.js).
+    // This page is only ever served to authenticated users.
+    // We just need _authReady to resolve immediately so admin.js can proceed,
+    // and we lazily load Supabase in the background for token refresh + logout.
+    window._authReady = Promise.resolve()
+    ;(function() {
       var SUPA_URL = 'https://pjcjbiafivmbkudcnzax.supabase.co'
       var SUPA_KEY = 'sb_publishable_k_HVbG5Nh7XsxIkohQrWRA_U7mZc-7v'
-
-      function bail() { location.replace('/admin-login') }
-
-      // admin.js awaits this Promise before making any API calls
-      window._authReady = new Promise(function(resolve) { window._resolveAuth = resolve })
-
-      // Decode the `exp` field from a JWT without verifying the signature
-      function jwtExp(token) {
-        try {
-          var b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
-          return JSON.parse(atob(b64)).exp || 0
-        } catch(_) { return 0 }
+      var s = document.createElement('script')
+      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+      s.onload = function() {
+        try { window._sb = supabase.createClient(SUPA_URL, SUPA_KEY) } catch(_) {}
       }
-
-      function loadSupabase(cb) {
-        var s = document.createElement('script')
-        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
-        s.onerror = bail
-        s.onload = function() {
-          try { window._sb = supabase.createClient(SUPA_URL, SUPA_KEY) }
-          catch(e) { return bail() }
-          cb()
-        }
-        document.head.appendChild(s)
-      }
-
-      var hasMagicLink = location.hash.indexOf('access_token') !== -1 ||
-                         location.search.indexOf('code=') !== -1
-
-      var storedToken = localStorage.getItem('phd_sb_token') || ''
-      var tokenExp    = jwtExp(storedToken)
-      // Valid if expiry is at least 60 seconds away (buffer for clock skew)
-      var tokenFresh  = tokenExp > (Date.now() / 1000 + 60)
-
-      if (!hasMagicLink && tokenFresh) {
-        // ── FAST PATH ───────────────────────────────────────────────────────
-        // Token is good — reveal the page NOW with zero CDN latency.
-        document.body.style.visibility = 'visible'
-        window._resolveAuth(storedToken)   // unblocks admin.js
-        // Load Supabase lazily so getToken() can refresh and logout works
-        loadSupabase(function() {
-          // Proactively refresh if token expires within 5 minutes
-          if (tokenExp < (Date.now() / 1000 + 300)) {
-            window._sb.auth.getSession().then(function(r) {
-              if (r.data && r.data.session)
-                localStorage.setItem('phd_sb_token', r.data.session.access_token)
-            }).catch(function(){})
-          }
-        })
-      } else {
-        // ── SLOW PATH ───────────────────────────────────────────────────────
-        // Token expired, missing, or this is a magic-link callback.
-        // Must verify / exchange via Supabase before showing anything.
-        loadSupabase(function() {
-          window._sb.auth.getSession().then(function(res) {
-            var session = res.data && res.data.session
-            if (session) {
-              if (hasMagicLink) history.replaceState(null, '', '/admin')
-              localStorage.setItem('phd_sb_token', session.access_token)
-              document.body.style.visibility = 'visible'
-              window._resolveAuth(session)
-            } else {
-              bail()
-            }
-          }).catch(bail)
-        })
-      }
+      document.head.appendChild(s)
     })()
   </script>
 </head>
-<body style="visibility:hidden">
+<body>
 
   <header class="adm-header">
     <div class="adm-header-left">
