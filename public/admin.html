@@ -19,21 +19,9 @@
         window._resolveAuth = resolve
       })
 
-      // Detect magic-link / OAuth callback — Supabase appends #access_token or ?code=
+      // Detect magic-link / OAuth callback in the URL
       var hasMagicLink = location.hash.indexOf('access_token') !== -1 ||
                          location.search.indexOf('code=') !== -1
-
-      // Guard: only the first confirmed session wins
-      var _resolved = false
-      function confirmSession(session) {
-        if (_resolved) return
-        _resolved = true
-        localStorage.setItem('phd_sb_token', session.access_token)
-        // Strip hash so a hard-refresh doesn't replay the (now-expired) token
-        if (hasMagicLink) history.replaceState(null, '', '/admin')
-        document.body.style.visibility = 'visible'
-        window._resolveAuth(session)   // ← unblocks admin.js init()
-      }
 
       var s = document.createElement('script')
       s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
@@ -43,37 +31,38 @@
           window._sb = supabase.createClient(SUPA_URL, SUPA_KEY)
         } catch(e) { return bail() }
 
-        // onAuthStateChange fires for BOTH existing sessions AND magic-link exchanges.
-        // This is the reliable source — it fires before getSession() resolves
-        // when the page was reached via a magic link redirect.
-        window._sb.auth.onAuthStateChange(function(event, session) {
-          if (event === 'SIGNED_IN' && session) {
-            confirmSession(session)
-          }
-          if (event === 'SIGNED_OUT') {
-            localStorage.removeItem('phd_sb_token')
-            // Only bounce to login if the page was already visible
-            // (i.e. session expired mid-session, not a startup race)
-            if (_resolved) location.replace('/admin-login')
-          }
-        })
-
-        // getSession() awaits Supabase's internal initializePromise which
-        // includes URL-hash processing — so this too will return the session
-        // once the magic-link token is exchanged.
+        // ── STARTUP: getSession() is the ONLY thing that makes body visible ──
+        //
+        // getSession() awaits Supabase's internal initializePromise, which:
+        //   • processes any #access_token hash (magic link)
+        //   • refreshes the access token if expired (using refresh token)
+        // It resolves with a session only when a session is genuinely valid.
+        //
+        // We do NOT use onAuthStateChange(SIGNED_IN) for startup visibility.
+        // Supabase fires SIGNED_IN from localStorage BEFORE attempting a refresh,
+        // then fires SIGNED_OUT if the refresh fails — causing a visible flash.
         window._sb.auth.getSession().then(function(res) {
           var session = res.data && res.data.session
           if (session) {
-            confirmSession(session)
-          } else if (!_resolved) {
-            if (hasMagicLink) {
-              // onAuthStateChange should fire shortly; set a fallback bail timeout
-              setTimeout(function() { if (!_resolved) bail() }, 8000)
-            } else {
-              bail()   // no session, no magic link — go to login immediately
-            }
+            if (hasMagicLink) history.replaceState(null, '', '/admin')
+            localStorage.setItem('phd_sb_token', session.access_token)
+            document.body.style.visibility = 'visible'
+            window._resolveAuth(session)   // ← unblocks admin.js init()
+          } else {
+            bail()
           }
-        }).catch(function() { if (!_resolved) bail() })
+        }).catch(bail)
+
+        // ── POST-STARTUP: keep stored token in sync; handle mid-session expiry ──
+        window._sb.auth.onAuthStateChange(function(event, session) {
+          if ((event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') && session) {
+            localStorage.setItem('phd_sb_token', session.access_token)
+          }
+          if (event === 'SIGNED_OUT') {
+            localStorage.removeItem('phd_sb_token')
+            location.replace('/admin-login')
+          }
+        })
       }
       document.head.appendChild(s)
     })()
