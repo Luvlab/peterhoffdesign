@@ -21,7 +21,7 @@ function jwtValid(token) {
   try {
     const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
     const payload = JSON.parse(atob(b64))
-    return payload.exp > Date.now() / 1000 + 60   // must have >60 s left
+    return payload.exp > Date.now() / 1000        // not yet expired
   } catch (_) {
     return false
   }

@@ -108,15 +108,19 @@
       try {
         sb = supabase.createClient(SUPA_URL, SUPA_KEY)
         sbReady = true
-        // If already logged in (or landing from magic-link ?code=…) → set cookie + go to admin
-        sb.auth.getSession().then(function(r) {
-          if (r.data && r.data.session) {
-            var token = r.data.session.access_token
-            localStorage.setItem('phd_sb_token', token)
-            document.cookie = 'phd_auth=' + token + '; path=/; max-age=3600; SameSite=Lax; Secure'
-            location.replace('/admin')
-          }
-        }).catch(function() {})
+        // Only auto-complete when this is a magic-link callback (?code=…).
+        // For normal visits we always show the form — the middleware on /admin
+        // already handles "already logged in" by checking the phd_auth cookie.
+        if (location.search.includes('code=')) {
+          sb.auth.getSession().then(function(r) {
+            if (r.data && r.data.session) {
+              var token = r.data.session.access_token
+              localStorage.setItem('phd_sb_token', token)
+              document.cookie = 'phd_auth=' + token + '; path=/; max-age=3600; SameSite=Lax; Secure'
+              location.replace('/admin')
+            }
+          }).catch(function() {})
+        }
       } catch(e) {
         showError('Login service unavailable — please try again shortly.')
       }
