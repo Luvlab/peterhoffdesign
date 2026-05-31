@@ -20,7 +20,7 @@ body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
   min-height: 100vh;
   display: flex;
@@ -58,18 +58,16 @@ body {
 
 /* ── Studio name + tagline ────────────────────────────────────────────────── */
 .gate-title {
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 400;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--text);
   margin-bottom: 8px;
 }
 
 .gate-sub {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.01em;
   color: var(--muted);
   margin-bottom: 20px;
 }
@@ -77,9 +75,8 @@ body {
 /* ── Status badge ─────────────────────────────────────────────────────────── */
 .gate-badge {
   display: inline-block;
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.01em;
   color: var(--muted);
   border: 1px solid var(--border);
   padding: 4px 14px;
@@ -92,8 +89,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 13px;
+  letter-spacing: 0.01em;
   color: var(--muted);
   margin-bottom: 48px;
   padding-bottom: 48px;
@@ -128,9 +125,9 @@ body {
   border-bottom: 1px solid var(--border);
   background: transparent;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 15px;
   text-align: center;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.01em;
   color: var(--text);
   outline: none;
   transition: border-color 0.15s;
@@ -144,9 +141,8 @@ body {
 
 .gate-input::placeholder {
   color: var(--border);
-  letter-spacing: 0.12em;
-  font-size: 10px;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: 13px;
 }
 
 /* ── Submit button ────────────────────────────────────────────────────────── */
@@ -156,9 +152,8 @@ body {
   background: transparent;
   color: var(--text);
   font-family: inherit;
-  font-size: 9px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.01em;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   -webkit-tap-highlight-color: transparent;
@@ -174,9 +169,8 @@ body {
 
 /* ── Error ────────────────────────────────────────────────────────────────── */
 .gate-error {
-  font-size: 10px;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.01em;
   color: var(--error);
 }
 
@@ -190,9 +184,8 @@ body {
 }
 
 .site-footer p {
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.01em;
   color: var(--muted);
 }
 
