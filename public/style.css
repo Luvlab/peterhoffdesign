@@ -56,7 +56,6 @@ body {
   gap: 24px;
   flex-shrink: 0;
   padding-left: 16px;
-  margin-left: auto;
 }
 
 .site-nav a {
@@ -98,14 +97,13 @@ body {
 }
 .lang-picker:focus { outline: none; }
 
-/* ── Filter nav (centre of header, horizontally scrollable) ──────────────────── */
+/* ── Filter nav (right-aligned, horizontally scrollable) ─────────────────────── */
 .filter-nav {
-  flex: 1;
-  min-width: 0;
+  margin-left: auto;   /* pushes filter-nav + site-nav to the far right */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 0 8px;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
