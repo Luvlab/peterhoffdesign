@@ -91,6 +91,11 @@
     var SUPA_URL = 'https://pjcjbiafivmbkudcnzax.supabase.co'
     var SUPA_KEY = 'sb_publishable_k_HVbG5Nh7XsxIkohQrWRA_U7mZc-7v'
 
+    // Capture URL state NOW — before the Supabase SDK loads and potentially
+    // clears the hash fragment (#access_token=…) during createClient().
+    var _initHash   = location.hash
+    var _initSearch = location.search
+
     let sb = null
     let sbReady = false
 
@@ -109,12 +114,10 @@
         sb = supabase.createClient(SUPA_URL, SUPA_KEY)
         sbReady = true
 
-        // Supabase may use either PKCE (?code=…) or hash-based (#access_token=…) flow.
-        // Also surface any error returned in the hash (e.g. otp_expired).
-        var hashParams  = new URLSearchParams(location.hash.slice(1))
-        var hasError    = location.hash.includes('error=')
-        var isCallback  = location.search.includes('code=') ||
-                          location.hash.includes('access_token=')
+        // Use the captured values — by now Supabase may have already cleared location.hash
+        var hashParams = new URLSearchParams(_initHash.slice(1))
+        var hasError   = _initHash.includes('error=')
+        var isCallback = _initSearch.includes('code=') || _initHash.includes('access_token=')
 
         if (hasError) {
           // Show the error Supabase returned (e.g. expired / invalid link)
