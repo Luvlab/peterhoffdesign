@@ -6,55 +6,83 @@
   <title>CMS — Peter Hoff Design</title>
   <link rel="stylesheet" href="admin.css" />
   <script>
-    // Auth guard — runs before anything renders.
-    // Public keys embedded directly (anon key is safe in frontend code).
+    // ── Auth guard ────────────────────────────────────────────────────────────
+    // Fast path:  valid JWT in localStorage → show page instantly, no CDN wait.
+    // Slow path:  token expired/missing or magic-link → load Supabase CDN,
+    //             exchange / refresh, then show or bail to login.
+    //
+    // This eliminates the "blank-page flash" caused by waiting for the CDN
+    // before revealing the body, and the redirect loop it triggered.
     (function() {
       var SUPA_URL = 'https://pjcjbiafivmbkudcnzax.supabase.co'
       var SUPA_KEY = 'sb_publishable_k_HVbG5Nh7XsxIkohQrWRA_U7mZc-7v'
 
       function bail() { location.replace('/admin-login') }
 
-      // admin.js awaits this before making any authenticated API calls
-      window._authReady = new Promise(function(resolve) {
-        window._resolveAuth = resolve
-      })
+      // admin.js awaits this Promise before making any API calls
+      window._authReady = new Promise(function(resolve) { window._resolveAuth = resolve })
 
-      // Detect magic-link / OAuth callback in the URL
+      // Decode the `exp` field from a JWT without verifying the signature
+      function jwtExp(token) {
+        try {
+          var b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+          return JSON.parse(atob(b64)).exp || 0
+        } catch(_) { return 0 }
+      }
+
+      function loadSupabase(cb) {
+        var s = document.createElement('script')
+        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
+        s.onerror = bail
+        s.onload = function() {
+          try { window._sb = supabase.createClient(SUPA_URL, SUPA_KEY) }
+          catch(e) { return bail() }
+          cb()
+        }
+        document.head.appendChild(s)
+      }
+
       var hasMagicLink = location.hash.indexOf('access_token') !== -1 ||
                          location.search.indexOf('code=') !== -1
 
-      var s = document.createElement('script')
-      s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
-      s.onerror = bail
-      s.onload = function() {
-        try {
-          window._sb = supabase.createClient(SUPA_URL, SUPA_KEY)
-        } catch(e) { return bail() }
+      var storedToken = localStorage.getItem('phd_sb_token') || ''
+      var tokenExp    = jwtExp(storedToken)
+      // Valid if expiry is at least 60 seconds away (buffer for clock skew)
+      var tokenFresh  = tokenExp > (Date.now() / 1000 + 60)
 
-        // ── STARTUP: getSession() is the ONLY thing that makes body visible ──
-        //
-        // getSession() awaits Supabase's internal initializePromise, which:
-        //   • processes any #access_token hash (magic link)
-        //   • refreshes the access token if expired (using refresh token)
-        // It resolves with a session only when a session is genuinely valid.
-        //
-        // We do NOT use onAuthStateChange(SIGNED_IN) for startup visibility.
-        // Supabase fires SIGNED_IN from localStorage BEFORE attempting a refresh,
-        // then fires SIGNED_OUT if the refresh fails — causing a visible flash.
-        window._sb.auth.getSession().then(function(res) {
-          var session = res.data && res.data.session
-          if (session) {
-            if (hasMagicLink) history.replaceState(null, '', '/admin')
-            // Store token so apiFetch has a reliable fallback on every call
-            localStorage.setItem('phd_sb_token', session.access_token)
-            document.body.style.visibility = 'visible'
-            window._resolveAuth(session)   // ← unblocks admin.js init()
-          } else {
-            bail()
+      if (!hasMagicLink && tokenFresh) {
+        // ── FAST PATH ───────────────────────────────────────────────────────
+        // Token is good — reveal the page NOW with zero CDN latency.
+        document.body.style.visibility = 'visible'
+        window._resolveAuth(storedToken)   // unblocks admin.js
+        // Load Supabase lazily so getToken() can refresh and logout works
+        loadSupabase(function() {
+          // Proactively refresh if token expires within 5 minutes
+          if (tokenExp < (Date.now() / 1000 + 300)) {
+            window._sb.auth.getSession().then(function(r) {
+              if (r.data && r.data.session)
+                localStorage.setItem('phd_sb_token', r.data.session.access_token)
+            }).catch(function(){})
           }
-        }).catch(bail)
+        })
+      } else {
+        // ── SLOW PATH ───────────────────────────────────────────────────────
+        // Token expired, missing, or this is a magic-link callback.
+        // Must verify / exchange via Supabase before showing anything.
+        loadSupabase(function() {
+          window._sb.auth.getSession().then(function(res) {
+            var session = res.data && res.data.session
+            if (session) {
+              if (hasMagicLink) history.replaceState(null, '', '/admin')
+              localStorage.setItem('phd_sb_token', session.access_token)
+              document.body.style.visibility = 'visible'
+              window._resolveAuth(session)
+            } else {
+              bail()
+            }
+          }).catch(bail)
+        })
       }
-      document.head.appendChild(s)
     })()
   </script>
 </head>
