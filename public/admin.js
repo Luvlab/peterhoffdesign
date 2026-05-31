@@ -487,20 +487,26 @@ function uploadImages(projId, files) {
 }
 
 /* ── API helper ────────────────────────────────────────────────────────────── */
-function getToken() {
+async function getToken() {
+  // Always fetch a live token from the Supabase client so auto-refreshed
+  // tokens are used automatically — no onAuthStateChange listener needed.
+  if (window._sb) {
+    const { data } = await window._sb.auth.getSession()
+    if (data?.session?.access_token) return data.session.access_token
+  }
   return localStorage.getItem('phd_sb_token') || ''
 }
 
 async function apiFetch(method, path, body) {
-  const opts = { method, headers: { 'Authorization': 'Bearer ' + getToken() } }
+  const token = await getToken()
+  const opts = { method, headers: { 'Authorization': 'Bearer ' + token } }
   if (body !== undefined) {
     opts.headers['Content-Type'] = 'application/json'
     opts.body = JSON.stringify(body)
   }
   const res = await fetch(path, opts)
   if (res.status === 401 || res.status === 403) {
-    // Token expired or invalid — re-auth
-    localStorage.removeItem('phd_sb_token')
+    // Session expired — send to login
     location.replace('/admin-login')
     return
   }

@@ -45,24 +45,11 @@
           var session = res.data && res.data.session
           if (session) {
             if (hasMagicLink) history.replaceState(null, '', '/admin')
-            localStorage.setItem('phd_sb_token', session.access_token)
             document.body.style.visibility = 'visible'
             window._resolveAuth(session)   // ← unblocks admin.js init()
-
-            // ── POST-STARTUP only ──
-            // Register AFTER getSession() confirms a valid session.
-            // If registered earlier, Supabase fires SIGNED_OUT during its own
-            // startup token-refresh attempt, which bounces the page to /admin-login
-            // before the session is confirmed — creating a redirect loop.
-            window._sb.auth.onAuthStateChange(function(event, sess) {
-              if ((event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') && sess) {
-                localStorage.setItem('phd_sb_token', sess.access_token)
-              }
-              if (event === 'SIGNED_OUT') {
-                localStorage.removeItem('phd_sb_token')
-                location.replace('/admin-login')
-              }
-            })
+            // No onAuthStateChange — admin.js apiFetch() reads a live token
+            // directly from window._sb.auth.getSession() and its 401 handler
+            // redirects to login if the session ever expires.
           } else {
             bail()
           }
