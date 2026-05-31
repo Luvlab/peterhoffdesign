@@ -26,9 +26,24 @@ const wrap = fn => (req, res) => fn(req, res).catch(err => {
 })
 
 // ── auth middleware ──────────────────────────────────────────────────────────
+function parseCookie(header, name) {
+  return (header || '').split(';')
+    .map(c => c.trim())
+    .find(c => c.startsWith(name + '='))
+    ?.slice(name.length + 1) || null
+}
+
 async function requireAdmin(req, res, next) {
+  // 1. Bearer token (set explicitly by admin.js)
   const auth = req.headers['authorization'] || ''
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null
+  let token = auth.startsWith('Bearer ') ? auth.slice(7) : null
+
+  // 2. phd_auth cookie — browser sends this automatically for same-origin
+  //    fetches, so it works even if the in-memory token is stale or missing.
+  if (!token) {
+    token = parseCookie(req.headers['cookie'], 'phd_auth')
+  }
+
   if (!token) return res.status(401).json({ error: 'No token' })
 
   const { data: { user }, error } = await supabase.auth.getUser(token)

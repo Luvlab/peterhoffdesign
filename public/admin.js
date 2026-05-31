@@ -440,7 +440,7 @@ imgFileInput.addEventListener('change', () => {
 })
 
 async function uploadImages(projId, files) {
-  const token = await getToken()
+  const token = getToken()
   return new Promise(resolve => {
     const form = new FormData()
     files.forEach(f => form.append('images', f))
@@ -488,26 +488,15 @@ async function uploadImages(projId, files) {
 }
 
 /* ── API helper ────────────────────────────────────────────────────────────── */
-async function getToken() {
-  // Try to get a live token from the Supabase client first (handles auto-refresh).
-  // Write it back to localStorage AND refresh the auth cookie so middleware stays happy.
-  if (window._sb) {
-    try {
-      const { data } = await window._sb.auth.getSession()
-      if (data?.session?.access_token) {
-        const token = data.session.access_token
-        localStorage.setItem('phd_sb_token', token)
-        document.cookie = 'phd_auth=' + token + '; path=/; max-age=3600; SameSite=Lax; Secure'
-        return token
-      }
-    } catch (_) { /* fall through to stored token */ }
-  }
-  // Fallback: use the token stored at login / last successful refresh
+function getToken() {
+  // The phd_auth cookie is sent automatically on every same-origin fetch,
+  // so the server can always auth via cookie even if this returns empty.
+  // We still send a Bearer token for belt-and-suspenders.
   return localStorage.getItem('phd_sb_token') || ''
 }
 
 async function apiFetch(method, path, body) {
-  const token = await getToken()
+  const token = getToken()
   const opts = { method, headers: { 'Authorization': 'Bearer ' + token } }
   if (body !== undefined) {
     opts.headers['Content-Type'] = 'application/json'
@@ -647,11 +636,10 @@ document.getElementById('confirmOverlay').addEventListener('click', e => {
 })
 
 /* ── Logout ────────────────────────────────────────────────────────────────── */
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  if (window._sb) await window._sb.auth.signOut().catch(() => {})
+document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('phd_sb_token')
-  // Expire the auth cookie so middleware blocks /admin immediately
   document.cookie = 'phd_auth=; path=/; max-age=0; SameSite=Lax; Secure'
+  if (window._sb) window._sb.auth.signOut().catch(() => {})
   location.replace('/admin-login')
 })
 
