@@ -30,25 +30,63 @@
           <option value="pt">PT</option>
         </select>
       </div>
-      <div class="ratio-picker" id="ratioPicker">
-        <button class="ratio-btn active" data-ratio="1/1" title="1:1">
-          <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="1"/></svg>
+      <div class="ratio-menu" id="ratioMenu">
+        <button class="ratio-trigger" id="ratioTrigger" aria-label="Aspect ratio" aria-expanded="false">
+          <svg class="ratio-trigger-icon" width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="1"/></svg>
         </button>
-        <button class="ratio-btn" data-ratio="4/3" title="4:3">
-          <svg width="18" height="14" viewBox="0 0 18 14"><rect x="1" y="1" width="16" height="12" rx="1"/></svg>
-        </button>
-        <button class="ratio-btn" data-ratio="16/9" title="16:9">
-          <svg width="20" height="12" viewBox="0 0 20 12"><rect x="1" y="1" width="18" height="10" rx="1"/></svg>
-        </button>
-        <button class="ratio-btn" data-ratio="3/4" title="3:4">
-          <svg width="14" height="18" viewBox="0 0 14 18"><rect x="1" y="1" width="12" height="16" rx="1"/></svg>
-        </button>
-        <button class="ratio-btn" data-ratio="9/16" title="9:16">
-          <svg width="12" height="20" viewBox="0 0 12 20"><rect x="1" y="1" width="10" height="18" rx="1"/></svg>
-        </button>
+        <div class="ratio-dropdown" id="ratioDropdown" hidden>
+          <button class="ratio-btn" data-ratio="1/1">
+            <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="1"/></svg>
+            <span>1:1</span>
+          </button>
+          <button class="ratio-btn" data-ratio="4/3">
+            <svg width="18" height="14" viewBox="0 0 18 14"><rect x="1" y="1" width="16" height="12" rx="1"/></svg>
+            <span>4:3</span>
+          </button>
+          <button class="ratio-btn" data-ratio="16/9">
+            <svg width="20" height="12" viewBox="0 0 20 12"><rect x="1" y="1" width="18" height="10" rx="1"/></svg>
+            <span>16:9</span>
+          </button>
+          <button class="ratio-btn" data-ratio="3/4">
+            <svg width="14" height="18" viewBox="0 0 14 18"><rect x="1" y="1" width="12" height="16" rx="1"/></svg>
+            <span>3:4</span>
+          </button>
+          <button class="ratio-btn" data-ratio="9/16">
+            <svg width="12" height="20" viewBox="0 0 12 20"><rect x="1" y="1" width="10" height="18" rx="1"/></svg>
+            <span>9:16</span>
+          </button>
+        </div>
       </div>
     </nav>
+
+    <!-- Hamburger — mobile only -->
+    <button class="nav-hamburger" id="navHamburger" aria-label="Menu" aria-expanded="false">
+      <span class="hbg-bar"></span>
+      <span class="hbg-bar"></span>
+      <span class="hbg-bar"></span>
+    </button>
   </header>
+
+  <!-- Mobile slide-in menu -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <nav class="mobile-menu-cats" id="mobileMenuCats"></nav>
+    <div class="mobile-menu-sep"></div>
+    <a href="#contact" class="mobile-menu-link" id="mobileMenuContact" data-i18n="contact">Kontakt</a>
+    <div class="mobile-menu-lang">
+      <span class="mobile-menu-lang-label">Language</span>
+      <select class="lang-picker" id="mobileLangPicker" title="Language / Språk">
+        <option value="sv">Svenska</option>
+        <option value="no">Norsk</option>
+        <option value="da">Dansk</option>
+        <option value="fi">Suomi</option>
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+        <option value="es">Español</option>
+        <option value="pt">Português</option>
+      </select>
+    </div>
+  </div>
+  <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
 
   <main class="projects-grid" id="projectsGrid">
     <p class="loading" data-i18n="loading">Loading…</p>

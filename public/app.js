@@ -82,6 +82,8 @@ function applyTranslations() {
   })
   const picker = document.getElementById('langPicker')
   if (picker) picker.value = currentLang
+  const mobilePicker = document.getElementById('mobileLangPicker')
+  if (mobilePicker) mobilePicker.value = currentLang
 }
 
 // ── bootstrap ────────────────────────────────────────────────────────────────
@@ -131,28 +133,45 @@ function showAll() {
 })()
 
 function renderNav(categories, projects) {
-  const nav = document.getElementById('filterNav')
+  const nav       = document.getElementById('filterNav')
+  const mobileNav = document.getElementById('mobileMenuCats')
 
   // find which categories actually have visible projects
   const usedCats = new Set(projects.map(p => p.category))
 
-  // add category buttons only for categories that have projects
   categories.forEach(cat => {
     if (!usedCats.has(cat.id)) return
+
+    // Desktop filter button
     const btn = document.createElement('button')
     btn.className = 'filter-btn'
     btn.dataset.filter   = 'cat'
     btn.dataset.category = cat.id
-    btn.dataset.i18n     = cat.id          // translated by applyTranslations()
+    btn.dataset.i18n     = cat.id
     btn.textContent = t(cat.id)
     btn.addEventListener('click', () => setFilter('cat', cat.id))
     nav.appendChild(btn)
+
+    // Mobile menu button (mirrors desktop)
+    if (mobileNav) {
+      const mBtn = document.createElement('button')
+      mBtn.className = 'mobile-filter-btn'
+      mBtn.dataset.filter   = 'cat'
+      mBtn.dataset.category = cat.id
+      mBtn.dataset.i18n     = cat.id
+      mBtn.textContent = t(cat.id)
+      mBtn.addEventListener('click', () => {
+        setFilter('cat', cat.id)
+        window._closeMobileMenu?.()
+      })
+      mobileNav.appendChild(mBtn)
+    }
   })
 }
 
 function setFilter(type, catId) {
-  // highlight correct button
-  document.querySelectorAll('.filter-btn').forEach(b => {
+  // highlight correct button — both desktop and mobile mirrors
+  document.querySelectorAll('.filter-btn, .mobile-filter-btn').forEach(b => {
     const isActive =
       (type === 'featured' && b.dataset.filter === 'featured') ||
       (type === 'all'      && b.dataset.filter === 'all')      ||
@@ -444,47 +463,148 @@ function renderContact(c, settings) {
   }, 900)
 })()
 
-// ── language picker ───────────────────────────────────────────────────────────
+// ── language picker (desktop + mobile synced) ────────────────────────────────
 ;(function() {
-  const picker = document.getElementById('langPicker')
-  if (!picker) return
-  picker.value = currentLang
-  picker.addEventListener('change', () => {
-    currentLang = picker.value
+  function changeLang(lang) {
+    currentLang = lang
     localStorage.setItem('phd_lang', currentLang)
-    applyTranslations()
+    applyTranslations()  // syncs both pickers via applyTranslations()
     // Re-render project cards so their inline category text updates
     const overlay = document.getElementById('detailOverlay')
     if (overlay && overlay.hidden) {
-      // grid is visible — re-render with current filter
-      const activeBtn = document.querySelector('.filter-btn.active')
+      const activeBtn = document.querySelector('.filter-btn.active, .mobile-filter-btn.active')
       if (activeBtn) {
         if (activeBtn.dataset.filter === 'cat') setFilter('cat', activeBtn.dataset.category)
         else setFilter(activeBtn.dataset.filter || 'all')
       }
     }
+  }
+
+  const picker = document.getElementById('langPicker')
+  if (picker) {
+    picker.value = currentLang
+    picker.addEventListener('change', () => changeLang(picker.value))
+  }
+
+  const mobilePicker = document.getElementById('mobileLangPicker')
+  if (mobilePicker) {
+    mobilePicker.value = currentLang
+    mobilePicker.addEventListener('change', () => {
+      changeLang(mobilePicker.value)
+      window._closeMobileMenu?.()
+    })
+  }
+})()
+
+// ── hamburger / mobile menu ───────────────────────────────────────────────────
+;(function() {
+  const hamburger = document.getElementById('navHamburger')
+  const menu      = document.getElementById('mobileMenu')
+  const backdrop  = document.getElementById('mobileMenuBackdrop')
+  if (!hamburger || !menu || !backdrop) return
+
+  function openMenu() {
+    menu.classList.add('is-open')
+    backdrop.classList.add('is-open')
+    hamburger.setAttribute('aria-expanded', 'true')
+    menu.setAttribute('aria-hidden', 'false')
+    document.body.style.overflow = 'hidden'
+  }
+
+  function closeMenu() {
+    menu.classList.remove('is-open')
+    backdrop.classList.remove('is-open')
+    hamburger.setAttribute('aria-expanded', 'false')
+    menu.setAttribute('aria-hidden', 'true')
+    document.body.style.overflow = ''
+  }
+
+  // Export close for use by category buttons populated later in init()
+  window._closeMobileMenu = closeMenu
+
+  hamburger.addEventListener('click', () =>
+    menu.classList.contains('is-open') ? closeMenu() : openMenu()
+  )
+  backdrop.addEventListener('click', closeMenu)
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu() })
+
+  // Contact link in mobile menu → scroll to footer
+  document.getElementById('mobileMenuContact')?.addEventListener('click', e => {
+    e.preventDefault()
+    closeMenu()
+    setTimeout(() => {
+      document.getElementById('siteFooter')?.scrollIntoView({ behavior: 'smooth' })
+    }, 320)  // wait for menu slide-out
   })
 })()
 
-// ── ratio picker ──────────────────────────────────────────────────────────────
+// ── ratio menu (dropdown) ─────────────────────────────────────────────────────
 ;(function() {
   const STORAGE_KEY = 'phd_thumb_ratio'
-  const root = document.documentElement
-  const btns = document.querySelectorAll('.ratio-btn')
+  const root        = document.documentElement
+  const trigger     = document.getElementById('ratioTrigger')
+  const dropdown    = document.getElementById('ratioDropdown')
+  const btns        = document.querySelectorAll('.ratio-btn')
+
+  if (!trigger || !dropdown) return
+
+  // SVG icons keyed by ratio — used to swap the trigger icon
+  const ICONS = {
+    '1/1':  '<svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="1"/></svg>',
+    '4/3':  '<svg width="18" height="14" viewBox="0 0 18 14"><rect x="1" y="1" width="16" height="12" rx="1"/></svg>',
+    '16/9': '<svg width="20" height="12" viewBox="0 0 20 12"><rect x="1" y="1" width="18" height="10" rx="1"/></svg>',
+    '3/4':  '<svg width="14" height="18" viewBox="0 0 14 18"><rect x="1" y="1" width="12" height="16" rx="1"/></svg>',
+    '9/16': '<svg width="12" height="20" viewBox="0 0 12 20"><rect x="1" y="1" width="10" height="18" rx="1"/></svg>',
+  }
+
+  function closeDropdown() {
+    dropdown.hidden = true
+    trigger.setAttribute('aria-expanded', 'false')
+  }
+
+  function openDropdown() {
+    dropdown.hidden = false
+    trigger.setAttribute('aria-expanded', 'true')
+  }
 
   function applyRatio(ratio) {
     root.style.setProperty('--thumb-ratio', ratio)
     btns.forEach(b => b.classList.toggle('active', b.dataset.ratio === ratio))
+    // Update trigger icon to reflect active ratio
+    if (ICONS[ratio]) {
+      trigger.innerHTML = ICONS[ratio]
+    }
+    trigger.classList.toggle('active', true) // mark trigger as having a selection
     localStorage.setItem(STORAGE_KEY, ratio)
   }
 
-  // restore saved ratio on page load
-  const saved = localStorage.getItem(STORAGE_KEY)
-  if (saved) applyRatio(saved)
+  // Restore saved ratio on page load
+  const saved = localStorage.getItem(STORAGE_KEY) || '1/1'
+  applyRatio(saved)
 
-  btns.forEach(btn =>
-    btn.addEventListener('click', () => applyRatio(btn.dataset.ratio))
-  )
+  // Toggle dropdown on trigger click
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation()
+    dropdown.hidden ? openDropdown() : closeDropdown()
+  })
+
+  // Select ratio on option click
+  btns.forEach(btn => btn.addEventListener('click', () => {
+    applyRatio(btn.dataset.ratio)
+    closeDropdown()
+  }))
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!dropdown.hidden && !dropdown.contains(e.target) && e.target !== trigger) {
+      closeDropdown()
+    }
+  })
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDropdown()
+  })
 })()
 
 init()

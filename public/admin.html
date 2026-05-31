@@ -19,6 +19,22 @@
         window._resolveAuth = resolve
       })
 
+      // Detect magic-link / OAuth callback — Supabase appends #access_token or ?code=
+      var hasMagicLink = location.hash.indexOf('access_token') !== -1 ||
+                         location.search.indexOf('code=') !== -1
+
+      // Guard: only the first confirmed session wins
+      var _resolved = false
+      function confirmSession(session) {
+        if (_resolved) return
+        _resolved = true
+        localStorage.setItem('phd_sb_token', session.access_token)
+        // Strip hash so a hard-refresh doesn't replay the (now-expired) token
+        if (hasMagicLink) history.replaceState(null, '', '/admin')
+        document.body.style.visibility = 'visible'
+        window._resolveAuth(session)   // ← unblocks admin.js init()
+      }
+
       var s = document.createElement('script')
       s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
       s.onerror = bail
@@ -27,34 +43,37 @@
           window._sb = supabase.createClient(SUPA_URL, SUPA_KEY)
         } catch(e) { return bail() }
 
-        // Keep token fresh on auto-refresh (fires while already on page)
+        // onAuthStateChange fires for BOTH existing sessions AND magic-link exchanges.
+        // This is the reliable source — it fires before getSession() resolves
+        // when the page was reached via a magic link redirect.
         window._sb.auth.onAuthStateChange(function(event, session) {
           if (event === 'SIGNED_IN' && session) {
-            localStorage.setItem('phd_sb_token', session.access_token)
-            // Only update URL/visibility if we're still on the admin page
-            if (location.pathname === '/admin') {
-              document.body.style.visibility = 'visible'
-            } else {
-              history.replaceState(null, '', '/admin')
-              document.body.style.visibility = 'visible'
-            }
+            confirmSession(session)
           }
           if (event === 'SIGNED_OUT') {
             localStorage.removeItem('phd_sb_token')
-            location.replace('/admin-login')
+            // Only bounce to login if the page was already visible
+            // (i.e. session expired mid-session, not a startup race)
+            if (_resolved) location.replace('/admin-login')
           }
         })
 
+        // getSession() awaits Supabase's internal initializePromise which
+        // includes URL-hash processing — so this too will return the session
+        // once the magic-link token is exchanged.
         window._sb.auth.getSession().then(function(res) {
           var session = res.data && res.data.session
-          if (!session) {
-            bail()
-          } else {
-            localStorage.setItem('phd_sb_token', session.access_token)
-            document.body.style.visibility = 'visible'
-            window._resolveAuth(session)   // ← unblocks admin.js init()
+          if (session) {
+            confirmSession(session)
+          } else if (!_resolved) {
+            if (hasMagicLink) {
+              // onAuthStateChange should fire shortly; set a fallback bail timeout
+              setTimeout(function() { if (!_resolved) bail() }, 8000)
+            } else {
+              bail()   // no session, no magic link — go to login immediately
+            }
           }
-        }).catch(bail)
+        }).catch(function() { if (!_resolved) bail() })
       }
       document.head.appendChild(s)
     })()
