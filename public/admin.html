@@ -14,6 +14,11 @@
 
       function bail() { location.replace('/admin-login') }
 
+      // admin.js awaits this before making any authenticated API calls
+      window._authReady = new Promise(function(resolve) {
+        window._resolveAuth = resolve
+      })
+
       var s = document.createElement('script')
       s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
       s.onerror = bail
@@ -22,18 +27,24 @@
           window._sb = supabase.createClient(SUPA_URL, SUPA_KEY)
         } catch(e) { return bail() }
 
-        // Handle magic-link callback (token in URL hash or query)
+        // Keep token fresh on auto-refresh (fires while already on page)
         window._sb.auth.onAuthStateChange(function(event, session) {
           if (event === 'SIGNED_IN' && session) {
             localStorage.setItem('phd_sb_token', session.access_token)
-            history.replaceState(null, '', '/admin')
-            document.body.style.visibility = 'visible'
+            // Only update URL/visibility if we're still on the admin page
+            if (location.pathname === '/admin') {
+              document.body.style.visibility = 'visible'
+            } else {
+              history.replaceState(null, '', '/admin')
+              document.body.style.visibility = 'visible'
+            }
           }
           if (event === 'SIGNED_OUT') {
             localStorage.removeItem('phd_sb_token')
             location.replace('/admin-login')
           }
         })
+
         window._sb.auth.getSession().then(function(res) {
           var session = res.data && res.data.session
           if (!session) {
@@ -41,6 +52,7 @@
           } else {
             localStorage.setItem('phd_sb_token', session.access_token)
             document.body.style.visibility = 'visible'
+            window._resolveAuth(session)   // ← unblocks admin.js init()
           }
         }).catch(bail)
       }

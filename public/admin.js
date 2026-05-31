@@ -15,6 +15,9 @@ function closePanels() {
 
 /* ── Bootstrap ─────────────────────────────────────────────────────────────── */
 async function init() {
+  // Wait for auth guard to confirm a valid session & store a fresh token
+  if (window._authReady) await window._authReady
+
   const [cats, projs, settings] = await Promise.all([
     fetch('/api/categories').then(r => r.json()),
     apiFetch('GET', '/api/admin/projects'),
@@ -46,7 +49,6 @@ function buildCatTabs() {
 }
 
 function setTab(catId) {
-  closePanels()
   currentCat = catId
   document.querySelectorAll('.cat-tab').forEach(b =>
     b.classList.toggle('active', b.dataset.cat === catId)
