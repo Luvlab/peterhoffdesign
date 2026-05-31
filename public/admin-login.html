@@ -110,39 +110,58 @@
     s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js'
     s.onerror = function() { showError('Login service unavailable — please try again shortly.') }
     s.onload = function() {
+      var hashParams = new URLSearchParams(_initHash.slice(1))
+      var hasError   = _initHash.includes('error=')
+      var isCallback = _initSearch.includes('code=') || _initHash.includes('access_token=')
+
+      if (hasError) {
+        var desc = hashParams.get('error_description') || hashParams.get('error') || 'Login failed'
+        showError(desc.replace(/\+/g, ' '))
+        history.replaceState(null, '', '/admin-login')
+        // Still create client so form works
+      }
+
       try {
-        sb = supabase.createClient(SUPA_URL, SUPA_KEY)
+        // Force implicit (hash) flow — matches this Supabase project's configuration.
+        // Without this the newer SDK defaults to PKCE, causing a flow mismatch.
+        sb = supabase.createClient(SUPA_URL, SUPA_KEY, {
+          auth: { flowType: 'implicit' }
+        })
         sbReady = true
-
-        // Use the captured values — by now Supabase may have already cleared location.hash
-        var hashParams = new URLSearchParams(_initHash.slice(1))
-        var hasError   = _initHash.includes('error=')
-        var isCallback = _initSearch.includes('code=') || _initHash.includes('access_token=')
-
-        if (hasError) {
-          // Show the error Supabase returned (e.g. expired / invalid link)
-          var desc = hashParams.get('error_description') || hashParams.get('error') || 'Login failed'
-          showError(desc.replace(/\+/g, ' '))
-          history.replaceState(null, '', '/admin-login')  // clean up URL
-
-        } else if (isCallback) {
-          // Exchange the code / token for a session, set cookie, enter admin
-          sb.auth.getSession().then(function(r) {
-            if (r.data && r.data.session) {
-              var token = r.data.session.access_token
-              localStorage.setItem('phd_sb_token', token)
-              document.cookie = 'phd_auth=' + token + '; path=/; max-age=3600; SameSite=Lax; Secure'
-              location.replace('/admin')
-            } else {
-              showError('Login failed — please request a new magic link.')
-            }
-          }).catch(function() {
-            showError('Login failed — please request a new magic link.')
-          })
-        }
-        // Otherwise: normal visit — just show the form, do nothing.
       } catch(e) {
         showError('Login service unavailable — please try again shortly.')
+        return
+      }
+
+      if (!hasError && isCallback) {
+        var redirected = false
+        function finishLogin(session) {
+          if (redirected || !session) return
+          redirected = true
+          var token = session.access_token
+          localStorage.setItem('phd_sb_token', token)
+          document.cookie = 'phd_auth=' + token + '; path=/; max-age=3600; SameSite=Lax; Secure'
+          location.replace('/admin')
+        }
+
+        // Primary: onAuthStateChange fires the moment Supabase establishes the session
+        var sub = sb.auth.onAuthStateChange(function(event, session) {
+          if (event === 'SIGNED_IN' && session) {
+            sub.data.subscription.unsubscribe()
+            finishLogin(session)
+          }
+        })
+
+        // Fallback: getSession() awaits Supabase's full initialisation
+        sb.auth.getSession().then(function(r) {
+          if (r.data && r.data.session) {
+            finishLogin(r.data.session)
+          } else if (!redirected) {
+            showError('Login failed — please request a new magic link.')
+          }
+        }).catch(function() {
+          if (!redirected) showError('Login failed — please request a new magic link.')
+        })
       }
     }
     document.head.appendChild(s)
