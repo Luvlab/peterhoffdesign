@@ -116,15 +116,25 @@ async function init() {
 }
 
 // ── nav ───────────────────────────────────────────────────────────────────────
+function showAll() {
+  history.pushState({}, '', '/')
+  document.title = 'Peter Hoff Design AB'
+  document.getElementById('detailOverlay').hidden = true
+  document.getElementById('projectsGrid').style.display = ''
+  setFilter('all')
+}
+
+// Logo click → reset to all projects
+;(function() {
+  const link = document.getElementById('logoLink')
+  if (link) link.addEventListener('click', e => { e.preventDefault(); showAll() })
+})()
+
 function renderNav(categories, projects) {
   const nav = document.getElementById('filterNav')
 
   // find which categories actually have visible projects
   const usedCats = new Set(projects.map(p => p.category))
-
-  // wire filter buttons (already in HTML)
-  nav.querySelector('[data-filter="featured"]')?.addEventListener('click', () => setFilter('featured'))
-  nav.querySelector('[data-filter="all"]')?.addEventListener('click',      () => setFilter('all'))
 
   // add category buttons only for categories that have projects
   categories.forEach(cat => {
