@@ -440,7 +440,7 @@ imgFileInput.addEventListener('change', () => {
 })
 
 async function uploadImages(projId, files) {
-  const token = getToken()
+  const token = await getToken()
   return new Promise(resolve => {
     const form = new FormData()
     files.forEach(f => form.append('images', f))
@@ -488,15 +488,29 @@ async function uploadImages(projId, files) {
 }
 
 /* ── API helper ────────────────────────────────────────────────────────────── */
-function getToken() {
-  // The phd_auth cookie is sent automatically on every same-origin fetch,
-  // so the server can always auth via cookie even if this returns empty.
-  // We still send a Bearer token for belt-and-suspenders.
-  return localStorage.getItem('phd_sb_token') || ''
+async function getToken() {
+  // 1. Try a live Supabase session (most reliable — always fresh)
+  if (window._sb) {
+    try {
+      const { data } = await window._sb.auth.getSession()
+      if (data?.session?.access_token) {
+        const t = data.session.access_token
+        localStorage.setItem('phd_sb_token', t)
+        document.cookie = 'phd_auth=' + t + '; path=/; max-age=3600; SameSite=Lax; Secure'
+        return t
+      }
+    } catch (_) {}
+  }
+  // 2. Stored token from login (still works until it expires)
+  const stored = localStorage.getItem('phd_sb_token') || ''
+  if (stored) return stored
+  // 3. Read from the phd_auth cookie directly as last resort
+  const match = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith('phd_auth='))
+  return match ? match.slice(9) : ''
 }
 
 async function apiFetch(method, path, body) {
-  const token = getToken()
+  const token = await getToken()
   const opts = { method, headers: { 'Authorization': 'Bearer ' + token } }
   if (body !== undefined) {
     opts.headers['Content-Type'] = 'application/json'
