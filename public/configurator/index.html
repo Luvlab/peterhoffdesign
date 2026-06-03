@@ -4,9 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nexus Configurator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                primary:   'var(--brand-primary)',
+                secondary: 'var(--brand-secondary)',
+                bg:        'var(--brand-bg)',
+                text:      'var(--brand-text)',
+              }
+            }
+          }
+        }
+      }
+    </script>
     <style>
+      :root {
+        --brand-primary:   #3b82f6;
+        --brand-secondary: #1e40af;
+        --brand-bg:        #f3f4f6;
+        --brand-text:      #111827;
+      }
       *, *::before, *::after { box-sizing: border-box; }
-      body { margin: 0; overflow: hidden; background: #111; }
+      body { margin: 0; overflow: hidden; }
     </style>
     <script type="module" crossorigin src="/configurator/assets/index-BosYEBzH.js"></script>
   </head>
