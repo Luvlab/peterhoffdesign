@@ -7,6 +7,8 @@
     { "source": "/admin",               "destination": "/admin.html"             },
     { "source": "/admin-login",         "destination": "/admin-login.html"       },
     { "source": "/configurator",        "destination": "/configurator/index.html" },
-    { "source": "/configurator/:path*", "destination": "/configurator/:path*"    }
+    { "source": "/configurator/:path*", "destination": "/configurator/:path*"    },
+    { "source": "/jewelry",             "destination": "/jewelry/index.html"      },
+    { "source": "/jewelry/:path*",      "destination": "/jewelry/:path*"          }
   ]
 }
