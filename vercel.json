@@ -27,16 +27,20 @@
       "destination": "/configurator/:path*"
     },
     {
+      "source": "/links",
+      "destination": "/links/index.html"
+    }
+  ],
+  "redirects": [
+    {
       "source": "/jewelry",
-      "destination": "/jewelry/index.html"
+      "destination": "/links",
+      "permanent": true
     },
     {
       "source": "/jewelry/:path*",
-      "destination": "/jewelry/:path*"
-    },
-    {
-      "source": "/links",
-      "destination": "/links/index.html"
+      "destination": "/links",
+      "permanent": true
     }
   ]
 }
