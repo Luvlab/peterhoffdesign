@@ -46,20 +46,28 @@ legend{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--
 .selinfo b{color:var(--fg);font-weight:600}
 .facts{border-top:1px solid var(--line);padding-top:14px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13px}
 .facts dt{color:var(--muted)} .facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.order-form{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.order-form input,.order-form textarea{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:4px;padding:7px 9px;background:var(--panel);color:var(--fg)}
+.order-form button{all:unset;cursor:pointer;text-align:center;background:var(--fg);color:var(--panel);border-radius:6px;padding:9px 12px;font-size:13px}
+.order-form button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .note{font-size:11.5px;color:var(--muted);line-height:1.45;margin:0}
 main{position:relative;min-width:0;min-height:0;background:var(--stage)}
 canvas{display:block;width:100%;height:100%}
 .hud{position:absolute;right:max(14px,env(safe-area-inset-right,0px));bottom:14px;display:flex;gap:8px}
-.hud button{all:unset;cursor:pointer;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:7px 11px;font-size:12.5px}
+.hud button{all:unset;cursor:pointer;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;width:40px;height:40px;display:grid;place-items:center}
+.hud button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.hud button[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
+.hud button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hud button[disabled]{opacity:.4;cursor:default}
 .tag{position:absolute;left:14px;top:12px;font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
-.cap{position:absolute;left:max(14px,env(safe-area-inset-left,0px));bottom:14px;max-width:calc(100% - 220px);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:13px;line-height:1.35}
+.cap{position:absolute;left:max(14px,env(safe-area-inset-left,0px));bottom:14px;max-width:calc(100% - 260px);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:13px;line-height:1.35}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px}
 .btnrow button{all:unset;cursor:pointer;border:1px solid var(--fg);border-radius:6px;padding:7px 12px;font-size:13px;color:var(--fg)}
 .btnrow button.primary{background:var(--fg);color:var(--panel)}
 .btnrow button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btnrow button[disabled]{opacity:.4;cursor:default}
 .why{margin:0;padding-left:18px;font-size:12.5px;color:var(--muted);line-height:1.55}
-@media (max-width:760px){.cap{max-width:calc(100% - 28px);bottom:58px}}
+@media (max-width:760px){.cap{max-width:calc(100% - 28px);bottom:64px}}
 @media (max-width:760px){
   .app{grid-template-columns:1fr;grid-template-rows:58vh auto;height:auto}
   main{order:-1;height:58vh}
@@ -93,7 +101,8 @@ canvas{display:block;width:100%;height:100%}
         <button type="button" data-v="rundad" aria-pressed="true">Rundad</button>
         <button type="button" data-v="fas" aria-pressed="false">Fas</button>
       </div>
-      <div class="row"><input type="range" id="rad" min="0.2" max="1.2" step="0.05" value="0.5" aria-label="Radie"><span class="val" id="radv">0,50 mm</span></div>
+      <p class="selinfo">Max 0,9 mm, så att kupol och skål alltid sitter på plana ytor och länkarna kan kopplas ihop.</p>
+      <div class="row"><input type="range" id="rad" min="0.2" max="0.9" step="0.05" value="0.5" aria-label="Radie"><span class="val" id="radv">0,50 mm</span></div>
     </fieldset>
 
     <fieldset>
@@ -106,14 +115,6 @@ canvas{display:block;width:100%;height:100%}
         <button type="button" id="selNone">Avmarkera</button>
       </div>
       <div class="swatches" id="mat"></div>
-    </fieldset>
-
-    <fieldset>
-      <legend>Sätt ihop, ta av och på</legend>
-      <div class="btnrow">
-        <button type="button" class="primary" id="demoBuild">Visa ihopsättning</button>
-        <button type="button" id="demoWear">Ta av och på</button>
-      </div>
     </fieldset>
 
     <fieldset>
@@ -142,16 +143,29 @@ canvas{display:block;width:100%;height:100%}
       <dt>Längd</dt><dd id="fLen">–</dd>
       <dt>Vikt i valt material</dt><dd id="fW">–</dd>
       <dt>Vikt i silver 925</dt><dd id="fAg">–</dd>
+      <dt id="fPriceL" hidden>Pris inkl. moms</dt><dd id="fPrice" hidden>–</dd>
     </dl>
+    <form id="orderForm" class="order-form">
+      <legend style="font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600">Skicka förfrågan</legend>
+      <input type="text" id="oName" name="name" placeholder="Namn" autocomplete="name" required>
+      <input type="email" id="oEmail" name="email" placeholder="E-post" autocomplete="email" required>
+      <textarea id="oMsg" name="message" rows="2" placeholder="Meddelande (valfritt)"></textarea>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+      <button type="submit" id="oSend">Skicka min konfiguration</button>
+      <p class="note" id="oStatus" aria-live="polite"></p>
+    </form>
     <p class="note">Förhandsvisning för att välja kantform och material. Printfilerna med gångjärn byggs separat när valet är gjort. Vikten är beräknad från modellens volym.</p>
   </aside>
   <main>
     <div class="cap" id="cap" hidden aria-live="polite"></div>
     <span class="tag" id="tag">kors + H · rundad 0,50 mm</span>
     <canvas id="c" aria-label="3D-vy av länkarna. Dra för att rotera, nyp eller scrolla för att zooma, klicka på en länk för att välja den."></canvas>
-    <div class="hud">
-      <button type="button" id="spin" data-spin aria-pressed="true">Snurra</button>
-      <button type="button" id="reset">Centrera</button>
+    <div class="hud" role="toolbar" aria-label="Visning">
+      <button type="button" class="ic" id="demoBuild" title="Visa ihopsättning" aria-label="Visa ihopsättning"><svg viewBox="0 0 24 24"><path d="M3 12h5M16 12h5M8 8v8M16 8v8M8 12h8"/><path d="M11 9l1-1 1 1M11 15l1 1 1-1"/></svg></button>
+      <button type="button" class="ic" id="demoWear" title="Ta av och på" aria-label="Ta av och på"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M17 3v3h-3"/></svg></button>
+      <button type="button" class="ic" id="randomize" title="Slumpa färger och material" aria-label="Slumpa färger och material"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/></svg></button>
+      <button type="button" class="ic" id="spin" data-spin aria-pressed="true" title="Snurra" aria-label="Snurra"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg></button>
+      <button type="button" class="ic" id="reset" title="Centrera" aria-label="Centrera"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
     </div>
   </main>
 </div>
@@ -184,6 +198,7 @@ function grainTex(base,line){
   for(let y=0;y<size;y+=2){g.strokeStyle=line;g.globalAlpha=0.08+r()*0.25;g.lineWidth=0.6+r()*1.6;g.beginPath();g.moveTo(0,y);for(let x=0;x<=size;x+=16)g.lineTo(x,y+Math.sin(x*0.03+y*0.11)*3);g.stroke();}
   g.globalAlpha=1;const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(0.06,0.06);t.colorSpace=THREE.SRGBColorSpace;return t;
 }
+const plaMat=c=>new THREE.MeshStandardMaterial({color:c,roughness:0.55});
 const MATS=[
   {id:'silver',name:'Silver 925',sw:'#cfd1d4',rho:10.36,m:()=>new THREE.MeshPhysicalMaterial({color:0xdcdee1,metalness:1,roughness:0.2})},
   {id:'gold',name:'Guld 18k',sw:'#e2bd64',rho:15.5,m:()=>new THREE.MeshPhysicalMaterial({color:0xe8c26a,metalness:1,roughness:0.22})},
@@ -199,9 +214,37 @@ const MATS=[
   {id:'cork',name:'Kork',sw:'#b88b5c',rho:1.0,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#b98c5d',['#7b5531','#d9b384','#5e3f22'],4200),roughness:0.95})},
   {id:'coffee',name:'Kaffe',sw:'#4c3427',rho:1.2,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#4b3426',['#2a1c13','#6e4e3a'],3000),roughness:0.85})},
   {id:'hemp',name:'Hampa',sw:'#aa9c78',rho:1.25,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#a99b78',['#6f6447','#c9bd99'],3000),roughness:0.85})},
+  {id:'pla-red',name:'PLA röd',sw:'#c8102e',rho:1.24,cheap:1,m:()=>plaMat(0xc8102e)},
+  {id:'pla-blue',name:'PLA blå',sw:'#0b5fb0',rho:1.24,cheap:1,m:()=>plaMat(0x0b5fb0)},
+  {id:'pla-yellow',name:'PLA gul',sw:'#fecc02',rho:1.24,cheap:1,m:()=>plaMat(0xfecc02)},
+  {id:'pla-green',name:'PLA grön',sw:'#009b48',rho:1.24,cheap:1,m:()=>plaMat(0x009b48)},
+  {id:'pla-white',name:'PLA vit',sw:'#f4f4f2',rho:1.24,cheap:1,m:()=>plaMat(0xf4f4f2)},
+  {id:'pla-black',name:'PLA svart',sw:'#1c1c1e',rho:1.24,cheap:1,m:()=>plaMat(0x1c1c1e)},
+  {id:'pla-orange',name:'PLA orange',sw:'#f57c00',rho:1.24,cheap:1,m:()=>plaMat(0xf57c00)},
+  {id:'rpetg-clear',name:'rPETG klar',sw:'#cfe3ea',rho:1.27,cheap:1,m:()=>new THREE.MeshPhysicalMaterial({color:0xd8eef4,roughness:0.15,transmission:0.6,thickness:3,ior:1.55})},
   {id:'carbon',name:'Kolfiber',sw:'#26272a',rho:1.3,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#232427',['#3a3c41','#101113'],2400),roughness:0.55})},
 ];
 
+// ---- prices and materials from the admin (/api/links/catalog) ----
+let CATALOG=null;
+async function loadCatalog(){
+  try{
+    const r=await fetch('/api/links/catalog');if(!r.ok)return;const c=await r.json();
+    const byId={};(c.materials||[]).forEach(m=>byId[m.id]=m);
+    // keep only materials that are active in the admin, take density and price from there
+    for(let i=MATS.length-1;i>=0;i--){const m=MATS[i],a=byId[m.id];if(!a){MATS.splice(i,1);continue}m.rho=+a.density||m.rho;m.name=a.name||m.name;m.cost=a}
+    CATALOG={showPrices:!!c.showPrices,settings:c.settings};
+    if(!MATS.find(m=>m.id===state.mat))state.mat=MATS[0]?.id;
+    renderSwatches();build();
+  }catch(e){}
+}
+function priceFor(volC,volH,links,matIdOf){
+  if(!CATALOG||!CATALOG.showPrices)return null;const s=CATALOG.settings;let cost=+s.fixed_per_piece;
+  for(let i=0;i<links;i++){const m=MATS.find(x=>x.id===matIdOf(i));if(!m||!m.cost)return null;const c=m.cost,cross=i%2===0;
+    const grams=(cross?volC:volH)*(+c.density);
+    cost+=grams/1000*(+c.cost_per_kg)*(1+s.waste_percent/100)+(c.family==='filament'?(cross?s.minutes_per_cross:s.minutes_per_h)/60*s.machine_sek_per_hour:0)+s.post_minutes_per_link/60*s.labour_sek_per_hour+(+c.fee_per_link||0)}
+  return cost*(1+s.markup_percent/100)*(1+s.vat_percent/100);
+}
 // ---- outline helpers ----
 function inset(pts,d){
   const n=pts.length,out=[];
@@ -277,6 +320,14 @@ let linkTotal=0;
 const selCache={};
 const selMat=id=>selCache[id]||(selCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2f6bff);m.emissiveIntensity=0.35;return m})());
 const matIdFor=i=>state.linkMats[i]||state.mat;
+const METAL_IDS=new Set(['silver','gold','rose','black','steel','bronze','titanium']);
+const layerTex=(()=>{const c=document.createElement('canvas');c.width=4;c.height=64;const g=c.getContext('2d');
+  for(let y=0;y<64;y++){const v=Math.round(128+110*Math.cos(y/8*2*Math.PI));g.fillStyle=`rgb(${v},${v},${v})`;g.fillRect(0,y,4,1)}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,1/(0.12*8));return t})();
+const sideCache={};
+function sideMat(id,base){const k=id+(base.emissive&&base.emissiveIntensity?'_'+base.emissive.getHexString():'');
+  return sideCache[k]||(sideCache[k]=(()=>{const m=base.clone();m.bumpMap=layerTex;m.bumpScale=0.9;if(m.map){m.map=m.map.clone();m.map.needsUpdate=true}return m})())}
+const meshMat=(id,base)=>METAL_IDS.has(id)?base:[base,sideMat(id,base)];
 const matCache={};const getMat=id=>matCache[id]||(matCache[id]=MATS.find(m=>m.id===id).m());
 let chain=new THREE.Group();scene.add(chain);
 
@@ -321,7 +372,7 @@ function build(){
   for(let i=0;i<links;i++){
     const isCross=i%2===0,g=new THREE.Group();
     const id=matIdFor(i),mat=state.fresh.has(i)?freshMat(id):state.sel.has(i)?selMat(id):getMat(id);
-    const mesh=new THREE.Mesh(isCross?gc:gh,mat);mesh.castShadow=true;mesh.userData.idx=i;g.add(mesh);g.userData.idx=i;
+    const mesh=new THREE.Mesh(isCross?gc:gh,meshMat(id,mat));mesh.castShadow=true;mesh.userData.idx=i;g.add(mesh);g.userData.idx=i;
     if(isCross&&state.domes){
       for(const xk of [XK-S/2,S/2-XK])for(const side of [-1,1]){
         const d=new THREE.Mesh(gd,mat);d.userData.idx=i;d.position.set(xk,side*A/2,ZC-A/2);d.rotation.z=side>0?0:Math.PI;g.add(d);
@@ -342,6 +393,9 @@ function build(){
   document.getElementById('fLen').textContent=`${fmt(len/10,1)} cm`;
   document.getElementById('fW').textContent=`${fmt(wMix,1)} g`;
   document.getElementById('fAg').textContent=`${vol*10.36|0} g`;
+  const price=priceFor(vC,vH,links,matIdFor);document.getElementById('fPriceL').hidden=document.getElementById('fPrice').hidden=price==null;
+  if(price!=null)document.getElementById('fPrice').textContent=`${Math.round(price/10)*10} kr`;
+  lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),domes:state.domes};lastPrice=price;
   document.getElementById('extraInfo').innerHTML=state.extra?`<b>${2*state.extra} länkar tillagda</b> (+${fmt(state.extra*(SPAN_C+SPAN_H)/10,1)} cm). De klickas in i sista leden.`:'Köp till länkar när du vill. De klickas in i sista leden.';
   document.getElementById('removePair').disabled=!state.extra;
   document.getElementById('tag').textContent=`kors + H · ${state.edge}${state.edge==='skarp'?'':' '+fmt(state.rad,2)+' mm'} · ${used.size>1?'blandade material':MATS.find(m=>m.id===[...used][0]).name}`;
@@ -357,13 +411,13 @@ function run(steps,done){
   if(state.kind==='rakt'){state.kind='armband';document.querySelectorAll('#kind button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v==='armband')));updLen()}
   anim={steps,i:0,t0:performance.now(),done};controls.autoRotate=false;document.getElementById('spin').setAttribute('aria-pressed','false');
   steps[0].start&&steps[0].start();caption(steps[0].cap);
-  document.querySelectorAll('#demoBuild,#demoWear,#addPair,#removePair').forEach(b=>b.disabled=true);
+  document.querySelectorAll('#demoBuild,#demoWear,#randomize,#addPair,#removePair').forEach(b=>b.disabled=true);
 }
 function tick(now){
   if(anim){
     const st=anim.steps[anim.i],t=Math.min(1,(now-anim.t0)/st.dur);st.f&&st.f(ease(t),t);
     if(t>=1){st.end&&st.end();anim.i++;anim.t0=now;
-      if(anim.i>=anim.steps.length){const d=anim.done;anim=null;caption('');document.querySelectorAll('#demoBuild,#demoWear,#addPair').forEach(b=>b.disabled=false);document.getElementById('removePair').disabled=!state.extra;d&&d()}
+      if(anim.i>=anim.steps.length){const d=anim.done;anim=null;caption('');document.querySelectorAll('#demoBuild,#demoWear,#randomize,#addPair').forEach(b=>b.disabled=false);document.getElementById('removePair').disabled=!state.extra;d&&d()}
       else{const nx=anim.steps[anim.i];nx.start&&nx.start();nx.cap!==undefined&&caption(nx.cap)}}
   }
   for(const g of linkObjs){const p=g.userData.popT;if(!p)continue;const k=(now-p)/320;if(k>=1){g.scale.setScalar(1);g.userData.popT=0}else g.scale.setScalar(1+0.07*Math.sin(k*Math.PI))}
@@ -406,6 +460,11 @@ function addPair(){
   ],()=>{state.fresh.clear();build()});
 }
 document.getElementById('demoBuild').onclick=demoBuild;
+document.getElementById('randomize').onclick=()=>{
+  if(anim)return;const pool=MATS.map(m=>m.id);const k=2+Math.floor(Math.random()*3);
+  const pick=[...pool].sort(()=>Math.random()-.5).slice(0,k);   // 2–4 materials, mixed per link
+  state.linkMats=Array.from({length:linkTotal},()=>pick[Math.floor(Math.random()*pick.length)]);state.sel.clear();build();
+};
 document.getElementById('demoWear').onclick=demoWear;
 document.getElementById('addPair').onclick=addPair;
 document.getElementById('removePair').onclick=()=>{if(state.extra>0&&!anim){state.extra--;build();camTo(ringR(),500)}};
@@ -428,8 +487,18 @@ document.getElementById('len').addEventListener('input',e=>{state.len=+e.target.
 document.getElementById('len').addEventListener('change',frame);
 document.getElementById('rad').addEventListener('input',e=>{state.rad=+e.target.value;document.getElementById('radv').textContent=`${state.rad.toFixed(2).replace('.',',')} mm`;build()});
 document.getElementById('domes').addEventListener('change',e=>{state.domes=e.target.checked;build()});
+let lastConfig=null,lastPrice=null;
 const mw=document.getElementById('mat');
-for(const m of MATS){const b=document.createElement('button');b.type='button';b.className='sw';b.setAttribute('aria-pressed',String(m.id===state.mat));b.innerHTML=`<i style="background:${m.sw}"></i>${m.name}`;b.dataset.id=m.id;b.onclick=()=>{if(state.sel.size){for(const k of state.sel)state.linkMats[k]=m.id}else{state.mat=m.id;state.linkMats=[]}build()};mw.appendChild(b)}
+function renderSwatches(){mw.innerHTML='';for(const m of MATS){const b=document.createElement('button');b.type='button';b.className='sw';b.setAttribute('aria-pressed',String(m.id===state.mat));b.innerHTML=`<i style="background:${m.sw}"></i>${m.name}`;b.dataset.id=m.id;b.onclick=()=>{if(state.sel.size){for(const k of state.sel)state.linkMats[k]=m.id}else{state.mat=m.id;state.linkMats=[]}build()};mw.appendChild(b)}}
+renderSwatches();
+document.getElementById('orderForm').addEventListener('submit',async e=>{
+  e.preventDefault();const f=e.target,st=document.getElementById('oStatus'),btn=document.getElementById('oSend');
+  btn.disabled=true;st.textContent='Skickar…';
+  try{const r=await fetch('/api/links/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name.value,email:f.email.value,message:f.message.value,website:f.website.value,config:lastConfig,total_sek:lastPrice?Math.round(lastPrice):null})});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Något gick fel');
+    st.textContent='Tack! Peter Hoff Design hör av sig.';f.reset();
+  }catch(err){st.textContent=err.message}finally{btn.disabled=false}
+});
 function updSelUI(){
   const n=state.sel.size,info=document.getElementById('selinfo');
   info.innerHTML=n?`<b>${n} ${n===1?'länk vald':'länkar valda'}</b>. Välj material för ${n===1?'den':'dem'}.`:'Klicka på en länk för att ge den eget material. Skift-klick väljer flera.';
@@ -459,7 +528,7 @@ canvas.addEventListener('pointerup',e=>{
 document.getElementById('spin').onclick=e=>{controls.autoRotate=!controls.autoRotate;e.target.setAttribute('aria-pressed',String(controls.autoRotate))};
 document.getElementById('reset').onclick=frame;
 
-resize();build();frame();
+resize();build();frame();loadCatalog();
 renderer.setAnimationLoop(now=>{tick(now);controls.update();renderer.render(scene,camera)});
 </script>
 

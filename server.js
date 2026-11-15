@@ -10,6 +10,8 @@ app.use(apiApp)
 
 app.get('/project/*',   (_, res) => res.sendFile(path.join(__dirname, 'public/index.html')))
 app.get('/admin',       (_, res) => res.sendFile(path.join(__dirname, 'public/admin.html')))
+app.get('/admin-links', (_, res) => res.sendFile(path.join(__dirname, 'public/admin-links.html')))
+app.get('/links',       (_, res) => res.sendFile(path.join(__dirname, 'public/links/index.html')))
 app.get('/admin-login', (_, res) => res.sendFile(path.join(__dirname, 'public/admin-login.html')))
 
 const PORT = process.env.PORT || 3000

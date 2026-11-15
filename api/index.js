@@ -11,8 +11,10 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100
 const supabase = require('../lib/supabase')
 
 // Allowed admin emails (comma-separated in env)
+// tolerate stray quotes and literal "\n" that sometimes end up in the env value
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
-  .split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  .replace(/\\n/g, ',').replace(/["']/g, '')
+  .split(/[,\s]+/).map(e => e.trim().toLowerCase()).filter(Boolean)
 
 // JSON body for non-multipart requests
 app.use((req, res, next) => {
@@ -188,6 +190,96 @@ app.put('/api/admin/projects/:id/images', requireAdmin, wrap(async (req, res) =>
   if (!Array.isArray(images)) return res.status(400).json({ error: 'images array required' })
   const updated = await db.updateProject(req.params.id, { images })
   res.json(updated)
+}))
+
+// ── Links (cross + H link configurator) ─────────────────────────────────────
+const LINK_MATERIAL_FIELDS = ['name','family','swatch','density','cost_per_kg','fee_per_link','supplier','url','notes','estimated','active','sort']
+const LINK_SETTING_FIELDS  = ['machine_sek_per_hour','minutes_per_cross','minutes_per_h','labour_sek_per_hour','post_minutes_per_link','waste_percent','fixed_per_piece','markup_percent','vat_percent','show_prices']
+const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] !== undefined).map(k => [k, obj[k]]))
+
+// public: active materials + pricing settings (prices only when show_prices is on)
+app.get('/api/links/catalog', wrap(async (req, res) => {
+  const [{ data: mats, error: e1 }, { data: set, error: e2 }] = await Promise.all([
+    supabase.from('links_materials').select('*').eq('active', true).order('sort'),
+    supabase.from('links_settings').select('*').eq('id', 1).single()
+  ])
+  if (e1) throw e1; if (e2) throw e2
+  res.set('Cache-Control', 'public, max-age=60')
+  if (!set.show_prices) return res.json({ showPrices: false, materials: mats.map(m => pick(m, ['id','name','family','swatch','density'])) })
+  res.json({ showPrices: true, settings: pick(set, LINK_SETTING_FIELDS), materials: mats.map(m => pick({ id: m.id, ...m }, ['id', ...LINK_MATERIAL_FIELDS])) })
+}))
+
+// public: send an enquiry / order request from the configurator
+const recentOrders = new Map()
+app.post('/api/links/orders', wrap(async (req, res) => {
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'local'
+  const now = Date.now(), last = recentOrders.get(ip) || 0
+  if (now - last < 20000) return res.status(429).json({ error: 'Vänta en stund innan du skickar igen.' })
+  const { name, email, message, config, total_sek, website } = req.body || {}
+  if (website) return res.json({ ok: true })                       // honeypot
+  if (!name || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: 'Fyll i namn och en giltig e-postadress.' })
+  if (!config || typeof config !== 'object' || JSON.stringify(config).length > 20000) return res.status(400).json({ error: 'Konfigurationen saknas.' })
+  recentOrders.set(ip, now)
+  const { error } = await supabase.from('links_orders').insert({
+    name: String(name).slice(0, 120), email: String(email).slice(0, 200), message: String(message || '').slice(0, 2000),
+    config, total_sek: Number.isFinite(+total_sek) ? +total_sek : null
+  })
+  if (error) throw error
+  res.json({ ok: true })
+}))
+
+// admin: materials
+app.get('/api/admin/links/materials', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_materials').select('*').order('sort')
+  if (error) throw error
+  res.json(data)
+}))
+app.post('/api/admin/links/materials', requireAdmin, wrap(async (req, res) => {
+  const b = req.body || {}
+  const id = String(b.id || b.name || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  if (!id || !b.name || !b.density) return res.status(400).json({ error: 'Namn och densitet krävs' })
+  const { data, error } = await supabase.from('links_materials').insert({ id, ...pick(b, LINK_MATERIAL_FIELDS) }).select().single()
+  if (error) throw error
+  res.json(data)
+}))
+app.put('/api/admin/links/materials/:id', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_materials')
+    .update({ ...pick(req.body || {}, LINK_MATERIAL_FIELDS), updated_at: new Date().toISOString() })
+    .eq('id', req.params.id).select().single()
+  if (error) throw error
+  res.json(data)
+}))
+app.delete('/api/admin/links/materials/:id', requireAdmin, wrap(async (req, res) => {
+  const { error } = await supabase.from('links_materials').delete().eq('id', req.params.id)
+  if (error) throw error
+  res.json({ ok: true })
+}))
+
+// admin: pricing settings
+app.get('/api/admin/links/settings', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_settings').select('*').eq('id', 1).single()
+  if (error) throw error
+  res.json(data)
+}))
+app.put('/api/admin/links/settings', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_settings')
+    .update({ ...pick(req.body || {}, LINK_SETTING_FIELDS), updated_at: new Date().toISOString() })
+    .eq('id', 1).select().single()
+  if (error) throw error
+  res.json(data)
+}))
+
+// admin: enquiries / orders
+app.get('/api/admin/links/orders', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_orders').select('*').order('created_at', { ascending: false }).limit(500)
+  if (error) throw error
+  res.json(data)
+}))
+app.put('/api/admin/links/orders/:id', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_orders')
+    .update(pick(req.body || {}, ['status', 'admin_notes'])).eq('id', req.params.id).select().single()
+  if (error) throw error
+  res.json(data)
 }))
 
 module.exports = app

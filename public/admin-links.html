@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Links admin — Peter Hoff Design</title>
+<link rel="icon" href="/phd-logo.png">
+<style>
+:root{--bg:#fff;--fg:#111;--muted:#888;--line:#e4e4e4;--hover:#f5f5f5;--ok:#1a7f37;--warn:#b35900;--bad:#b42318}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 "Helvetica Neue",Helvetica,Arial,sans-serif}
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+header img{height:36px}
+header h1{font-size:18px;font-weight:400;margin:0}
+header nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+a.btn,button.btn{all:unset;cursor:pointer;border:1px solid var(--fg);border-radius:4px;padding:6px 12px;font-size:13px}
+button.btn.primary{background:var(--fg);color:var(--bg)}
+button.btn:focus-visible,a.btn:focus-visible{outline:2px solid #2f6bff;outline-offset:2px}
+main{padding:20px;max-width:1280px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
+.tabs button{all:unset;cursor:pointer;padding:8px 14px;border-bottom:2px solid transparent;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--fg);border-color:var(--fg)}
+section[hidden]{display:none}
+h2{font-size:15px;font-weight:600;margin:0 0 10px}
+p.help{color:var(--muted);margin:0 0 14px;max-width:70ch}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:middle;white-space:nowrap}
+th{font-weight:600;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;background:#fafafa}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+input[type=text],input[type=number],input[type=url],select,textarea{font:inherit;border:1px solid var(--line);border-radius:3px;padding:4px 6px;background:#fff;color:var(--fg)}
+input[type=number]{width:90px;text-align:right}
+input.w-name{width:150px} input.w-url{width:160px} input.w-sup{width:140px}
+input[type=color]{width:34px;height:26px;padding:0;border:1px solid var(--line);border-radius:3px;background:none}
+tr.dirty td{background:#fffbe6}
+.pill{display:inline-block;border-radius:999px;padding:1px 8px;font-size:11.5px;border:1px solid var(--line)}
+.pill.est{color:var(--warn);border-color:#f0c48a}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px 18px;max-width:900px}
+.grid label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+.grid label input{width:100%;text-align:left}
+.toggle{display:flex;gap:8px;align-items:center;margin:16px 0}
+.msg{position:fixed;right:16px;bottom:16px;background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:4px;font-size:13px}
+.order{border:1px solid var(--line);border-radius:4px;padding:12px 14px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:8px 16px}
+.order .meta{color:var(--muted);font-size:12.5px}
+.order pre{margin:0;font:12px/1.4 ui-monospace,Menlo,monospace;white-space:pre-wrap;color:#333}
+.order textarea{width:100%;min-height:44px}
+.empty{color:var(--muted);padding:20px 0}
+.err{color:var(--bad)}
+</style>
+</head>
+<body>
+<header>
+  <a href="/" aria-label="Peter Hoff Design"><img src="/phd-logo.png" alt="Peter Hoff Design"></a>
+  <h1>Links admin</h1>
+  <nav>
+    <a class="btn" href="/admin">Projekt</a>
+    <a class="btn" href="/links" target="_blank" rel="noopener">Öppna /links ↗</a>
+  </nav>
+</header>
+<main>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="materials">Material och priser</button>
+    <button role="tab" aria-selected="false" data-tab="costs">Kostnader och påslag</button>
+    <button role="tab" aria-selected="false" data-tab="calc">Priskalkyl</button>
+    <button role="tab" aria-selected="false" data-tab="orders">Förfrågningar <span id="orderCount"></span></button>
+  </div>
+
+  <section id="tab-materials">
+    <h2>Material och priser</h2>
+    <p class="help">Pris per kg är vad materialet kostar er. För filament: pris per rulle omräknat till kg. För metall: pris per kg färdig metall, plus avgift per länk för gjutning eller print-on-demand. Ändrade rader blir gula, tryck Spara på raden. Bocka ur "Aktiv" för att dölja ett material på /links.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Färg</th><th>Namn</th><th>Typ</th><th class="num">Densitet g/cm³</th><th class="num">Kr per kg</th><th class="num">Avgift kr/länk</th><th>Leverantör</th><th>Länk</th><th>Uppskattat</th><th>Aktiv</th><th class="num">Ordning</th><th></th></tr></thead>
+      <tbody id="matBody"><tr><td colspan="12" class="empty">Laddar…</td></tr></tbody>
+    </table></div>
+    <p style="margin-top:12px"><button class="btn" id="addMat">+ Nytt material</button></p>
+  </section>
+
+  <section id="tab-costs" hidden>
+    <h2>Kostnader och påslag</h2>
+    <p class="help">Används för att räkna fram priset per länk och per smycke. Printtid är per länk på er egen printer. Efterarbete är slipning, kontroll och montering per länk.</p>
+    <form id="setForm" class="grid">
+      <label>Maskinkostnad, kr per timme<input type="number" step="0.5" name="machine_sek_per_hour"></label>
+      <label>Printtid kors, minuter<input type="number" step="0.5" name="minutes_per_cross"></label>
+      <label>Printtid H, minuter<input type="number" step="0.5" name="minutes_per_h"></label>
+      <label>Arbetskostnad, kr per timme<input type="number" step="10" name="labour_sek_per_hour"></label>
+      <label>Efterarbete per länk, minuter<input type="number" step="0.5" name="post_minutes_per_link"></label>
+      <label>Spill och misslyckade printar, %<input type="number" step="1" name="waste_percent"></label>
+      <label>Fast kostnad per smycke, kr (förpackning, lås)<input type="number" step="5" name="fixed_per_piece"></label>
+      <label>Påslag, %<input type="number" step="5" name="markup_percent"></label>
+      <label>Moms, %<input type="number" step="1" name="vat_percent"></label>
+    </form>
+    <label class="toggle"><input type="checkbox" id="showPrices"> Visa priser för besökare på /links</label>
+    <button class="btn primary" id="saveSet">Spara</button>
+  </section>
+
+  <section id="tab-calc" hidden>
+    <h2>Priskalkyl</h2>
+    <p class="help">Räknat med massiva länkar 18 × 18 × 6 mm (kors 1,05 cm³, H 1,47 cm³ med 0,5 mm rundning). Armband 18 cm = 14 länkar, halsband 45 cm = 34 länkar. Priser inklusive moms.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Material</th><th class="num">Gram per kors</th><th class="num">Gram per H</th><th class="num">Kostnad kors</th><th class="num">Kostnad H</th><th class="num">Pris per länk</th><th class="num">Armband 18 cm</th><th class="num">Halsband 45 cm</th><th class="num">+2 länkar</th></tr></thead>
+      <tbody id="calcBody"></tbody>
+    </table></div>
+  </section>
+
+  <section id="tab-orders" hidden>
+    <h2>Förfrågningar från /links</h2>
+    <div id="orders"><p class="empty">Laddar…</p></div>
+  </section>
+</main>
+<div class="msg" id="msg" hidden></div>
+
+<script>
+const VOL={cross:1.05,h:1.47}, N_BRACELET=14, N_NECKLACE=34
+const STATUSES=['ny','kontaktad','offert','beställd','levererad','avbruten']
+let mats=[],settings=null,orders=[]
+const $=s=>document.querySelector(s)
+const kr=v=>Math.round(v).toLocaleString('sv-SE')+' kr'
+function toast(t,bad){const m=$('#msg');m.textContent=t;m.style.background=bad?'#b42318':'';m.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>m.hidden=true,2600)}
+async function api(path,opt={}){
+  const r=await fetch(path,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...opt})
+  if(r.status===401||r.status===403){location.href='/admin-login';throw new Error('login')}
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||r.statusText);return j
+}
+// tabs
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));document.querySelectorAll('main section').forEach(s=>s.hidden=s.id!=='tab-'+b.dataset.tab);if(b.dataset.tab==='calc')renderCalc()})
+
+// ---- materials ----
+function matRow(m,isNew){
+  const tr=document.createElement('tr');tr.dataset.id=m.id||''
+  tr.innerHTML=`<td><input type="color" data-k="swatch" value="${m.swatch||'#cccccc'}"></td>
+  <td><input type="text" class="w-name" data-k="name" value="${esc(m.name||'')}"></td>
+  <td><select data-k="family"><option value="filament">Filament</option><option value="metal">Metall</option></select></td>
+  <td class="num"><input type="number" step="0.01" data-k="density" value="${m.density??''}"></td>
+  <td class="num"><input type="number" step="1" data-k="cost_per_kg" value="${m.cost_per_kg??0}"></td>
+  <td class="num"><input type="number" step="1" data-k="fee_per_link" value="${m.fee_per_link??0}"></td>
+  <td><input type="text" class="w-sup" data-k="supplier" value="${esc(m.supplier||'')}"></td>
+  <td><input type="url" class="w-url" data-k="url" value="${esc(m.url||'')}" placeholder="https://"></td>
+  <td><input type="checkbox" data-k="estimated" ${m.estimated!==false?'checked':''}></td>
+  <td><input type="checkbox" data-k="active" ${m.active!==false?'checked':''}></td>
+  <td class="num"><input type="number" step="1" data-k="sort" value="${m.sort??0}" style="width:60px"></td>
+  <td><button class="btn primary" data-act="save">Spara</button> <button class="btn" data-act="del">Ta bort</button></td>`
+  tr.querySelector('[data-k=family]').value=m.family||'filament'
+  if(m.notes)tr.title=m.notes
+  tr.addEventListener('input',()=>tr.classList.add('dirty'))
+  tr.querySelector('[data-act=save]').onclick=()=>saveMat(tr,isNew)
+  tr.querySelector('[data-act=del]').onclick=()=>delMat(tr,isNew)
+  if(isNew)tr.classList.add('dirty')
+  return tr
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function readRow(tr){const o={};tr.querySelectorAll('[data-k]').forEach(i=>{const k=i.dataset.k;o[k]=i.type==='checkbox'?i.checked:(i.type==='number'?(i.value===''?null:+i.value):i.value)});return o}
+async function saveMat(tr,isNew){
+  const body=readRow(tr)
+  if(!body.name||!body.density){toast('Namn och densitet krävs',true);return}
+  try{
+    const saved=isNew?await api('/api/admin/links/materials',{method:'POST',body:JSON.stringify(body)}):await api('/api/admin/links/materials/'+encodeURIComponent(tr.dataset.id),{method:'PUT',body:JSON.stringify(body)})
+    const i=mats.findIndex(m=>m.id===saved.id);if(i>=0)mats[i]=saved;else mats.push(saved)
+    tr.replaceWith(matRow(saved,false));toast('Sparat: '+saved.name)
+  }catch(e){toast(e.message,true)}
+}
+async function delMat(tr,isNew){
+  if(isNew){tr.remove();return}
+  const btn=tr.querySelector('[data-act=del]')
+  if(btn.dataset.confirm!=='1'){btn.dataset.confirm='1';btn.textContent='Säker?';setTimeout(()=>{btn.dataset.confirm='';btn.textContent='Ta bort'},3000);return}
+  try{await api('/api/admin/links/materials/'+encodeURIComponent(tr.dataset.id),{method:'DELETE'});mats=mats.filter(m=>m.id!==tr.dataset.id);tr.remove();toast('Borttaget')}catch(e){toast(e.message,true)}
+}
+$('#addMat').onclick=()=>$('#matBody').appendChild(matRow({family:'filament',density:1.24,cost_per_kg:250,estimated:true,active:true,sort:50},true))
+function renderMats(){const b=$('#matBody');b.innerHTML='';mats.forEach(m=>b.appendChild(matRow(m,false)));if(!mats.length)b.innerHTML='<tr><td colspan="12" class="empty">Inga material än.</td></tr>'}
+
+// ---- settings ----
+function fillSettings(){const f=$('#setForm');for(const el of f.elements)if(el.name&&settings[el.name]!=null)el.value=settings[el.name];$('#showPrices').checked=!!settings.show_prices}
+$('#saveSet').onclick=async()=>{
+  const body={show_prices:$('#showPrices').checked};for(const el of $('#setForm').elements)if(el.name)body[el.name]=+el.value
+  try{settings=await api('/api/admin/links/settings',{method:'PUT',body:JSON.stringify(body)});toast('Kostnader sparade')}catch(e){toast(e.message,true)}
+}
+
+// ---- price calculation (same formula as /links) ----
+function linkCost(m,s,kind){
+  const grams=VOL[kind]*m.density,mat=grams/1000*m.cost_per_kg*(1+s.waste_percent/100)
+  const machine=m.family==='filament'?(kind==='cross'?s.minutes_per_cross:s.minutes_per_h)/60*s.machine_sek_per_hour:0
+  const post=s.post_minutes_per_link/60*s.labour_sek_per_hour
+  return {grams,cost:mat+machine+post+(+m.fee_per_link||0)}
+}
+function priceOf(m,s,n){
+  const c=linkCost(m,s,'cross').cost,h=linkCost(m,s,'h').cost
+  const cost=Math.ceil(n/2)*c+Math.floor(n/2)*h+s.fixed_per_piece
+  return cost*(1+s.markup_percent/100)*(1+s.vat_percent/100)
+}
+function renderCalc(){
+  if(!settings)return;const s=settings,b=$('#calcBody');b.innerHTML=''
+  mats.filter(m=>m.active).forEach(m=>{
+    const c=linkCost(m,s,'cross'),h=linkCost(m,s,'h'),f=(1+s.markup_percent/100)*(1+s.vat_percent/100)
+    const pair=(c.cost+h.cost)*f
+    const tr=document.createElement('tr')
+    tr.innerHTML=`<td><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${m.swatch};vertical-align:-1px;margin-right:6px;border:1px solid #ddd"></span>${esc(m.name)} ${m.estimated?'<span class="pill est">uppskattat</span>':''}</td>
+    <td class="num">${c.grams.toFixed(1)}</td><td class="num">${h.grams.toFixed(1)}</td>
+    <td class="num">${kr(c.cost)}</td><td class="num">${kr(h.cost)}</td><td class="num">${kr(pair/2)}</td>
+    <td class="num"><b>${kr(priceOf(m,s,N_BRACELET))}</b></td><td class="num"><b>${kr(priceOf(m,s,N_NECKLACE))}</b></td><td class="num">${kr(pair)}</td>`
+    b.appendChild(tr)
+  })
+}
+
+// ---- orders ----
+function renderOrders(){
+  const box=$('#orders');box.innerHTML='';$('#orderCount').textContent=orders.filter(o=>o.status==='ny').length?`(${orders.filter(o=>o.status==='ny').length} nya)`:''
+  if(!orders.length){box.innerHTML='<p class="empty">Inga förfrågningar än. De dyker upp här när någon skickar sin konfiguration från /links.</p>';return}
+  orders.forEach(o=>{
+    const d=document.createElement('div');d.className='order'
+    const c=o.config||{}
+    const summary=[`${c.kind||''} ${c.lengthCm?c.lengthCm+' cm':''}`,`${c.links||'?'} länkar`,c.edge?`kant: ${c.edge}${c.radius?' '+c.radius+' mm':''}`:'',c.materials?'material: '+c.materials:''].filter(Boolean).join(' · ')
+    d.innerHTML=`<div><b>${esc(o.name)}</b> · <span>${esc(o.email)}</span><div class="meta">${new Date(o.created_at).toLocaleString('sv-SE')} ${o.total_sek?'· '+kr(o.total_sek):''}</div>
+      <pre>${esc(summary)}${o.message?'\n\n'+esc(o.message):''}</pre></div>
+      <div><select data-k="status">${STATUSES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div style="grid-column:1/-1"><textarea data-k="admin_notes" placeholder="Anteckningar">${esc(o.admin_notes||'')}</textarea>
+      <button class="btn" data-act="save">Spara</button></div>`
+    d.querySelector('[data-act=save]').onclick=async()=>{try{const u=await api('/api/admin/links/orders/'+o.id,{method:'PUT',body:JSON.stringify({status:d.querySelector('[data-k=status]').value,admin_notes:d.querySelector('[data-k=admin_notes]').value})});Object.assign(o,u);renderOrders();toast('Sparat')}catch(e){toast(e.message,true)}}
+    box.appendChild(d)
+  })
+}
+
+(async()=>{
+  try{
+    [mats,settings,orders]=await Promise.all([api('/api/admin/links/materials'),api('/api/admin/links/settings'),api('/api/admin/links/orders')])
+    renderMats();fillSettings();renderOrders()
+  }catch(e){if(e.message!=='login')$('#matBody').innerHTML=`<tr><td colspan="12" class="err">Kunde inte ladda: ${esc(e.message)}</td></tr>`}
+})()
+</script>
+</body>
+</html>

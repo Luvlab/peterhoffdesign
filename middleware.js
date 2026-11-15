@@ -8,7 +8,7 @@
  *  • /admin (valid phd_auth cookie)      → let through; Vercel rewrite serves admin.html
  */
 
-export const config = { matcher: '/admin' }
+export const config = { matcher: ['/admin', '/admin-links'] }
 
 function getCookie(request, name) {
   const header = request.headers.get('cookie') || ''
