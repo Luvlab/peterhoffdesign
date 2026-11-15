@@ -39,6 +39,11 @@ legend{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--
 .sw[aria-pressed="true"]{color:var(--fg);font-weight:600}
 .sw[aria-pressed="true"] i{outline:2px solid var(--fg);outline-offset:2px}
 .chk{display:flex;gap:8px;align-items:center;font-size:13px}
+.selbar{display:flex;flex-wrap:wrap;gap:6px}
+.selbar button{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--fg)}
+.selbar button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.selinfo{font-size:12px;color:var(--muted);margin:0;line-height:1.4}
+.selinfo b{color:var(--fg);font-weight:600}
 .facts{border-top:1px solid var(--line);padding-top:14px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13px}
 .facts dt{color:var(--muted)} .facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
 .note{font-size:11.5px;color:var(--muted);line-height:1.45;margin:0}
@@ -84,7 +89,14 @@ canvas{display:block;width:100%;height:100%}
     </fieldset>
 
     <fieldset>
-      <legend>Material</legend>
+      <legend>Material och färg</legend>
+      <p class="selinfo" id="selinfo">Klicka på en länk för att ge den eget material. Skift-klick väljer flera.</p>
+      <div class="selbar">
+        <button type="button" id="selCross">Alla kors</button>
+        <button type="button" id="selH">Alla H</button>
+        <button type="button" id="selAll">Alla länkar</button>
+        <button type="button" id="selNone">Avmarkera</button>
+      </div>
       <div class="swatches" id="mat"></div>
     </fieldset>
 
@@ -103,7 +115,7 @@ canvas{display:block;width:100%;height:100%}
   </aside>
   <main>
     <span class="tag" id="tag">kors + H · rundad 0,50 mm</span>
-    <canvas id="c" aria-label="3D-vy av länkarna. Dra för att rotera, nyp eller scrolla för att zooma."></canvas>
+    <canvas id="c" aria-label="3D-vy av länkarna. Dra för att rotera, nyp eller scrolla för att zooma, klicka på en länk för att välja den."></canvas>
     <div class="hud">
       <button type="button" id="spin" data-spin aria-pressed="true">Snurra</button>
       <button type="button" id="reset">Centrera</button>
@@ -222,7 +234,11 @@ const cam=key.shadow.camera;cam.left=cam.bottom=-200;cam.right=cam.top=200;cam.n
 function bgFromTheme(){const v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e4e2de';scene.background=new THREE.Color(v);}
 bgFromTheme();
 // ---- state ----
-const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true};
+const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[]};
+let linkTotal=0;
+const selCache={};
+const selMat=id=>selCache[id]||(selCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2f6bff);m.emissiveIntensity=0.35;return m})());
+const matIdFor=i=>state.linkMats[i]||state.mat;
 const matCache={};const getMat=id=>matCache[id]||(matCache[id]=MATS.find(m=>m.id===id).m());
 let chain=new THREE.Group();scene.add(chain);
 
@@ -241,7 +257,6 @@ function ringRadius(n){
 function build(){
   scene.remove(chain);(chain.userData.geos||[]).forEach(g=>g.dispose());chain=new THREE.Group();
   const gc=linkGeo(CROSS,state.edge,state.rad),gh=linkGeo(HSHAPE,state.edge,state.rad),gd=domeGeo();
-  const mat=getMat(state.mat);
   const {n,cm}=linkCount();
   // pivots
   const piv=[];
@@ -255,10 +270,11 @@ function build(){
   for(let i=0;i<links;i++){
     const isCross=i%2===0;const p0=piv[i],p1=piv[i+1];
     const g=new THREE.Group();
-    const mesh=new THREE.Mesh(isCross?gc:gh,mat);mesh.castShadow=true;g.add(mesh);
+    const mat=state.sel.has(i)?selMat(matIdFor(i)):getMat(matIdFor(i));
+    const mesh=new THREE.Mesh(isCross?gc:gh,mat);mesh.castShadow=true;mesh.userData.idx=i;g.add(mesh);g.userData.idx=i;
     if(isCross&&state.domes){
       for(const xk of [XK-S/2,S/2-XK])for(const side of [-1,1]){
-        const d=new THREE.Mesh(gd,mat);d.position.set(xk,side*A/2,ZC-A/2);d.rotation.z=side>0?0:Math.PI;g.add(d);
+        const d=new THREE.Mesh(gd,mat);d.userData.idx=i;d.position.set(xk,side*A/2,ZC-A/2);d.rotation.z=side>0?0:Math.PI;g.add(d);
       }
     }
     // place: local x along chord, local y = width (world Y), local z = radial
@@ -274,14 +290,17 @@ function build(){
   chain.position.y-=box.min.y;chain.position.x-=(box.min.x+box.max.x)/2;chain.position.z-=(box.min.z+box.max.z)/2;
   scene.add(chain);
   // facts
+  linkTotal=links;for(const k of [...state.sel])if(k>=links)state.sel.delete(k);
   const nC=Math.ceil(links/2),nH=Math.floor(links/2);
-  const vol=(nC*volume(gc)+nH*volume(gh))/1000; // cm3
-  const rho=MATS.find(m=>m.id===state.mat).rho;
+  const vC=volume(gc)/1000,vH=volume(gh)/1000;
+  const vol=nC*vC+nH*vH; // cm3
+  let wMix=0;const used=new Set();for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=(i%2?vH:vC)*MATS.find(m=>m.id===id).rho}
   document.getElementById('fLinks').textContent=`${links} (${nC} kors, ${nH} H)`;
   document.getElementById('fLen').textContent=`${(cm).toFixed(1).replace('.',',')} cm`;
-  document.getElementById('fW').textContent=`${(vol*rho).toFixed(1).replace('.',',')} g`;
+  document.getElementById('fW').textContent=`${wMix.toFixed(1).replace('.',',')} g`;
   document.getElementById('fAg').textContent=`${(vol*10.36).toFixed(0)} g`;
-  document.getElementById('tag').textContent=`kors + H · ${state.edge}${state.edge==='skarp'?'':' '+state.rad.toFixed(2).replace('.',',')+' mm'} · ${MATS.find(m=>m.id===state.mat).name}`;
+  document.getElementById('tag').textContent=`kors + H · ${state.edge}${state.edge==='skarp'?'':' '+state.rad.toFixed(2).replace('.',',')+' mm'} · ${used.size>1?'blandade material':MATS.find(m=>m.id===[...used][0]).name}`;
+  updSelUI();
   chain.userData.geos=[gc,gh,gd];
 }
 function frame(){
@@ -304,7 +323,33 @@ document.getElementById('len').addEventListener('change',frame);
 document.getElementById('rad').addEventListener('input',e=>{state.rad=+e.target.value;document.getElementById('radv').textContent=`${state.rad.toFixed(2).replace('.',',')} mm`;build()});
 document.getElementById('domes').addEventListener('change',e=>{state.domes=e.target.checked;build()});
 const mw=document.getElementById('mat');
-for(const m of MATS){const b=document.createElement('button');b.type='button';b.className='sw';b.setAttribute('aria-pressed',String(m.id===state.mat));b.innerHTML=`<i style="background:${m.sw}"></i>${m.name}`;b.onclick=()=>{state.mat=m.id;mw.querySelectorAll('.sw').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));build()};mw.appendChild(b)}
+for(const m of MATS){const b=document.createElement('button');b.type='button';b.className='sw';b.setAttribute('aria-pressed',String(m.id===state.mat));b.innerHTML=`<i style="background:${m.sw}"></i>${m.name}`;b.dataset.id=m.id;b.onclick=()=>{if(state.sel.size){for(const k of state.sel)state.linkMats[k]=m.id}else{state.mat=m.id;state.linkMats=[]}build()};mw.appendChild(b)}
+function updSelUI(){
+  const n=state.sel.size,info=document.getElementById('selinfo');
+  info.innerHTML=n?`<b>${n} ${n===1?'länk vald':'länkar valda'}</b>. Välj material för ${n===1?'den':'dem'}.`:'Klicka på en länk för att ge den eget material. Skift-klick väljer flera.';
+  const cur=n?matIdFor([...state.sel][0]):(new Set(Array.from({length:linkTotal},(_,i)=>matIdFor(i))).size>1?null:state.mat);
+  mw.querySelectorAll('.sw').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.id===cur)));
+}
+const pick=f=>{state.sel=new Set(Array.from({length:linkTotal},(_,i)=>i).filter(f));build()};
+document.getElementById('selCross').onclick=()=>pick(i=>i%2===0);
+document.getElementById('selH').onclick=()=>pick(i=>i%2===1);
+document.getElementById('selAll').onclick=()=>pick(()=>true);
+document.getElementById('selNone').onclick=()=>{state.sel.clear();build()};
+// click a link in 3D to select it
+const ray=new THREE.Raycaster(),ptr=new THREE.Vector2();let down=null;
+canvas.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY]});
+canvas.addEventListener('pointerup',e=>{
+  if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5){down=null;return}down=null;
+  const r=canvas.getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
+  ray.setFromCamera(ptr,camera);const hit=ray.intersectObjects(chain.children,true).find(h=>h.object.userData.idx!==undefined);
+  const multi=e.shiftKey||e.metaKey||e.ctrlKey;
+  if(!hit){if(!multi)state.sel.clear();build();return}
+  const i=hit.object.userData.idx;
+  if(multi){state.sel.has(i)?state.sel.delete(i):state.sel.add(i)}
+  else if(state.sel.size===1&&state.sel.has(i))state.sel.clear();
+  else state.sel=new Set([i]);
+  build();
+});
 document.getElementById('spin').onclick=e=>{controls.autoRotate=!controls.autoRotate;e.target.setAttribute('aria-pressed',String(controls.autoRotate))};
 document.getElementById('reset').onclick=frame;
 
