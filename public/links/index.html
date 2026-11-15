@@ -233,6 +233,11 @@ async function loadCatalog(){
     const byId={};(c.materials||[]).forEach(m=>byId[m.id]=m);
     // keep only materials that are active in the admin, take density and price from there
     for(let i=MATS.length-1;i>=0;i--){const m=MATS[i],a=byId[m.id];if(!a){MATS.splice(i,1);continue}m.rho=+a.density||m.rho;m.name=a.name||m.name;m.cost=a}
+    // materials that exist only in the admin: plain colour from their swatch
+    const have=new Set(MATS.map(m=>m.id));
+    (c.materials||[]).forEach(a=>{if(have.has(a.id))return;const metal=a.family==='metal';
+      MATS.push({id:a.id,name:a.name,sw:a.swatch,rho:+a.density,cost:a,m:()=>metal?new THREE.MeshPhysicalMaterial({color:new THREE.Color(a.swatch),metalness:1,roughness:0.3}):new THREE.MeshStandardMaterial({color:new THREE.Color(a.swatch),roughness:0.7})})});
+    const order=(c.materials||[]).map(m=>m.id);MATS.sort((x,y)=>order.indexOf(x.id)-order.indexOf(y.id));
     CATALOG={showPrices:!!c.showPrices,settings:c.settings};
     if(!MATS.find(m=>m.id===state.mat))state.mat=MATS[0]?.id;
     renderSwatches();build();
