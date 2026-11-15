@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Links — Peter Hoff Design</title>
+<meta name="description" content="Peter Hoff Design Links: armband och halsband av kors- och H-länkar. Välj längd, kantform och material i 3D.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/phd-logo.png">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<style>
+/* Layout: full-height 3D stage with a narrow control column (left on desktop, below on phones) */
+:root{
+  --bg:#ffffff; --panel:#ffffff; --fg:#111111; --muted:#888888; --line:#e4e4e4; --accent:#111111; --stage:#f5f5f5;
+  --f-display:"Helvetica Neue",Helvetica,Arial,sans-serif; --f-body:"Helvetica Neue",Helvetica,Arial,sans-serif; --f-mono:ui-monospace,"SF Mono",Menlo,monospace;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px}
+.app{display:grid;grid-template-columns:300px 1fr;height:100%;min-height:0}
+aside{background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:18px;display:flex;flex-direction:column;gap:18px;min-width:0}
+h1{font-family:var(--f-display);font-weight:400;font-size:22px;letter-spacing:.01em;margin:6px 0 0}
+.logo{display:block;width:fit-content}.logo img{height:42px;width:auto;display:block}
+.sub{color:var(--muted);margin:2px 0 0;font-size:12.5px;line-height:1.45}
+fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+legend{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:8px;font-weight:600}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;text-align:center;padding:8px 4px;font-size:13px;color:var(--fg);border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
+.seg button:focus-visible,.sw:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;align-items:center;gap:10px}
+.row input[type=range]{flex:1;accent-color:var(--accent)}
+.val{font-family:var(--f-mono);font-size:12.5px;min-width:64px;text-align:right;font-variant-numeric:tabular-nums}
+.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sw{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:var(--muted);text-align:center;line-height:1.2}
+.sw i{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:block}
+.sw[aria-pressed="true"]{color:var(--fg);font-weight:600}
+.sw[aria-pressed="true"] i{outline:2px solid var(--fg);outline-offset:2px}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px}
+.facts{border-top:1px solid var(--line);padding-top:14px;display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:13px}
+.facts dt{color:var(--muted)} .facts dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.note{font-size:11.5px;color:var(--muted);line-height:1.45;margin:0}
+main{position:relative;min-width:0;min-height:0;background:var(--stage)}
+canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;right:max(14px,env(safe-area-inset-right,0px));bottom:14px;display:flex;gap:8px}
+.hud button{all:unset;cursor:pointer;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:7px 11px;font-size:12.5px}
+.tag{position:absolute;left:14px;top:12px;font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr;grid-template-rows:58vh auto;height:auto}
+  main{order:-1;height:58vh}
+  aside{border-right:0;border-top:1px solid var(--line);padding-right:max(16px,env(safe-area-inset-right,0px))}
+}
+@media (prefers-reduced-motion: reduce){.hud [data-spin]{display:none}}
+</style>
+
+<div class="app">
+  <aside>
+    <div>
+      <a class="logo" href="/" aria-label="Peter Hoff Design"><img src="/phd-logo.png" alt="Peter Hoff Design"></a>
+      <h1>Links</h1>
+      <p class="sub">Peter Hoff Design · kors- och H-länkar med klick-gångjärn, verklig skala 18 × 18 × 6 mm.</p>
+    </div>
+
+    <fieldset>
+      <legend>Smycke</legend>
+      <div class="seg" id="kind">
+        <button type="button" data-v="armband" aria-pressed="true">Armband</button>
+        <button type="button" data-v="halsband" aria-pressed="false">Halsband</button>
+        <button type="button" data-v="rakt" aria-pressed="false">Utlagt</button>
+      </div>
+      <div class="row"><input type="range" id="len" min="14" max="22" step="0.5" value="18" aria-label="Längd"><span class="val" id="lenv">18 cm</span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Kanter</legend>
+      <div class="seg" id="edge">
+        <button type="button" data-v="skarp" aria-pressed="false">Skarp</button>
+        <button type="button" data-v="rundad" aria-pressed="true">Rundad</button>
+        <button type="button" data-v="fas" aria-pressed="false">Fas</button>
+      </div>
+      <div class="row"><input type="range" id="rad" min="0.2" max="1.2" step="0.05" value="0.5" aria-label="Radie"><span class="val" id="radv">0,50 mm</span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Material</legend>
+      <div class="swatches" id="mat"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Visa</legend>
+      <label class="chk"><input type="checkbox" id="domes" checked> Kupoler (klick)</label>
+    </fieldset>
+
+    <dl class="facts">
+      <dt>Länkar</dt><dd id="fLinks">–</dd>
+      <dt>Längd</dt><dd id="fLen">–</dd>
+      <dt>Vikt i valt material</dt><dd id="fW">–</dd>
+      <dt>Vikt i silver 925</dt><dd id="fAg">–</dd>
+    </dl>
+    <p class="note">Förhandsvisning för att välja kantform och material. Printfilerna med gångjärn byggs separat när valet är gjort. Vikten är beräknad från modellens volym.</p>
+  </aside>
+  <main>
+    <span class="tag" id="tag">kors + H · rundad 0,50 mm</span>
+    <canvas id="c" aria-label="3D-vy av smycket. Dra för att rotera, nyp eller scrolla för att zooma."></canvas>
+    <div class="hud">
+      <button type="button" id="spin" data-spin aria-pressed="true">Snurra</button>
+      <button type="button" id="reset">Centrera</button>
+    </div>
+  </main>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+// ---- Peter's link, real scale (mm) ----
+const S=17.952, A=5.984, XK=2.166, XH=2.435, ZC=2.974;
+const SPAN_C=S-2*XK, SPAN_H=S-2*XH;     // pivot to pivot
+const CROSS=[[A,0],[2*A,0],[2*A,A],[3*A,A],[3*A,2*A],[2*A,2*A],[2*A,3*A],[A,3*A],[A,2*A],[0,2*A],[0,A],[A,A]];
+const HSHAPE=[[0,0],[3*A,0],[3*A,A],[2*A,A],[2*A,2*A],[3*A,2*A],[3*A,3*A],[0,3*A],[0,2*A],[A,2*A],[A,A],[0,A]];
+
+// ---- materials ----
+function speckleTex(base,dots,amount,size=256){
+  const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');
+  g.fillStyle=base;g.fillRect(0,0,size,size);
+  let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;
+  for(let i=0;i<amount;i++){g.fillStyle=dots[Math.floor(r()*dots.length)];const d=r()*2.2+0.4;g.globalAlpha=0.35+r()*0.6;g.beginPath();g.arc(r()*size,r()*size,d,0,7);g.fill();}
+  g.globalAlpha=1;const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(0.08,0.08);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+function grainTex(base,line){
+  const size=256,c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');
+  g.fillStyle=base;g.fillRect(0,0,size,size);let s=11;const r=()=>(s=(s*16807)%2147483647)/2147483647;
+  for(let y=0;y<size;y+=2){g.strokeStyle=line;g.globalAlpha=0.08+r()*0.25;g.lineWidth=0.6+r()*1.6;g.beginPath();g.moveTo(0,y);for(let x=0;x<=size;x+=16)g.lineTo(x,y+Math.sin(x*0.03+y*0.11)*3);g.stroke();}
+  g.globalAlpha=1;const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(0.06,0.06);t.colorSpace=THREE.SRGBColorSpace;return t;
+}
+const MATS=[
+  {id:'silver',name:'Silver 925',sw:'#cfd1d4',rho:10.36,m:()=>new THREE.MeshPhysicalMaterial({color:0xdcdee1,metalness:1,roughness:0.2})},
+  {id:'gold',name:'Guld 18k',sw:'#e2bd64',rho:15.5,m:()=>new THREE.MeshPhysicalMaterial({color:0xe8c26a,metalness:1,roughness:0.22})},
+  {id:'rose',name:'Roséguld',sw:'#e0a48c',rho:15.1,m:()=>new THREE.MeshPhysicalMaterial({color:0xe6a68e,metalness:1,roughness:0.24})},
+  {id:'black',name:'Svart rodium',sw:'#34353a',rho:10.36,m:()=>new THREE.MeshPhysicalMaterial({color:0x3a3b40,metalness:1,roughness:0.3})},
+  {id:'oyster',name:'Ostron',sw:'#e8e3d8',rho:1.3,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#e9e4d9',['#b9b2a3','#8f887a','#f7f5ef'],2600),roughness:0.85})},
+  {id:'mussel',name:'Musselskal',sw:'#3c414c',rho:1.3,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#3d424d',['#7a8396','#20232a','#9aa2b3'],2600),roughness:0.8})},
+  {id:'wood',name:'Trä',sw:'#a8794c',rho:1.15,m:()=>new THREE.MeshStandardMaterial({map:grainTex('#a87a4f','#5b3b20'),roughness:0.75})},
+  {id:'bamboo',name:'Bambu',sw:'#d3bb8b',rho:1.15,m:()=>new THREE.MeshStandardMaterial({map:grainTex('#d4bc8c','#8d7444'),roughness:0.7})},
+  {id:'cork',name:'Kork',sw:'#b88b5c',rho:1.0,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#b98c5d',['#7b5531','#d9b384','#5e3f22'],4200),roughness:0.95})},
+  {id:'coffee',name:'Kaffe',sw:'#4c3427',rho:1.2,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#4b3426',['#2a1c13','#6e4e3a'],3000),roughness:0.85})},
+  {id:'hemp',name:'Hampa',sw:'#aa9c78',rho:1.25,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#a99b78',['#6f6447','#c9bd99'],3000),roughness:0.85})},
+  {id:'carbon',name:'Kolfiber',sw:'#26272a',rho:1.3,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#232427',['#3a3c41','#101113'],2400),roughness:0.55})},
+];
+
+// ---- outline helpers ----
+function inset(pts,d){
+  const n=pts.length,out=[];
+  for(let i=0;i<n;i++){
+    const p=pts[i],a=pts[(i-1+n)%n],b=pts[(i+1)%n];
+    const e1=[p[0]-a[0],p[1]-a[1]],e2=[b[0]-p[0],b[1]-p[1]];
+    const l1=Math.hypot(...e1),l2=Math.hypot(...e2);
+    const n1=[-e1[1]/l1,e1[0]/l1],n2=[-e2[1]/l2,e2[0]/l2];
+    out.push([p[0]+d*(n1[0]+n2[0]),p[1]+d*(n1[1]+n2[1])]);
+  }
+  return out;
+}
+function cornered(pts,r,mode){
+  const n=pts.length,shape=new THREE.Shape();let first=true;
+  const add=(x,y)=>{if(first){shape.moveTo(x,y);first=false}else shape.lineTo(x,y)};
+  for(let i=0;i<n;i++){
+    const p=pts[i],a=pts[(i-1+n)%n],b=pts[(i+1)%n];
+    const u1=[p[0]-a[0],p[1]-a[1]],u2=[b[0]-p[0],b[1]-p[1]];
+    const l1=Math.hypot(...u1),l2=Math.hypot(...u2);u1[0]/=l1;u1[1]/=l1;u2[0]/=l2;u2[1]/=l2;
+    const convex=(u1[0]*u2[1]-u1[1]*u2[0])>0;
+    const rr=Math.min(convex?r:0,0.45*l1,0.45*l2);
+    if(rr<1e-4||mode==='skarp'){add(p[0],p[1]);continue}
+    const P1=[p[0]-u1[0]*rr,p[1]-u1[1]*rr],P2=[p[0]+u2[0]*rr,p[1]+u2[1]*rr];
+    if(mode==='fas'){add(...P1);add(...P2);continue}
+    const left=[-u1[1],u1[0]],c=[P1[0]+left[0]*rr,P1[1]+left[1]*rr];
+    const a0=Math.atan2(P1[1]-c[1],P1[0]-c[0]);
+    for(let k=0;k<=8;k++){const t=a0+(Math.PI/2)*k/8;add(c[0]+rr*Math.cos(t),c[1]+rr*Math.sin(t))}
+  }
+  return shape;
+}
+function linkGeo(poly,mode,r){
+  let geo;
+  if(mode==='skarp'){
+    geo=new THREE.ExtrudeGeometry(cornered(poly,0,'skarp'),{depth:A,bevelEnabled:false});
+  }else{
+    const ins=inset(poly,r);
+    geo=new THREE.ExtrudeGeometry(cornered(ins,r,mode),{depth:A-2*r,bevelEnabled:true,bevelThickness:r,bevelSize:r,bevelOffset:0,bevelSegments:mode==='fas'?1:6,curveSegments:8});
+    geo.translate(0,0,r);
+  }
+  geo.translate(-S/2,-1.5*A,-A/2);   // link centre at origin, thickness along z
+  geo.computeVertexNormals();
+  return geo;
+}
+function volume(geo){
+  const g=geo.index?geo.toNonIndexed():geo,p=g.attributes.position.array;let v=0;
+  for(let i=0;i<p.length;i+=9){
+    v+=p[i]*(p[i+4]*p[i+8]-p[i+5]*p[i+7])-p[i+1]*(p[i+3]*p[i+8]-p[i+5]*p[i+6])+p[i+2]*(p[i+3]*p[i+7]-p[i+4]*p[i+6]);
+  }
+  return Math.abs(v/6);
+}
+
+// ---- scene ----
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMappingExposure=1.35;
+const scene=new THREE.Scene();
+const pmrem=new THREE.PMREMGenerator(renderer);scene.environment=pmrem.fromScene(new RoomEnvironment(),0.04).texture;
+const camera=new THREE.PerspectiveCamera(32,1,1,5000);
+const controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.autoRotate=!matchMedia('(prefers-reduced-motion: reduce)').matches;controls.autoRotateSpeed=0.9;
+const key=new THREE.DirectionalLight(0xffffff,1.4);key.position.set(80,140,100);scene.add(key);
+scene.add(new THREE.HemisphereLight(0xffffff,0x888071,0.5));
+const ground=new THREE.Mesh(new THREE.CircleGeometry(600,64),new THREE.ShadowMaterial({opacity:0.12}));ground.rotation.x=-Math.PI/2;scene.add(ground);
+renderer.shadowMap.enabled=true;key.castShadow=true;key.shadow.mapSize.set(2048,2048);ground.receiveShadow=true;
+const cam=key.shadow.camera;cam.left=cam.bottom=-200;cam.right=cam.top=200;cam.near=1;cam.far=600;
+
+function bgFromTheme(){const v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e4e2de';scene.background=new THREE.Color(v);}
+bgFromTheme();
+// ---- state ----
+const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true};
+const matCache={};const getMat=id=>matCache[id]||(matCache[id]=MATS.find(m=>m.id===id).m());
+let chain=new THREE.Group();scene.add(chain);
+
+function domeGeo(){
+  const rb=1.144,h=0.3,R=(rb*rb+h*h)/(2*h),th=Math.acos(1-h/R);
+  const g=new THREE.SphereGeometry(R,24,10,0,Math.PI*2,0,th);g.translate(0,-(R-h),0);return g; // cap tip at y=h, base at y=0
+}
+function linkCount(){
+  const cm=state.kind==='halsband'?state.len*2.5:state.len; // halsband slider 14–22 → 35–55 cm
+  const per=(SPAN_C+SPAN_H)/2;let n=Math.round(cm*10/per);if(n%2)n++;return {n,cm};
+}
+function ringRadius(n){
+  const f=R=>(n/2)*(2*Math.asin(Math.min(1,SPAN_C/(2*R)))+2*Math.asin(Math.min(1,SPAN_H/(2*R))))-2*Math.PI;
+  let lo=SPAN_C/2+1e-6,hi=2000;for(let i=0;i<80;i++){const m=(lo+hi)/2;f(m)>0?lo=m:hi=m}return (lo+hi)/2;
+}
+function build(){
+  scene.remove(chain);(chain.userData.geos||[]).forEach(g=>g.dispose());chain=new THREE.Group();
+  const gc=linkGeo(CROSS,state.edge,state.rad),gh=linkGeo(HSHAPE,state.edge,state.rad),gd=domeGeo();
+  const mat=getMat(state.mat);
+  const {n,cm}=linkCount();
+  // pivots
+  const piv=[];
+  if(state.kind==='rakt'){
+    let x=0;piv.push([0,0]);for(let i=0;i<n-1;i++){x+=i%2?SPAN_H:SPAN_C;piv.push([x,0])}
+  }else{
+    const R=ringRadius(n);let ang=0;
+    for(let i=0;i<=n;i++){piv.push([R*Math.cos(ang),R*Math.sin(ang)]);const L=i%2?SPAN_H:SPAN_C;ang+=2*Math.asin(L/(2*R))}
+  }
+  const links=state.kind==='rakt'?n-1:n;
+  for(let i=0;i<links;i++){
+    const isCross=i%2===0;const p0=piv[i],p1=piv[i+1];
+    const g=new THREE.Group();
+    const mesh=new THREE.Mesh(isCross?gc:gh,mat);mesh.castShadow=true;g.add(mesh);
+    if(isCross&&state.domes){
+      for(const xk of [XK-S/2,S/2-XK])for(const side of [-1,1]){
+        const d=new THREE.Mesh(gd,mat);d.position.set(xk,side*A/2,ZC-A/2);d.rotation.z=side>0?0:Math.PI;g.add(d);
+      }
+    }
+    // place: local x along chord, local y = width (world Y), local z = radial
+    const mx=(p0[0]+p1[0])/2,mz=(p0[1]+p1[1])/2,dx=p1[0]-p0[0],dz=p1[1]-p0[1];
+    g.position.set(mx,0,mz);
+    if(state.kind==='rakt'){g.rotation.x=-Math.PI/2;g.position.y=A/2}
+    else g.rotation.y=Math.atan2(-dz,dx)+Math.PI; // flip so the outer face faces outward
+    chain.add(g);
+  }
+  if(state.kind!=='rakt'){chain.rotation.x=0;}
+  // stand rings on the ground
+  const box=new THREE.Box3().setFromObject(chain);
+  chain.position.y-=box.min.y;chain.position.x-=(box.min.x+box.max.x)/2;chain.position.z-=(box.min.z+box.max.z)/2;
+  scene.add(chain);
+  // facts
+  const nC=Math.ceil(links/2),nH=Math.floor(links/2);
+  const vol=(nC*volume(gc)+nH*volume(gh))/1000; // cm3
+  const rho=MATS.find(m=>m.id===state.mat).rho;
+  document.getElementById('fLinks').textContent=`${links} (${nC} kors, ${nH} H)`;
+  document.getElementById('fLen').textContent=`${(cm).toFixed(1).replace('.',',')} cm`;
+  document.getElementById('fW').textContent=`${(vol*rho).toFixed(1).replace('.',',')} g`;
+  document.getElementById('fAg').textContent=`${(vol*10.36).toFixed(0)} g`;
+  document.getElementById('tag').textContent=`kors + H · ${state.edge}${state.edge==='skarp'?'':' '+state.rad.toFixed(2).replace('.',',')+' mm'} · ${MATS.find(m=>m.id===state.mat).name}`;
+  chain.userData.geos=[gc,gh,gd];
+}
+function frame(){
+  const box=new THREE.Box3().setFromObject(chain),s=box.getBoundingSphere(new THREE.Sphere());
+  const d=s.radius/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.05;
+  controls.target.copy(s.center);camera.position.set(s.center.x+d*0.55,s.center.y+d*0.55,s.center.z+d*0.62);camera.near=d/100;camera.far=d*20;camera.updateProjectionMatrix();controls.update();
+}
+function resize(){const r=canvas.parentElement.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/Math.max(1,r.height);camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(canvas.parentElement);
+
+// ---- UI ----
+function seg(id,keyName,after){
+  const el=document.getElementById(id);
+  el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state[keyName]=b.dataset.v;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));after&&after();build();if(keyName==='kind')frame();});
+}
+seg('kind','kind',updLen);seg('edge','edge',()=>{document.getElementById('rad').disabled=state.edge==='skarp'});
+function updLen(){const v=state.kind==='halsband'?state.len*2.5:state.len;document.getElementById('lenv').textContent=`${v.toFixed(state.kind==='halsband'?0:1).replace('.',',')} cm`;}
+document.getElementById('len').addEventListener('input',e=>{state.len=+e.target.value;updLen();build()});
+document.getElementById('len').addEventListener('change',frame);
+document.getElementById('rad').addEventListener('input',e=>{state.rad=+e.target.value;document.getElementById('radv').textContent=`${state.rad.toFixed(2).replace('.',',')} mm`;build()});
+document.getElementById('domes').addEventListener('change',e=>{state.domes=e.target.checked;build()});
+const mw=document.getElementById('mat');
+for(const m of MATS){const b=document.createElement('button');b.type='button';b.className='sw';b.setAttribute('aria-pressed',String(m.id===state.mat));b.innerHTML=`<i style="background:${m.sw}"></i>${m.name}`;b.onclick=()=>{state.mat=m.id;mw.querySelectorAll('.sw').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));build()};mw.appendChild(b)}
+document.getElementById('spin').onclick=e=>{controls.autoRotate=!controls.autoRotate;e.target.setAttribute('aria-pressed',String(controls.autoRotate))};
+document.getElementById('reset').onclick=frame;
+
+resize();build();frame();
+renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera)});
+</script>
+
+</body>
+</html>

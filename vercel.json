@@ -2,13 +2,41 @@
   "version": 2,
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/api/:path*",          "destination": "/api/index"              },
-    { "source": "/project/:path*",      "destination": "/index.html"             },
-    { "source": "/admin",               "destination": "/admin.html"             },
-    { "source": "/admin-login",         "destination": "/admin-login.html"       },
-    { "source": "/configurator",        "destination": "/configurator/index.html" },
-    { "source": "/configurator/:path*", "destination": "/configurator/:path*"    },
-    { "source": "/jewelry",             "destination": "/jewelry/index.html"      },
-    { "source": "/jewelry/:path*",      "destination": "/jewelry/:path*"          }
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/project/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/admin-login",
+      "destination": "/admin-login.html"
+    },
+    {
+      "source": "/configurator",
+      "destination": "/configurator/index.html"
+    },
+    {
+      "source": "/configurator/:path*",
+      "destination": "/configurator/:path*"
+    },
+    {
+      "source": "/jewelry",
+      "destination": "/jewelry/index.html"
+    },
+    {
+      "source": "/jewelry/:path*",
+      "destination": "/jewelry/:path*"
+    },
+    {
+      "source": "/links",
+      "destination": "/links/index.html"
+    }
   ]
 }
