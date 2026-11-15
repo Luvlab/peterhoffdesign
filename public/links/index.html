@@ -52,6 +52,14 @@ canvas{display:block;width:100%;height:100%}
 .hud{position:absolute;right:max(14px,env(safe-area-inset-right,0px));bottom:14px;display:flex;gap:8px}
 .hud button{all:unset;cursor:pointer;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:7px 11px;font-size:12.5px}
 .tag{position:absolute;left:14px;top:12px;font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.cap{position:absolute;left:max(14px,env(safe-area-inset-left,0px));bottom:14px;max-width:calc(100% - 220px);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:13px;line-height:1.35}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btnrow button{all:unset;cursor:pointer;border:1px solid var(--fg);border-radius:6px;padding:7px 12px;font-size:13px;color:var(--fg)}
+.btnrow button.primary{background:var(--fg);color:var(--panel)}
+.btnrow button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btnrow button[disabled]{opacity:.4;cursor:default}
+.why{margin:0;padding-left:18px;font-size:12.5px;color:var(--muted);line-height:1.55}
+@media (max-width:760px){.cap{max-width:calc(100% - 28px);bottom:58px}}
 @media (max-width:760px){
   .app{grid-template-columns:1fr;grid-template-rows:58vh auto;height:auto}
   main{order:-1;height:58vh}
@@ -101,6 +109,30 @@ canvas{display:block;width:100%;height:100%}
     </fieldset>
 
     <fieldset>
+      <legend>Sätt ihop, ta av och på</legend>
+      <div class="btnrow">
+        <button type="button" class="primary" id="demoBuild">Visa ihopsättning</button>
+        <button type="button" id="demoWear">Ta av och på</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Fler länkar</legend>
+      <p class="selinfo" id="extraInfo">Köp till länkar när du vill. De klickas in i sista leden.</p>
+      <div class="btnrow">
+        <button type="button" class="primary" id="addPair">+ 2 länkar</button>
+        <button type="button" id="removePair">− 2 länkar</button>
+      </div>
+      <ul class="why">
+        <li>Större storlek, eller till någon annan</li>
+        <li>Ersätta en tappad länk</li>
+        <li>Blanda in en ny metall eller färg</li>
+        <li>Göra armbandet till ett halsband</li>
+        <li>En ny länk för varje minne eller gåva</li>
+      </ul>
+    </fieldset>
+
+    <fieldset>
       <legend>Visa</legend>
       <label class="chk"><input type="checkbox" id="domes" checked> Kupoler (klick)</label>
     </fieldset>
@@ -114,6 +146,7 @@ canvas{display:block;width:100%;height:100%}
     <p class="note">Förhandsvisning för att välja kantform och material. Printfilerna med gångjärn byggs separat när valet är gjort. Vikten är beräknad från modellens volym.</p>
   </aside>
   <main>
+    <div class="cap" id="cap" hidden aria-live="polite"></div>
     <span class="tag" id="tag">kors + H · rundad 0,50 mm</span>
     <canvas id="c" aria-label="3D-vy av länkarna. Dra för att rotera, nyp eller scrolla för att zooma, klicka på en länk för att välja den."></canvas>
     <div class="hud">
@@ -237,7 +270,9 @@ const cam=key.shadow.camera;cam.left=cam.bottom=-200;cam.right=cam.top=200;cam.n
 function bgFromTheme(){const v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e4e2de';scene.background=new THREE.Color(v);}
 bgFromTheme();
 // ---- state ----
-const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[]};
+const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[],extra:0,fresh:new Set()};
+const freshCache={};
+const freshMat=id=>freshCache[id]||(freshCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2fbf71);m.emissiveIntensity=0.45;return m})());
 let linkTotal=0;
 const selCache={};
 const selMat=id=>selCache[id]||(selCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2f6bff);m.emissiveIntensity=0.35;return m})());
@@ -257,55 +292,123 @@ function ringRadius(n){
   const f=R=>(n/2)*(2*Math.asin(Math.min(1,SPAN_C/(2*R)))+2*Math.asin(Math.min(1,SPAN_H/(2*R))))-2*Math.PI;
   let lo=SPAN_C/2+1e-6,hi=2000;for(let i=0;i<80;i++){const m=(lo+hi)/2;f(m)>0?lo=m:hi=m}return (lo+hi)/2;
 }
-function build(){
-  scene.remove(chain);(chain.userData.geos||[]).forEach(g=>g.dispose());chain=new THREE.Group();
-  const gc=linkGeo(CROSS,state.edge,state.rad),gh=linkGeo(HSHAPE,state.edge,state.rad),gd=domeGeo();
-  const {n,cm}=linkCount();
-  // pivots
-  const piv=[];
-  if(state.kind==='rakt'){
-    let x=0;piv.push([0,0]);for(let i=0;i<n-1;i++){x+=i%2?SPAN_H:SPAN_C;piv.push([x,0])}
-  }else{
-    const R=ringRadius(n);let ang=0;
-    for(let i=0;i<=n;i++){piv.push([R*Math.cos(ang),R*Math.sin(ang)]);const L=i%2?SPAN_H:SPAN_C;ang+=2*Math.asin(L/(2*R))}
+const spanOf=i=>i%2?SPAN_H:SPAN_C;
+let linkObjs=[],anim=null,poseState={s:1,gaps:null};
+function poseChain(n,sv,gaps){
+  const R=ringRadius(n),al=Array.from({length:n},(_,i)=>2*Math.asin(spanOf(i)/(2*R)));
+  let px=0,pz=0,h=0;const out=[];
+  for(let i=0;i<n;i++){
+    const L=spanOf(i),cx=Math.cos(h),cz=Math.sin(h);
+    out.push({x:px+cx*L/2,z:pz+cz*L/2,h});
+    const g=gaps?(gaps[i]||0):0;px+=cx*(L+g);pz+=cz*(L+g);
+    if(i<n-1)h+=sv*(al[i]+al[i+1])/2;
   }
-  const links=state.kind==='rakt'?n-1:n;
+  return out;
+}
+function applyPose(sv,gaps){
+  poseState={s:sv,gaps};const n=linkObjs.length;if(!n)return;
+  if(state.kind==='rakt'&&!anim){
+    let x=0;linkObjs.forEach((g,i)=>{const L=spanOf(i);g.position.set(x+L/2,A/2,0);g.rotation.set(-Math.PI/2,0,0);x+=L});
+  }else{
+    poseChain(n,sv,gaps).forEach((p,i)=>{const g=linkObjs[i];g.position.set(p.x,1.5*A+0.4,p.z);g.rotation.set(0,-p.h+Math.PI,0)});
+  }
+  let cx=0,cz=0;linkObjs.forEach(g=>{cx+=g.position.x;cz+=g.position.z});chain.position.set(-cx/n,0,-cz/n);
+}
+function build(){
+  scene.remove(chain);(chain.userData.geos||[]).forEach(g=>g.dispose());chain=new THREE.Group();linkObjs=[];
+  const gc=linkGeo(CROSS,state.edge,state.rad),gh=linkGeo(HSHAPE,state.edge,state.rad),gd=domeGeo();
+  const {n:nb}=linkCount();const links=nb+2*state.extra;
   for(let i=0;i<links;i++){
-    const isCross=i%2===0;const p0=piv[i],p1=piv[i+1];
-    const g=new THREE.Group();
-    const mat=state.sel.has(i)?selMat(matIdFor(i)):getMat(matIdFor(i));
+    const isCross=i%2===0,g=new THREE.Group();
+    const id=matIdFor(i),mat=state.fresh.has(i)?freshMat(id):state.sel.has(i)?selMat(id):getMat(id);
     const mesh=new THREE.Mesh(isCross?gc:gh,mat);mesh.castShadow=true;mesh.userData.idx=i;g.add(mesh);g.userData.idx=i;
     if(isCross&&state.domes){
       for(const xk of [XK-S/2,S/2-XK])for(const side of [-1,1]){
         const d=new THREE.Mesh(gd,mat);d.userData.idx=i;d.position.set(xk,side*A/2,ZC-A/2);d.rotation.z=side>0?0:Math.PI;g.add(d);
       }
     }
-    // place: local x along chord, local y = width (world Y), local z = radial
-    const mx=(p0[0]+p1[0])/2,mz=(p0[1]+p1[1])/2,dx=p1[0]-p0[0],dz=p1[1]-p0[1];
-    g.position.set(mx,0,mz);
-    if(state.kind==='rakt'){g.rotation.x=-Math.PI/2;g.position.y=A/2}
-    else g.rotation.y=Math.atan2(-dz,dx)+Math.PI; // flip so the outer face faces outward
-    chain.add(g);
+    linkObjs.push(g);chain.add(g);
   }
-  if(state.kind!=='rakt'){chain.rotation.x=0;}
-  // stand rings on the ground
-  const box=new THREE.Box3().setFromObject(chain);
-  chain.position.y-=box.min.y;chain.position.x-=(box.min.x+box.max.x)/2;chain.position.z-=(box.min.z+box.max.z)/2;
-  scene.add(chain);
+  scene.add(chain);chain.userData.geos=[gc,gh,gd];
+  applyPose(anim?poseState.s:1,anim?poseState.gaps:null);
   // facts
   linkTotal=links;for(const k of [...state.sel])if(k>=links)state.sel.delete(k);
   const nC=Math.ceil(links/2),nH=Math.floor(links/2);
-  const vC=volume(gc)/1000,vH=volume(gh)/1000;
-  const vol=nC*vC+nH*vH; // cm3
-  let wMix=0;const used=new Set();for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=(i%2?vH:vC)*MATS.find(m=>m.id===id).rho}
-  document.getElementById('fLinks').textContent=`${links} (${nC} kors, ${nH} H)`;
-  document.getElementById('fLen').textContent=`${(cm).toFixed(1).replace('.',',')} cm`;
-  document.getElementById('fW').textContent=`${wMix.toFixed(1).replace('.',',')} g`;
-  document.getElementById('fAg').textContent=`${(vol*10.36).toFixed(0)} g`;
-  document.getElementById('tag').textContent=`kors + H · ${state.edge}${state.edge==='skarp'?'':' '+state.rad.toFixed(2).replace('.',',')+' mm'} · ${used.size>1?'blandade material':MATS.find(m=>m.id===[...used][0]).name}`;
+  const vC=volume(gc)/1000,vH=volume(gh)/1000,vol=nC*vC+nH*vH;
+  let wMix=0,len=0;const used=new Set();
+  for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=(i%2?vH:vC)*MATS.find(m=>m.id===id).rho;len+=spanOf(i)}
+  const fmt=(v,d)=>v.toFixed(d).replace('.',',');
+  document.getElementById('fLinks').textContent=`${links} (${nC} kors, ${nH} H)`+(state.extra?` · +${2*state.extra}`:'');
+  document.getElementById('fLen').textContent=`${fmt(len/10,1)} cm`;
+  document.getElementById('fW').textContent=`${fmt(wMix,1)} g`;
+  document.getElementById('fAg').textContent=`${vol*10.36|0} g`;
+  document.getElementById('extraInfo').innerHTML=state.extra?`<b>${2*state.extra} länkar tillagda</b> (+${fmt(state.extra*(SPAN_C+SPAN_H)/10,1)} cm). De klickas in i sista leden.`:'Köp till länkar när du vill. De klickas in i sista leden.';
+  document.getElementById('removePair').disabled=!state.extra;
+  document.getElementById('tag').textContent=`kors + H · ${state.edge}${state.edge==='skarp'?'':' '+fmt(state.rad,2)+' mm'} · ${used.size>1?'blandade material':MATS.find(m=>m.id===[...used][0]).name}`;
   updSelUI();
-  chain.userData.geos=[gc,gh,gd];
 }
+// ---- animations ----
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const capEl=document.getElementById('cap');
+function caption(t){capEl.textContent=t||'';capEl.hidden=!t}
+function pop(...ids){const now=performance.now();ids.forEach(i=>{const g=linkObjs[(i+linkObjs.length)%linkObjs.length];if(g)g.userData.popT=now})}
+function run(steps,done){
+  if(anim)return;
+  if(state.kind==='rakt'){state.kind='armband';document.querySelectorAll('#kind button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v==='armband')));updLen()}
+  anim={steps,i:0,t0:performance.now(),done};controls.autoRotate=false;document.getElementById('spin').setAttribute('aria-pressed','false');
+  steps[0].start&&steps[0].start();caption(steps[0].cap);
+  document.querySelectorAll('#demoBuild,#demoWear,#addPair,#removePair').forEach(b=>b.disabled=true);
+}
+function tick(now){
+  if(anim){
+    const st=anim.steps[anim.i],t=Math.min(1,(now-anim.t0)/st.dur);st.f&&st.f(ease(t),t);
+    if(t>=1){st.end&&st.end();anim.i++;anim.t0=now;
+      if(anim.i>=anim.steps.length){const d=anim.done;anim=null;caption('');document.querySelectorAll('#demoBuild,#demoWear,#addPair').forEach(b=>b.disabled=false);document.getElementById('removePair').disabled=!state.extra;d&&d()}
+      else{const nx=anim.steps[anim.i];nx.start&&nx.start();nx.cap!==undefined&&caption(nx.cap)}}
+  }
+  for(const g of linkObjs){const p=g.userData.popT;if(!p)continue;const k=(now-p)/320;if(k>=1){g.scale.setScalar(1);g.userData.popT=0}else g.scale.setScalar(1+0.07*Math.sin(k*Math.PI))}
+  if(camGoal){const k=Math.min(1,(now-camGoal.t0)/camGoal.dur),e=ease(k);controls.target.lerpVectors(camGoal.ft,camGoal.tt,e);camera.position.lerpVectors(camGoal.fp,camGoal.tp,e);if(k>=1)camGoal=null}
+}
+let camGoal=null;
+function camTo(radius,dur=700){
+  const d=radius/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.05,dir=camera.position.clone().sub(controls.target).normalize();
+  const tt=new THREE.Vector3(0,1.5*A,0);camGoal={t0:performance.now(),dur,ft:controls.target.clone(),fp:camera.position.clone(),tt,tp:tt.clone().add(dir.multiplyScalar(d))};
+  camera.near=d/100;camera.far=d*20;camera.updateProjectionMatrix();
+}
+const ringR=()=>ringRadius(linkObjs.length)+2*A;
+function demoBuild(){
+  const n=linkObjs.length,G=9,gaps=()=>Array(n).fill(0);
+  let g=gaps().map(()=>G);const per=Math.max(110,3600/(n-1));
+  const straightR=(n*(SPAN_C+SPAN_H)/2+n*G)/2;
+  const steps=[{dur:900,cap:'Länkarna ligger lösa: kors och H växelvis.',start:()=>{applyPose(0,g);camTo(straightR*0.8)}}];
+  for(let k=0;k<n-1;k++)steps.push({dur:per,cap:'Korsets arm skjuts in i H:et. Kupolen klickar i skålen.',f:e=>{g[k]=G*(1-e);applyPose(0,g)},end:()=>pop(k,k+1)});
+  steps.push({dur:1700,cap:`Rulla ihop kedjan till ${state.kind==='halsband'?'ett halsband':'ett armband'}.`,start:()=>camTo(ringR()),f:e=>applyPose(e,g)});
+  steps.push({dur:1100,cap:'Sista leden klickar. Klart.',start:()=>pop(n-1,0)});
+  run(steps,()=>applyPose(1,null));
+}
+function demoWear(){
+  const n=linkObjs.length,open=0.5;
+  run([
+    {dur:700,cap:'Tryck isär en led, kupolen släpper ur skålen.',start:()=>pop(n-1,0)},
+    {dur:1300,cap:`${state.kind==='halsband'?'Halsbandet':'Armbandet'} öppnas.`,start:()=>camTo(ringR()*1.45,1100),f:e=>applyPose(1-(1-open)*e,null)},
+    {dur:900,cap:`Lägg det runt ${state.kind==='halsband'?'halsen':'handleden'}.`},
+    {dur:1300,cap:`Stäng runt ${state.kind==='halsband'?'halsen':'handleden'}.`,f:e=>applyPose(open+(1-open)*e,null)},
+    {dur:1000,cap:'Klick. Sitter fast.',start:()=>{pop(n-1,0);camTo(ringR(),900)}},
+  ],()=>applyPose(1,null));
+}
+function addPair(){
+  const open=0.72;let n0=linkObjs.length,gaps=null;
+  run([
+    {dur:800,cap:'Öppna sista leden.',start:()=>{pop(n0-1,0);camTo(ringR()*1.25)},f:e=>applyPose(1-(1-open)*e,null)},
+    {dur:900,cap:'Två nya länkar, ett kors och ett H, klickas in.',start:()=>{state.extra++;state.fresh=new Set([n0,n0+1]);gaps=Array(n0+2).fill(0);gaps[n0-1]=22;poseState={s:open,gaps};build();camTo(ringRadius(n0+2)+2*A)},f:e=>{gaps[n0-1]=22*(1-e);applyPose(open,gaps)},end:()=>pop(n0-1,n0)},
+    {dur:900,cap:'Stäng igen.',f:e=>applyPose(open+(1-open)*e,null)},
+    {dur:1300,cap:`Klick. ${state.kind==='halsband'?'Halsbandet':'Armbandet'} är 2,7 cm längre.`,start:()=>pop(n0+1,0)},
+  ],()=>{state.fresh.clear();build()});
+}
+document.getElementById('demoBuild').onclick=demoBuild;
+document.getElementById('demoWear').onclick=demoWear;
+document.getElementById('addPair').onclick=addPair;
+document.getElementById('removePair').onclick=()=>{if(state.extra>0&&!anim){state.extra--;build();camTo(ringR(),500)}};
 function frame(){
   const box=new THREE.Box3().setFromObject(chain),s=box.getBoundingSphere(new THREE.Sphere());
   const d=s.radius/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.05;
@@ -357,7 +460,7 @@ document.getElementById('spin').onclick=e=>{controls.autoRotate=!controls.autoRo
 document.getElementById('reset').onclick=frame;
 
 resize();build();frame();
-renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera)});
+renderer.setAnimationLoop(now=>{tick(now);controls.update();renderer.render(scene,camera)});
 </script>
 
 </body>
