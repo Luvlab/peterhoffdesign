@@ -204,7 +204,8 @@ canvas{display:block;width:100%;height:100%}
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
-import {SHAPES} from '/links/shapes.js';
+import {SHAPES as ALL_SHAPES} from '/links/shapes.js';
+const HIDDEN=new Set(['storth']),SHAPES=ALL_SHAPES.filter(d=>!HIDDEN.has(d.id));   // hidden shapes stay in shapes.js, just not offered
 
 // ---- Peter's link, real scale (mm) ----
 const S=17.952, A=5.984, XK=2.166, XH=2.435, ZC=2.974;
