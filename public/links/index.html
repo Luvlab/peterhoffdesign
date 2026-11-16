@@ -143,6 +143,23 @@ canvas{display:block;width:100%;height:100%}
     </fieldset>
 
     <fieldset>
+      <legend>Infattning i hålen</legend>
+      <p class="selinfo" id="inInfo">Fyll hål och springor med sten, glas eller ett annat material.</p>
+      <div class="seg" id="cut" role="group" aria-label="Slipning">
+        <button type="button" data-v="none" aria-pressed="true">Ingen</button>
+        <button type="button" data-v="flat" aria-pressed="false">Slät</button>
+        <button type="button" data-v="cab" aria-pressed="false">Kupig</button>
+        <button type="button" data-v="fas" aria-pressed="false">Fasett</button>
+      </div>
+      <p class="selinfo"><b>Ädelstenar</b></p>
+      <div class="swatches" id="inGem"></div>
+      <p class="selinfo"><b>Färgat glas</b></p>
+      <div class="swatches" id="inGlass"></div>
+      <p class="selinfo"><b>Annat material</b></p>
+      <div class="swatches" id="inMat"></div>
+    </fieldset>
+
+    <fieldset>
       <legend>Fler länkar</legend>
       <p class="selinfo" id="extraInfo">Köp till länkar när du vill. De klickas in i sista leden.</p>
       <div class="btnrow">
@@ -179,7 +196,7 @@ canvas{display:block;width:100%;height:100%}
       <button type="submit" id="oSend">Skicka min konfiguration</button>
       <p class="note" id="oStatus" aria-live="polite"></p>
     </form>
-    <p class="note">Förhandsvisning för att välja kantform och material. Printfilerna med gångjärn byggs separat när valet är gjort. Vikten är beräknad från modellens volym.</p>
+    <p class="note">Förhandsvisning för att välja kantform och material. Printfilerna med gångjärn byggs separat när valet är gjort. Vikten är beräknad från modellens volym. Infattningar prissätts separat.</p>
   </aside>
   <main>
     <div class="cap" id="cap" hidden aria-live="polite"></div>
@@ -203,6 +220,7 @@ canvas{display:block;width:100%;height:100%}
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import {SHAPES as ALL_SHAPES} from '/links/shapes.js';
 const HIDDEN=new Set(['storth']),SHAPES=ALL_SHAPES.filter(d=>!HIDDEN.has(d.id));   // hidden shapes stay in shapes.js, just not offered
@@ -253,6 +271,44 @@ const MATS=[
   {id:'rpetg-clear',name:'rPETG klar',sw:'#cfe3ea',rho:1.27,cheap:1,m:()=>new THREE.MeshPhysicalMaterial({color:0xd8eef4,roughness:0.15,transmission:0.6,thickness:3,ior:1.55})},
   {id:'carbon',name:'Kolfiber',sw:'#26272a',rho:1.3,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#232427',['#3a3c41','#101113'],2400),roughness:0.55})},
 ];
+
+// ---- inlays: what can sit in the holes and slits of a link ----
+const gemMat=(c,o={})=>new THREE.MeshPhysicalMaterial({color:c,metalness:0,roughness:0.03,clearcoat:1,clearcoatRoughness:0,envMapIntensity:1.5,emissive:c,emissiveIntensity:0.1,flatShading:true,...o});
+const glassMat=c=>new THREE.MeshPhysicalMaterial({color:c,metalness:0,roughness:0.06,clearcoat:1,envMapIntensity:1.8,transparent:true,opacity:0.62,flatShading:true});
+const INLAYS=[
+  {id:'diamant',name:'Diamant',g:'gem',sw:'linear-gradient(135deg,#fff,#cfe4f5 45%,#fff 55%,#b9cfe2)',rho:3.52,m:()=>gemMat(0xf2f7ff,{metalness:0.35,iridescence:1,iridescenceIOR:1.8,emissiveIntensity:0.05})},
+  {id:'rubin',name:'Rubin',g:'gem',sw:'linear-gradient(135deg,#ff5a6e,#b00f2c 55%,#6d0518)',rho:4.0,m:()=>gemMat(0xb80f2e)},
+  {id:'safir',name:'Safir',g:'gem',sw:'linear-gradient(135deg,#5c86ff,#1a3fb0 55%,#0a1f66)',rho:4.0,m:()=>gemMat(0x1a3fb0)},
+  {id:'smaragd',name:'Smaragd',g:'gem',sw:'linear-gradient(135deg,#4fd598,#0a8a4f 55%,#04512c)',rho:2.75,m:()=>gemMat(0x0a8a4f)},
+  {id:'ametist',name:'Ametist',g:'gem',sw:'linear-gradient(135deg,#c79cf2,#8a4fc7 55%,#4f2382)',rho:2.65,m:()=>gemMat(0x8a4fc7)},
+  {id:'topas',name:'Blå topas',g:'gem',sw:'linear-gradient(135deg,#c4efff,#5cc1e8 55%,#2a86ad)',rho:3.55,m:()=>gemMat(0x5cc1e8)},
+  {id:'citrin',name:'Citrin',g:'gem',sw:'linear-gradient(135deg,#ffe08a,#f2b632 55%,#b57a0c)',rho:2.65,m:()=>gemMat(0xf2b632)},
+  {id:'onyx',name:'Onyx',g:'gem',sw:'linear-gradient(135deg,#55555c,#111114 55%,#000)',rho:2.65,m:()=>gemMat(0x111114,{emissiveIntensity:0})},
+  {id:'turkos',name:'Turkos',g:'gem',sw:'#35c2bd',rho:2.7,m:()=>gemMat(0x35c2bd,{roughness:0.25,emissiveIntensity:0.05,envMapIntensity:1})},
+  {id:'parlemor',name:'Pärlemor',g:'gem',sw:'linear-gradient(135deg,#fdf6f0,#dfeaf0 50%,#f3e3ee)',rho:2.7,m:()=>gemMat(0xf1ece4,{roughness:0.18,iridescence:1,iridescenceIOR:1.5,emissiveIntensity:0,envMapIntensity:1.2})},
+  {id:'g-klar',name:'Klart',g:'glass',sw:'#dfeef2',rho:2.5,m:()=>glassMat(0xe6f4f8)},
+  {id:'g-bla',name:'Kobolt',g:'glass',sw:'#2247c9',rho:2.5,m:()=>glassMat(0x2247c9)},
+  {id:'g-gron',name:'Grönt',g:'glass',sw:'#2e9e5b',rho:2.5,m:()=>glassMat(0x2e9e5b)},
+  {id:'g-rod',name:'Rött',g:'glass',sw:'#d0263a',rho:2.5,m:()=>glassMat(0xd0263a)},
+  {id:'g-barn',name:'Bärnsten',g:'glass',sw:'#d98a1c',rho:2.5,m:()=>glassMat(0xd98a1c)},
+  {id:'g-rok',name:'Rök',g:'glass',sw:'#5a5d63',rho:2.5,m:()=>glassMat(0x5a5d63)},
+];
+const INLAY_BY_ID=Object.fromEntries(INLAYS.map(d=>[d.id,d]));
+const CUTS={none:'ingen',flat:'slät',cab:'kupig',fas:'fasett'};
+const inlayDef=id=>INLAY_BY_ID[id]||MATS.find(m=>m.id===id);
+const inlayCache={};const inlayMat=id=>INLAY_BY_ID[id]?(inlayCache[id]||(inlayCache[id]=INLAY_BY_ID[id].m())):getMat(id);
+// One hole or slit filled. flat = level with the top face. cab and fas rise above it: a rounded dome, or cut facets with a flat table.
+function holeStats(h){let a=0,p=0;for(let i=0;i<h.length;i++){const q=h[(i+1)%h.length],r=h[i];a+=r[0]*q[1]-q[0]*r[1];p+=Math.hypot(q[0]-r[0],q[1]-r[1])}return {area:Math.abs(a)/2,w:Math.abs(a)/p}}   // w ≈ half the narrowest width
+function inlayGeo(def,cut){
+  const parts=def.h.map(h=>{
+    const sh=new THREE.Shape(h.map(p=>new THREE.Vector2(p[0],p[1]))),{w}=holeStats(h);let g;
+    if(cut==='flat'){g=new THREE.ExtrudeGeometry(sh,{depth:A-0.2,bevelEnabled:false});g.translate(0,0,0.2)}
+    else{const cab=cut==='cab',sz=Math.min(cab?2.6:1.3,w*(cab?0.92:0.6)),t=cab?Math.min(1.1,sz*0.6):Math.min(0.8,sz*0.75);
+      g=new THREE.ExtrudeGeometry(sh,{depth:A-0.3-t,bevelEnabled:true,bevelThickness:t,bevelSize:sz,bevelOffset:-sz,bevelSegments:cab?7:2});g.translate(0,0,t+0.3)}
+    return g});
+  const geo=parts.length>1?mergeGeometries(parts):parts[0];if(parts.length>1)parts.forEach(g=>g.dispose());
+  geo.translate(-S/2,-1.5*A,-A/2);geo.computeVertexNormals();return geo;
+}
 
 // ---- prices and materials from the admin (/api/links/catalog) ----
 let CATALOG=null;
@@ -358,7 +414,7 @@ const cam=key.shadow.camera;cam.left=cam.bottom=-200;cam.right=cam.top=200;cam.n
 function bgFromTheme(){const v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e4e2de';scene.background=new THREE.Color(v);}
 bgFromTheme();
 // ---- state ----
-const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[],shape:'kors',shapeH:'h',linkShapes:[],extra:0,fresh:new Set()};
+const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[],shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],extra:0,fresh:new Set()};
 const freshCache={};
 const freshMat=id=>freshCache[id]||(freshCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2fbf71);m.emissiveIntensity=0.45;return m})());
 let linkTotal=0;
@@ -366,6 +422,9 @@ const selCache={};
 const selMat=id=>selCache[id]||(selCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2f6bff);m.emissiveIntensity=0.35;return m})());
 const matIdFor=i=>state.linkMats[i]||state.mat;
 const shapeFor=i=>state.linkShapes[i]||(i%2?state.shapeH:state.shape);
+const inlayFor=i=>state.linkInlays[i]||state.inlay;
+const holesOf=i=>SHAPE_BY_ID[shapeFor(i)]?.h||[];
+const hasInlay=i=>holesOf(i).length>0&&inlayFor(i).cut!=='none';
 const lenOf=i=>SHAPE_BY_ID[shapeFor(i)]?.len??S;   // length along the chain
 const METAL_IDS=new Set(['silver','gold','rose','black','steel','bronze','titanium']);
 const layerTex=(()=>{const c=document.createElement('canvas');c.width=4;c.height=64;const g=c.getContext('2d');
@@ -445,6 +504,10 @@ function build(){
         const c=new THREE.Mesh(gd,cupMat(mat,ref));c.position.set(xh,side*A/2,ZC-A/2);c.rotation.z=side>0?0:Math.PI;c.renderOrder=2;c.userData.idx=i;g.add(c);
       }
     }
+    if(hasInlay(i)){
+      const sid=shapeFor(i),inl=inlayFor(i),k='in_'+sid+'_'+inl.cut,ig=geos[k]||(geos[k]=inlayGeo(SHAPE_BY_ID[sid],inl.cut));
+      const st=new THREE.Mesh(ig,inlayMat(inl.mat));st.userData.idx=i;g.add(st);
+    }
     linkObjs.push(g);chain.add(g);
   }
   scene.add(chain);chain.userData.geos=[...Object.values(geos),gd];
@@ -454,20 +517,22 @@ function build(){
   const nC=Math.ceil(links/2),nH=Math.floor(links/2);
   let vol=0;for(let i=0;i<links;i++)vol+=volOf(i);
   let wMix=0,len=0;const used=new Set();
-  for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=volOf(i)*MATS.find(m=>m.id===id).rho;len+=spanOf(i)}
+  for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=volOf(i)*MATS.find(m=>m.id===id).rho;len+=spanOf(i);
+    if(hasInlay(i))wMix+=holesOf(i).reduce((a,h)=>a+holeStats(h).area,0)*A/1000*(inlayDef(inlayFor(i).mat)?.rho||2.5)}
   const fmt=(v,d)=>v.toFixed(d).replace('.',',');
   document.getElementById('fLinks').textContent=`${links} (${nC} + ${nH})`+(state.extra?` · +${2*state.extra}`:'');
   document.getElementById('fLen').textContent=`${fmt(len/10,1)} cm`;
   document.getElementById('fW').textContent=`${fmt(wMix,1)} g`;
   document.getElementById('fAg').textContent=`${vol*10.36|0} g`;
   const price=priceFor(volOf,links,matIdFor);document.getElementById('fPriceL').hidden=document.getElementById('fPrice').hidden=price==null;
-  if(price!=null)document.getElementById('fPrice').textContent=`${Math.round(price/10)*10} kr`;
-  lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),shapes:Array.from({length:links},(_,i)=>shapeName(shapeFor(i))),domes:state.domes};lastPrice=price;
+  const anyIn=Array.from({length:links},(_,i)=>hasInlay(i)).some(Boolean);
+  if(price!=null)document.getElementById('fPrice').textContent=`${Math.round(price/10)*10} kr`+(anyIn?' + infattning':'');
+  lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),shapes:Array.from({length:links},(_,i)=>shapeName(shapeFor(i))),domes:state.domes,inlays:Array.from({length:links},(_,i)=>hasInlay(i)?`${inlayDef(inlayFor(i).mat)?.name}, ${CUTS[inlayFor(i).cut]}`:null)};lastPrice=price;
   document.getElementById('extraInfo').innerHTML=state.extra?`<b>${2*state.extra} länkar tillagda</b> (+${fmt(state.extra*(SPAN_C+SPAN_H)/10,1)} cm). De klickas in i sista leden.`:'Köp till länkar när du vill. De klickas in i sista leden.';
   document.getElementById('removePair').disabled=!state.extra;
   const usedShapes=new Set(Array.from({length:links},(_,i)=>shapeFor(i)).filter((x,i)=>i%2===0));const usedH=new Set(Array.from({length:links},(_,i)=>shapeFor(i)).filter((x,i)=>i%2===1));
   document.getElementById('tag').textContent=`${usedShapes.size>1?'blandade kors':shapeName([...usedShapes][0]).toLowerCase()} + ${usedH.size>1?'blandade H':shapeName([...usedH][0])} · ${state.edge}${state.edge==='skarp'?'':' '+fmt(state.rad,2)+' mm'} · ${used.size>1?'blandade material':MATS.find(m=>m.id===[...used][0]).name}`;
-  updSelUI();updShapeUI();
+  updSelUI();updShapeUI();updInlayUI();
 }
 // ---- animations ----
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
@@ -534,6 +599,8 @@ document.getElementById('randomize').onclick=()=>{
   state.linkMats=Array.from({length:linkTotal+8},()=>pick[Math.floor(Math.random()*pick.length)]);
   const rnd=a=>a[Math.floor(Math.random()*a.length)],arms=['kors',...ARM_SHAPES.map(d=>d.id)],forks=['h',...SHAPES.filter(d=>d.kind==='f').map(d=>d.id)];
   state.linkShapes=Array.from({length:linkTotal+8},(_,i)=>rnd(i%2?forks:arms));   // random link shapes too
+  const gems=INLAYS.map(d=>d.id),cuts=['flat','cab','fas'];
+  state.linkInlays=Array.from({length:linkTotal+8},()=>Math.random()<0.6?{cut:rnd(cuts),mat:rnd(gems)}:{cut:'none',mat:'rubin'});   // and inlays in about half the holes
   state.sel.clear();build();if(state.kind!=='rakt')frame();
 };
 document.getElementById('demoWear').onclick=demoWear;
@@ -562,6 +629,27 @@ let lastConfig=null,lastPrice=null;
 const mw=document.getElementById('mat');
 function renderSwatches(){mw.innerHTML='';for(const m of MATS){const b=document.createElement('button');b.type='button';b.className='sw';b.setAttribute('aria-pressed',String(m.id===state.mat));b.innerHTML=`<i style="background:${m.sw}"></i>${m.name}`;b.dataset.id=m.id;b.onclick=()=>{if(state.sel.size){for(const k of state.sel)state.linkMats[k]=m.id}else{state.mat=m.id;state.linkMats=[]}build()};mw.appendChild(b)}}
 renderSwatches();
+function setInlay(patch){
+  const sel=[...state.sel];
+  if(sel.length){for(const i of sel)state.linkInlays[i]={...inlayFor(i),...patch}}else{state.inlay={...state.inlay,...patch};state.linkInlays=[]}
+  build();
+}
+for(const [wrapId,list] of [['inGem',INLAYS.filter(d=>d.g==='gem')],['inGlass',INLAYS.filter(d=>d.g==='glass')],['inMat',MATS]]){
+  const wrap=document.getElementById(wrapId);
+  for(const d of list){const b=document.createElement('button');b.type='button';b.className='sw insw';b.dataset.id=d.id;b.setAttribute('aria-pressed','false');
+    b.innerHTML=`<i style="background:${d.sw}"></i>${d.name}`;
+    b.onclick=()=>{const cur=state.sel.size?inlayFor([...state.sel][0]):state.inlay;setInlay({mat:d.id,...(cur.cut==='none'?{cut:d.g==='gem'?'fas':'flat'}:{})})};wrap.appendChild(b)}
+}
+document.querySelectorAll('#cut button').forEach(b=>b.onclick=()=>setInlay({cut:b.dataset.v}));
+function updInlayUI(){
+  const all=Array.from({length:linkTotal},(_,i)=>i),sel=[...state.sel],scope=sel.length?sel:all;
+  const holed=scope.filter(i=>holesOf(i).length),cur=sel.length?inlayFor(sel[0]):state.inlay,mixed=!sel.length&&state.linkInlays.some(Boolean);
+  document.querySelectorAll('#cut button').forEach(x=>x.setAttribute('aria-pressed',String(!mixed&&x.dataset.v===cur.cut)));
+  document.querySelectorAll('.insw').forEach(x=>x.setAttribute('aria-pressed',String(!mixed&&cur.cut!=='none'&&x.dataset.id===cur.mat)));
+  document.getElementById('inInfo').innerHTML=!holed.length
+    ?(sel.length?'De valda länkarna har inga hål.':'Inga länkar har hål just nu.')+' Välj en form med hål eller springa, till exempel Cirkel, Kvadrat, Sexkant, Springa, Kontur eller en ring.'
+    :`<b>${holed.length} ${sel.length?'av de valda länkarna':'länkar'} har hål.</b> Välj slipning och sten, glas eller material. ${sel.length?'':'Markera länkar för att bara ändra dem.'}`;
+}
 document.getElementById('orderForm').addEventListener('submit',async e=>{
   e.preventDefault();const f=e.target,st=document.getElementById('oStatus'),btn=document.getElementById('oSend');
   btn.disabled=true;st.textContent='Skickar…';
