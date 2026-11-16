@@ -64,6 +64,8 @@ tr.dirty td{background:#fffbe6}
     <button role="tab" aria-selected="false" data-tab="costs">Kostnader och påslag</button>
     <button role="tab" aria-selected="false" data-tab="calc">Priskalkyl</button>
     <button role="tab" aria-selected="false" data-tab="orders">Förfrågningar <span id="orderCount"></span></button>
+    <button role="tab" aria-selected="false" data-tab="messages">Meddelanden <span id="msgCount"></span></button>
+    <button role="tab" aria-selected="false" data-tab="providers">Tillverkare</button>
   </div>
 
   <section id="tab-materials">
@@ -107,6 +109,22 @@ tr.dirty td{background:#fffbe6}
   <section id="tab-orders" hidden>
     <h2>Förfrågningar från /links</h2>
     <div id="orders"><p class="empty">Laddar…</p></div>
+  </section>
+
+  <section id="tab-messages" hidden>
+    <h2>Meddelanden från kundsupporten</h2>
+    <p class="help">Hit kommer meddelanden som kunder skickar till en människa från supportfönstret på /links. Om kunden först pratade med AI-supporten följer samtalet med.</p>
+    <div id="messages"><p class="empty">Laddar…</p></div>
+  </section>
+
+  <section id="tab-providers" hidden>
+    <h2>Tillverkare: print och CNC på beställning</h2>
+    <p class="help">Företag som kan tillverka länkarna. API-nycklar sparas aldrig här. Lägg nyckeln som en miljövariabel i Vercel (Settings, Environment Variables) med namnet i kolumnen "Miljövariabel" och gör en ny deploy. Då visar "Ansluten" Ja.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Namn</th><th>Typ</th><th>Material</th><th>API</th><th>Miljövariabel</th><th>Ansluten</th><th>Dokumentation</th><th>Anteckningar</th><th>Aktiv</th><th class="num">Ordning</th><th></th></tr></thead>
+      <tbody id="provBody"><tr><td colspan="11" class="empty">Laddar…</td></tr></tbody>
+    </table></div>
+    <p style="margin-top:12px"><button class="btn" id="addProv">+ Ny tillverkare</button></p>
   </section>
 </main>
 <div class="msg" id="msg" hidden></div>
@@ -220,10 +238,46 @@ function renderOrders(){
   })
 }
 
+// ---- messages to a human ----
+let messages=[],providers=[]
+function renderMessages(){
+  const box=$('#messages');box.innerHTML='';const n=messages.filter(m=>m.status==='new').length;$('#msgCount').textContent=n?`(${n} nya)`:''
+  if(!messages.length){box.innerHTML='<p class="empty">Inga meddelanden än.</p>';return}
+  messages.forEach(m=>{
+    const d=document.createElement('div');d.className='order'
+    const talk=(m.transcript||[]).map(t=>(t.role==='user'?'Kund: ':'AI: ')+t.content).join('\n')
+    d.innerHTML=`<div><b>${esc(m.name||'Utan namn')}</b> · <span>${esc(m.email)}</span><div class="meta">${new Date(m.created_at).toLocaleString('sv-SE')} ${m.lang?'· språk '+esc(m.lang):''}</div>
+      <pre>${esc(m.message)}${talk?'\n\n--- Samtal med AI-supporten ---\n'+esc(talk):''}</pre></div>
+      <div><select data-k="status">${['new','answered','closed'].map(s=>`<option value="${s}" ${s===m.status?'selected':''}>${({new:'ny',answered:'besvarad',closed:'avslutad'})[s]}</option>`).join('')}</select></div>
+      <div style="grid-column:1/-1"><textarea data-k="admin_notes" placeholder="Anteckningar">${esc(m.admin_notes||'')}</textarea>
+      <button class="btn" data-act="save">Spara</button></div>`
+    d.querySelector('[data-act=save]').onclick=async()=>{try{const u=await api('/api/admin/links/messages/'+m.id,{method:'PUT',body:JSON.stringify({status:d.querySelector('[data-k=status]').value,admin_notes:d.querySelector('[data-k=admin_notes]').value})});Object.assign(m,u);renderMessages();toast('Sparat')}catch(e){toast(e.message,true)}}
+    box.appendChild(d)
+  })
+}
+// ---- print and CNC companies ----
+function provRow(p,isNew){
+  const tr=document.createElement('tr');tr.dataset.id=p.id||''
+  const inp=(k,w)=>`<input data-k="${k}" value="${esc(p[k]??'')}" style="min-width:${w}px">`
+  tr.innerHTML=`<td>${inp('name',120)}</td><td>${inp('kind',110)}</td><td>${inp('materials',200)}</td><td>${inp('api_status',120)}</td><td>${inp('env_key',170)}</td>
+    <td>${isNew?'':(p.connected?'<span class="pill">Ja</span>':'Nej')}</td><td>${inp('docs_url',160)}${p.docs_url?` <a href="${esc(p.docs_url)}" target="_blank" rel="noopener">öppna</a>`:''}</td><td>${inp('notes',240)}</td>
+    <td><input type="checkbox" data-k="active" ${p.active!==false?'checked':''} aria-label="Aktiv"></td><td class="num"><input type="number" data-k="sort" value="${p.sort??100}" style="width:60px"></td>
+    <td><button class="btn" data-act="save">Spara</button> <button class="btn" data-act="del">Ta bort</button></td>`
+  tr.querySelector('[data-act=save]').onclick=async()=>{const body=readRow(tr);if(!body.name){toast('Namn krävs',true);return}
+    try{const saved=isNew?await api('/api/admin/links/providers',{method:'POST',body:JSON.stringify(body)}):await api('/api/admin/links/providers/'+encodeURIComponent(tr.dataset.id),{method:'PUT',body:JSON.stringify(body)})
+      const i=providers.findIndex(x=>x.id===saved.id);if(i>=0)providers[i]=saved;else providers.push(saved);tr.replaceWith(provRow(saved,false));toast('Sparat: '+saved.name)}catch(e){toast(e.message,true)}}
+  tr.querySelector('[data-act=del]').onclick=async()=>{if(isNew){tr.remove();return}const b=tr.querySelector('[data-act=del]')
+    if(b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='Säker?';setTimeout(()=>{b.dataset.confirm='';b.textContent='Ta bort'},3000);return}
+    try{await api('/api/admin/links/providers/'+encodeURIComponent(tr.dataset.id),{method:'DELETE'});providers=providers.filter(x=>x.id!==tr.dataset.id);tr.remove();toast('Borttaget')}catch(e){toast(e.message,true)}}
+  return tr
+}
+function renderProviders(){const b=$('#provBody');b.innerHTML='';providers.forEach(p=>b.appendChild(provRow(p,false)));if(!providers.length)b.innerHTML='<tr><td colspan="11" class="empty">Inga tillverkare än.</td></tr>'}
+$('#addProv').onclick=()=>$('#provBody').appendChild(provRow({active:true,sort:100},true))
+
 (async()=>{
   try{
-    [mats,settings,orders]=await Promise.all([api('/api/admin/links/materials'),api('/api/admin/links/settings'),api('/api/admin/links/orders')])
-    renderMats();fillSettings();renderOrders()
+    [mats,settings,orders,messages,providers]=await Promise.all([api('/api/admin/links/materials'),api('/api/admin/links/settings'),api('/api/admin/links/orders'),api('/api/admin/links/messages'),api('/api/admin/links/providers')])
+    renderMats();fillSettings();renderOrders();renderMessages();renderProviders()
   }catch(e){if(e.message!=='login')$('#matBody').innerHTML=`<tr><td colspan="12" class="err">Kunde inte ladda: ${esc(e.message)}</td></tr>`}
 })()
 </script>

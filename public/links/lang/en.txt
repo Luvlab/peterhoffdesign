@@ -133,3 +133,29 @@ Shipping
 Total
 The standard material is recycled PETG, made from used bottles. You can also choose recycled fishing nets, shell, wood and cork.
 Your own shape? Describe your idea in the form and we will get back to you about a sketch or a 3D file.
+My account
+Help and support
+Sign in with your email to save your designs and follow your orders. We send you a link, no password needed.
+Send sign-in link
+Check your email and open the link on this device.
+Signed in as {email}
+Sign out
+My designs
+Name of the design
+Save this design
+Open
+Delete
+No saved designs yet.
+My orders
+No orders yet.
+Tracking
+Saved.
+Ask about Links: materials, sizes, how the click works or how to order. The answers come from an AI assistant.
+Type your question
+Send
+Typing…
+I can't answer that, sorry. Write to us below and a person will reply.
+Write to a person
+Didn't get a good answer? Send a message and we will read and reply ourselves. The conversation above is included.
+Thank you! We will reply to your email.
+Your message

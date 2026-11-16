@@ -133,3 +133,29 @@ Frakt
 Totalt
 Standardmaterialet är återvunnen PETG, gjord av använda flaskor. Här finns också återvunna fiskenät, skal, trä och kork.
 Egen form? Beskriv din idé i formuläret, så hör vi av oss om skiss eller 3D-fil.
+Mitt konto
+Hjälp och support
+Logga in med din e-post för att spara dina designer och följa dina beställningar. Vi skickar en länk, inget lösenord behövs.
+Skicka inloggningslänk
+Kolla din e-post och öppna länken på den här enheten.
+Inloggad som {email}
+Logga ut
+Mina designer
+Namn på designen
+Spara den här designen
+Öppna
+Ta bort
+Inga sparade designer än.
+Mina beställningar
+Inga beställningar än.
+Spårning
+Sparat.
+Fråga om Links: material, mått, hur klicket fungerar eller hur du beställer. Svaren kommer från en AI-assistent.
+Skriv din fråga
+Skicka
+Skriver…
+Det kan jag tyvärr inte svara på. Skriv till oss nedan så svarar en människa.
+Skriv till en människa
+Fick du inget bra svar? Skicka ett meddelande så läser och svarar vi själva. Samtalet ovan följer med.
+Tack! Vi svarar på din e-post.
+Ditt meddelande

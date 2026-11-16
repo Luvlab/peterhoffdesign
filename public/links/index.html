@@ -70,7 +70,7 @@ canvas{display:block;width:100%;height:100%}
 .hud button[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
 .hud button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .hud button[disabled]{opacity:.4;cursor:default}
-.buy{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:10px;z-index:2;display:flex;align-items:center;gap:10px;max-width:calc(100% - 84px);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 12px;min-height:34px;box-sizing:border-box}
+.buy{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:10px;z-index:2;display:flex;align-items:center;gap:10px;max-width:calc(100% - 168px);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 12px;min-height:34px;box-sizing:border-box}
 
 .buy .pr{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0;line-height:1.2}.buy .pr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .bd{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:54px;z-index:3;width:min(330px,calc(100% - 28px));max-height:calc(100dvh - 70px);overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.14);animation:bdIn .18s ease-out}
@@ -81,7 +81,7 @@ canvas{display:block;width:100%;height:100%}
 .bd li i{font-style:normal;color:var(--muted);font-family:var(--f-mono)}
 .bd b{font-family:var(--f-mono);font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap}
 .bd .sum{grid-template-columns:1fr auto;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
-.bd .sum.tot{font-weight:600}.bd .sum.tot b{font-weight:600}.buy small{font-size:10px;color:var(--muted)}
+.bd .sum.tot{font-weight:600}.bd .sum.tot b{font-weight:600}.buy small{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.buy .pr span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .buy span{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--fg);min-width:0}
 .buy button{all:unset;cursor:pointer;background:var(--fg);color:var(--panel);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap}
 .buy button:focus-visible,#upd button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -106,12 +106,31 @@ canvas{display:block;width:100%;height:100%}
   .hud button{width:36px;height:36px}
 }
 @media (min-width:761px){.hud .mob{display:none}}
-.langbtn{all:unset;cursor:pointer;position:absolute;top:10px;right:max(14px,env(safe-area-inset-right,0px));z-index:2;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;min-width:40px;height:34px;display:grid;place-items:center;font-size:12.5px;font-weight:600;letter-spacing:.06em}
+.topr{position:absolute;top:10px;right:max(14px,env(safe-area-inset-right,0px));z-index:2;display:flex;gap:6px}
+.langbtn.ic2{min-width:34px}.langbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.langbtn[data-on="1"]{background:var(--fg);color:var(--panel)}
+.langbtn{all:unset;cursor:pointer;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;min-width:40px;height:34px;display:grid;place-items:center;font-size:12.5px;font-weight:600;letter-spacing:.06em}
 .langbtn:focus-visible,#langDlg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-#langDlg{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;border:0;box-sizing:border-box;background:var(--bg);color:var(--fg);padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
+dialog.sheet{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;border:0;box-sizing:border-box;background:var(--bg);color:var(--fg);padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
 .langhead{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:900px;margin:0 auto 18px}
 .langhead h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0}
 #langClose{all:unset;cursor:pointer;border:1px solid var(--fg);border-radius:6px;padding:8px 14px;font-size:13px}
+.sheet .col{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.sheet .col .col{max-width:none;margin:0;width:100%}
+.sheet .col h3{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:10px 0 0;font-weight:600}
+.sheet input,.sheet textarea{font:inherit;font-size:15px;border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--panel);color:var(--fg);box-sizing:border-box;width:100%}
+.sheet .col button{all:unset;cursor:pointer;box-sizing:border-box;text-align:center;border:1px solid var(--fg);border-radius:6px;padding:9px 14px;font-size:14px}
+.sheet .col button.primary{background:var(--fg);color:var(--panel)}
+.sheet .col button[disabled]{opacity:.45;cursor:default}
+.sheet .col button:focus-visible,.sheet input:focus-visible,.sheet textarea:focus-visible,.sheet .langhead button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sheet .langhead button{all:unset;cursor:pointer;border:1px solid var(--fg);border-radius:6px;padding:8px 14px;font-size:13px}
+.sheet .rowb{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sheet ul.items{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.sheet ul.items li{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sheet ul.items li>div{flex:1;min-width:140px}.sheet ul.items small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.chat{display:flex;flex-direction:column;gap:8px}
+.chat p{margin:0;padding:9px 12px;border-radius:10px;max-width:88%;white-space:pre-wrap;line-height:1.4;font-size:14.5px}
+.chat p.u{align-self:flex-end;background:var(--fg);color:var(--panel)}.chat p.a{align-self:flex-start;background:var(--panel);border:1px solid var(--line)}
 .langgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-width:900px;margin:0 auto}
 .langgrid button{all:unset;cursor:pointer;box-sizing:border-box;display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:8px;padding:14px;font-size:15px;background:var(--panel);min-width:0}
 .langgrid button b{font-size:12px;letter-spacing:.06em;color:var(--muted);min-width:24px}
@@ -235,7 +254,11 @@ canvas{display:block;width:100%;height:100%}
   </aside>
   <main>
     <div class="cap" id="cap" hidden aria-live="polite"></div>
-    <button type="button" class="langbtn" id="langBtn" aria-haspopup="dialog" data-t-aria="chooseLang" title="">SV</button>
+    <div class="topr">
+      <button type="button" class="langbtn ic2" id="supBtn" aria-haspopup="dialog" data-t-aria="tSupport" title=""><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10h.01M12 10h.01M15 10h.01"/></svg></button>
+      <button type="button" class="langbtn ic2" id="accBtn" aria-haspopup="dialog" data-t-aria="tAccount" title=""><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></button>
+      <button type="button" class="langbtn" id="langBtn" aria-haspopup="dialog" data-t-aria="chooseLang" title="">SV</button>
+    </div>
     <div class="buy" id="buy"><button type="button" class="pr" id="hPriceBtn" aria-expanded="false" aria-controls="bd"><small id="hLbl" data-t="estPrice" hidden>Uppskattat pris, inkl. frakt</small><span id="hPrice" aria-live="polite"></span></button><button type="button" id="hOrder" data-t="order">Beställ</button></div>
     <div class="bd" id="bd" hidden></div>
     <canvas id="c" data-t-aria="canvas" aria-label="3D-vy av länkarna. Dra för att rotera, nyp eller scrolla för att zooma, klicka på en länk för att välja den."></canvas>
@@ -252,7 +275,39 @@ canvas{display:block;width:100%;height:100%}
   </main>
 </div>
 <div id="upd" role="alert" hidden><span data-t="newVer">Ny version finns</span><button type="button" id="updBtn" data-t="update">Uppdatera</button></div>
-<dialog id="langDlg" aria-labelledby="langTitle">
+<dialog id="accDlg" class="sheet" aria-labelledby="accTitle">
+  <div class="langhead" style="max-width:560px"><h2 id="accTitle" data-t="tAccount">Mitt konto</h2><button type="button" data-close data-t="close">Stäng</button></div>
+  <div class="col">
+    <div id="accOut"><p class="note" data-t="accIntro" style="font-size:14px"></p>
+      <form id="accForm" class="col" style="gap:8px"><input type="email" id="accEmail" autocomplete="email" required data-t-ph="email" data-t-aria="email"><button type="submit" class="primary" id="accSend" data-t="sendLink">Skicka inloggningslänk</button></form></div>
+    <div id="accIn" hidden><div class="rowb"><span id="accWho" style="flex:1;min-width:0;overflow-wrap:anywhere"></span><button type="button" id="accLogout" data-t="logout">Logga ut</button></div>
+      <h3 data-t="myDesigns">Mina designer</h3>
+      <div class="rowb"><input type="text" id="dName" maxlength="80" data-t-ph="designName" data-t-aria="designName" style="flex:1;min-width:160px"><button type="button" class="primary" id="dSave" data-t="saveDesign">Spara den här designen</button></div>
+      <ul class="items" id="dList"></ul>
+      <h3 data-t="myOrders">Mina beställningar</h3>
+      <ul class="items" id="oList"></ul></div>
+    <p class="note" id="accStatus" aria-live="polite" style="font-size:13.5px"></p>
+  </div>
+</dialog>
+<dialog id="supDlg" class="sheet" aria-labelledby="supTitle">
+  <div class="langhead" style="max-width:560px"><h2 id="supTitle" data-t="tSupport">Hjälp och support</h2><button type="button" data-close data-t="close">Stäng</button></div>
+  <div class="col">
+    <div id="supAi"><p class="note" data-t="supIntro" style="font-size:14px"></p>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <form id="supForm" class="rowb"><input type="text" id="supQ" maxlength="1500" required data-t-ph="supPh" data-t-aria="supPh" style="flex:1;min-width:160px"><button type="submit" class="primary" id="supSend" data-t="sendMsg">Skicka</button></form></div>
+    <h3 data-t="humanTitle">Skriv till en människa</h3>
+    <p class="note" data-t="humanNote" style="font-size:13.5px"></p>
+    <form id="humForm" class="col" style="gap:8px">
+      <input type="text" id="hName" autocomplete="name" data-t-ph="name" data-t-aria="name">
+      <input type="email" id="hEmail" autocomplete="email" required data-t-ph="email" data-t-aria="email">
+      <textarea id="hMsg" rows="4" required maxlength="4000" data-t-ph="yourMsg" data-t-aria="yourMsg"></textarea>
+      <input type="text" id="hWeb" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+      <button type="submit" id="hSend" data-t="sendMsg">Skicka</button>
+    </form>
+    <p class="note" id="supStatus" aria-live="polite" style="font-size:13.5px"></p>
+  </div>
+</dialog>
+<dialog id="langDlg" class="sheet" aria-labelledby="langTitle">
   <div class="langhead"><h2 id="langTitle" data-t="chooseLang">Välj språk</h2><button type="button" id="langClose" data-t="close">Stäng</button></div>
   <div class="langgrid" id="langGrid"></div>
 </dialog>
@@ -689,14 +744,30 @@ document.getElementById('randomize').onclick=()=>{
   state.linkInlays=Array.from({length:linkTotal+8},()=>Math.random()<0.6?{cut:rnd(cuts),mat:rnd(gems)}:{cut:'none',mat:'rubin'});   // and inlays in about half the holes
   state.sel.clear();build();if(state.kind!=='rakt')frame();
 };
+// Put the controls back in step with the state (after a reset or when a saved design is opened).
+function syncUI(){
+  state.sel.clear();state.fresh.clear();
+  document.querySelectorAll('#kind button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===state.kind)));
+  document.querySelectorAll('#edge button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===state.edge)));
+  document.getElementById('len').value=state.len;document.getElementById('rad').value=state.rad;document.getElementById('rad').disabled=state.edge==='skarp';document.getElementById('domes').checked=state.domes;
+  document.getElementById('radv').textContent=`${fmt(state.rad,2)} mm`;updLen();build();frame();
+}
+const STATE_KEYS=['kind','len','edge','rad','mat','domes','shape','shapeH','linkShapes','linkMats','inlay','linkInlays','extra'];
+const getState=()=>JSON.parse(JSON.stringify(Object.fromEntries(STATE_KEYS.map(k=>[k,state[k]]))));
+function applyState(st){
+  if(anim||!st||typeof st!=='object')return;
+  const ok={kind:v=>['armband','halsband','rakt'].includes(v),len:v=>v>=14&&v<=22,edge:v=>['skarp','rundad','fas'].includes(v),rad:v=>v>=0.2&&v<=0.9,mat:v=>!!MATS.find(m=>m.id===v),domes:v=>typeof v==='boolean',
+    shape:v=>v==='kors'||(SHAPE_BY_ID[v]&&!isFork(v)),shapeH:v=>isFork(v),linkShapes:Array.isArray,linkMats:Array.isArray,inlay:v=>v&&CUTS[v.cut]&&!!inlayDef(v.mat),linkInlays:Array.isArray,extra:v=>Number.isInteger(v)&&v>=0&&v<=40};
+  for(const k of STATE_KEYS)if(k in st&&ok[k](st[k]))state[k]=st[k];
+  state.linkShapes=state.linkShapes.map((v,i)=>v&&(v==='kors'||v==='h'||SHAPE_BY_ID[v])&&isFork(v)===(i%2===1)?v:null);
+  state.linkMats=state.linkMats.map(v=>v&&MATS.find(m=>m.id===v)?v:null);
+  state.linkInlays=state.linkInlays.map(v=>v&&CUTS[v.cut]&&inlayDef(v.mat)?{cut:v.cut,mat:v.mat}:null);
+  syncUI();
+}
 document.getElementById('resetDesign').onclick=()=>{
   if(anim)return;   // back to the design the page starts with
   Object.assign(state,{kind:'armband',len:18,edge:'rundad',rad:0.5,mat:MATS.find(m=>m.id==='rpetg-grey')?'rpetg-grey':MATS[0].id,domes:true,shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],linkMats:[],extra:0});
-  state.sel.clear();state.fresh.clear();
-  document.querySelectorAll('#kind button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v==='armband')));
-  document.querySelectorAll('#edge button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v==='rundad')));
-  document.getElementById('len').value=18;document.getElementById('rad').value=0.5;document.getElementById('rad').disabled=false;document.getElementById('domes').checked=true;
-  document.getElementById('radv').textContent=`${fmt(state.rad,2)} mm`;updLen();build();frame();
+  syncUI();
 };
 document.getElementById('demoWear').onclick=demoWear;
 document.getElementById('addPair').onclick=addPair;
@@ -747,7 +818,7 @@ function updInlayUI(){
 document.getElementById('orderForm').addEventListener('submit',async e=>{
   e.preventDefault();const f=e.target,st=document.getElementById('oStatus'),btn=document.getElementById('oSend');
   btn.disabled=true;st.textContent=t('sending');
-  try{const r=await fetch('/api/links/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name.value,email:f.email.value,message:f.message.value,website:f.website.value,config:lastConfig,total_sek:lastPrice?Math.round(lastPrice):null})});
+  try{const r=await fetch('/api/links/orders',{method:'POST',headers:{'Content-Type':'application/json',...(await authHeader())},body:JSON.stringify({name:f.name.value,email:f.email.value,message:f.message.value,website:f.website.value,config:lastConfig,total_sek:lastPrice?Math.round(lastPrice):null})});
     const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(t('err'));
     st.textContent=t('thanks');f.reset();
   }catch(err){st.textContent=err.message}finally{btn.disabled=false}
@@ -816,7 +887,7 @@ document.getElementById('reset').onclick=frame;
   set(on);b.onclick=()=>set(!on);}}
 
 function applyLang(){
-  document.documentElement.lang=LANG;for(const q of ['aside','#langDlg','#cap','#buy','#upd'])document.querySelector(q).dir=LANG==='ar'?'rtl':'ltr';   // right-to-left for the text panels only, the 3D view keeps its place
+  document.documentElement.lang=LANG;for(const q of ['aside','#langDlg','#accDlg','#supDlg','#cap','#buy','#upd'])document.querySelector(q).dir=LANG==='ar'?'rtl':'ltr';   // right-to-left for the text panels only, the 3D view keeps its place
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
   document.querySelectorAll('[data-t-ph]').forEach(e=>e.placeholder=t(e.dataset.tPh));
   document.querySelectorAll('[data-t-aria]').forEach(e=>{const v=t(e.dataset.tAria);e.setAttribute('aria-label',v);if(e.hasAttribute('title'))e.title=v});
@@ -852,6 +923,69 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('/links/sw.js')
  const check=async()=>{try{const now=await read();if(!now.replace(/\|/g,''))return;if(sig===null)sig=now;else if(now!==sig)document.getElementById('upd').hidden=false}catch{}};
  check();setInterval(check,120000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
  document.getElementById('updBtn').onclick=()=>location.reload();}
+// ---- customer account: sign in by email link (Supabase Auth), saved designs, own orders ----
+let sb=null,sbUser=null;
+const SB_KEY='sb-pjcjbiafivmbkudcnzax-auth-token';
+async function sbClient(){
+  if(sb)return sb;
+  const cfg=await (await fetch('/api/config')).json();
+  if(!window.supabase)await new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+  sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseKey,{auth:{persistSession:true,detectSessionInUrl:true}});
+  sb.auth.onAuthStateChange((_e,sess)=>{sbUser=sess?.user||null;renderAccount()});
+  sbUser=(await sb.auth.getSession()).data.session?.user||null;
+  if(/access_token=|[?&]code=/.test(location.hash+location.search))history.replaceState(null,'',location.pathname);
+  return sb;
+}
+async function authHeader(){try{if(!sb)return {};const tk=(await sb.auth.getSession()).data.session?.access_token;return tk?{Authorization:'Bearer '+tk}:{}}catch{return {}}}
+const accSay=x=>document.getElementById('accStatus').textContent=x||'';
+const escH=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dateStr=d=>new Date(d).toLocaleDateString(LANG==='ar'?'ar-u-nu-latn':LANG);
+const ST_EN={ny:'received',kontaktad:'contacted',offert:'quote sent',beställd:'in production',levererad:'delivered',avbruten:'cancelled'};
+async function renderAccount(){
+  document.getElementById('accBtn').dataset.on=sbUser?'1':'';
+  document.getElementById('accOut').hidden=!!sbUser;document.getElementById('accIn').hidden=!sbUser;
+  if(!sbUser)return;
+  document.getElementById('accWho').textContent=t('signedInAs',{email:sbUser.email});
+  for(const id of ['oEmail','hEmail'])if(!document.getElementById(id).value)document.getElementById(id).value=sbUser.email;
+  if(!document.getElementById('accDlg').open)return;
+  try{
+    const h=await authHeader(),[ds,os]=await Promise.all([fetch('/api/links/me/designs',{headers:h}).then(r=>r.json()),fetch('/api/links/me/orders',{headers:h}).then(r=>r.json())]);
+    const dl=document.getElementById('dList'),ol=document.getElementById('oList');
+    dl.innerHTML=Array.isArray(ds)&&ds.length?'':`<li><div>${escH(t('noDesigns'))}</div></li>`;
+    (Array.isArray(ds)?ds:[]).forEach(d=>{const li=document.createElement('li');
+      li.innerHTML=`<div><b>${escH(d.name)}</b><small>${dateStr(d.created_at)}${d.total_sek?' · '+fmt(Math.round(d.total_sek/10)*10,0)+' kr':''}</small></div><button type="button" class="primary">${escH(t('openDesign'))}</button><button type="button">${escH(t('del'))}</button>`;
+      const [open,del]=li.querySelectorAll('button');
+      open.onclick=()=>{applyState(d.state);document.getElementById('accDlg').close()};
+      del.onclick=async()=>{del.disabled=true;await fetch('/api/links/me/designs/'+d.id,{method:'DELETE',headers:await authHeader()});renderAccount()};
+      dl.appendChild(li)});
+    ol.innerHTML=Array.isArray(os)&&os.length?os.map(o=>`<li><div><b>${dateStr(o.created_at)}${o.links?' · '+o.links+' '+escH(t('fLinks').toLocaleLowerCase(LANG)):''}${o.total_sek?' · '+fmt(Math.round(o.total_sek/10)*10,0)+' kr':''}</b><small>${escH(LANG==='sv'?o.status:(ST_EN[o.status]||o.status))}${o.tracking?' · '+escH(t('tracking'))+': '+escH(o.tracking):''}</small></div></li>`).join(''):`<li><div>${escH(t('noOrders'))}</div></li>`;
+  }catch{accSay(t('err'))}
+}
+document.getElementById('accBtn').onclick=async()=>{const d=document.getElementById('accDlg');accSay('');d.showModal();try{await sbClient();renderAccount()}catch{accSay(t('err'))}};
+document.getElementById('accForm').onsubmit=async e=>{e.preventDefault();const b=document.getElementById('accSend');b.disabled=true;accSay(t('sending'));
+  try{const c=await sbClient(),{error}=await c.auth.signInWithOtp({email:document.getElementById('accEmail').value.trim(),options:{emailRedirectTo:location.origin+'/links/'}});accSay(error?t('err'):t('checkMail'))}catch{accSay(t('err'))}finally{b.disabled=false}};
+document.getElementById('accLogout').onclick=async()=>{try{await sb.auth.signOut()}catch{}};
+document.getElementById('dSave').onclick=async()=>{const b=document.getElementById('dSave');b.disabled=true;
+  try{const r=await fetch('/api/links/me/designs',{method:'POST',headers:{'Content-Type':'application/json',...(await authHeader())},body:JSON.stringify({name:document.getElementById('dName').value.trim()||new Date().toLocaleDateString(LANG),state:getState(),config:lastConfig,total_sek:lastPrice?Math.round(lastPrice):null})});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||t('err'));document.getElementById('dName').value='';accSay(t('saved'));renderAccount()}catch(err){accSay(err.message)}finally{b.disabled=false}};
+// a returning signed-in visitor, or someone arriving from the email link, is signed in right away
+try{if(localStorage.getItem(SB_KEY)||/access_token=|[?&]code=/.test(location.hash+location.search))sbClient().then(renderAccount).catch(()=>{})}catch{}
+
+// ---- support: AI answers first, a person on request ----
+const talk=[];
+const supSay=x=>document.getElementById('supStatus').textContent=x||'';
+function bubble(role,text){const p=document.createElement('p');p.className=role==='user'?'u':'a';p.textContent=text;document.getElementById('chat').appendChild(p);p.scrollIntoView({block:'nearest'});return p}
+document.getElementById('supBtn').onclick=async()=>{const d=document.getElementById('supDlg');supSay('');d.showModal();
+  try{const j=await (await fetch('/api/links/support')).json();document.getElementById('supAi').hidden=!j.available}catch{document.getElementById('supAi').hidden=true}};
+document.getElementById('supForm').onsubmit=async e=>{e.preventDefault();const q=document.getElementById('supQ'),b=document.getElementById('supSend'),text=q.value.trim();if(!text)return;
+  talk.push({role:'user',content:text});bubble('user',text);q.value='';b.disabled=true;const wait=bubble('assistant',t('thinking'));
+  try{const r=await fetch('/api/links/support',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:talk.slice(-20),context:`Language: ${LANG}. Current design: ${JSON.stringify(lastConfig).slice(0,900)}. Price shown: ${document.getElementById('hPrice').textContent}.`})});
+    const j=await r.json().catch(()=>({}));const reply=r.ok&&j.reply?j.reply:t('supNoAnswer');wait.textContent=reply;if(r.ok&&j.reply)talk.push({role:'assistant',content:reply});else talk.pop()}
+  catch{wait.textContent=t('supNoAnswer');talk.pop()}finally{b.disabled=false;q.focus()}};
+document.getElementById('humForm').onsubmit=async e=>{e.preventDefault();const b=document.getElementById('hSend');b.disabled=true;supSay(t('sending'));
+  try{const r=await fetch('/api/links/messages',{method:'POST',headers:{'Content-Type':'application/json',...(await authHeader())},body:JSON.stringify({name:document.getElementById('hName').value,email:document.getElementById('hEmail').value,message:document.getElementById('hMsg').value,website:document.getElementById('hWeb').value,transcript:talk.slice(-30),lang:LANG})});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||t('err'));supSay(t('msgSent'));document.getElementById('hMsg').value=''}catch(err){supSay(err.message)}finally{b.disabled=false}};
+document.querySelectorAll('dialog.sheet [data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
 applyLang();
 resize();build();frame();loadCatalog();
 renderer.setAnimationLoop(now=>{tick(now);controls.update();renderer.render(scene,camera)});

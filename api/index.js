@@ -222,7 +222,8 @@ app.post('/api/links/orders', wrap(async (req, res) => {
   recentOrders.set(ip, now)
   const { error } = await supabase.from('links_orders').insert({
     name: String(name).slice(0, 120), email: String(email).slice(0, 200), message: String(message || '').slice(0, 2000),
-    config, total_sek: Number.isFinite(+total_sek) ? +total_sek : null
+    config, total_sek: Number.isFinite(+total_sek) ? +total_sek : null,
+    user_id: (await userFrom(req))?.id || null
   })
   if (error) throw error
   res.json({ ok: true })
@@ -277,9 +278,158 @@ app.get('/api/admin/links/orders', requireAdmin, wrap(async (req, res) => {
 }))
 app.put('/api/admin/links/orders/:id', requireAdmin, wrap(async (req, res) => {
   const { data, error } = await supabase.from('links_orders')
-    .update(pick(req.body || {}, ['status', 'admin_notes'])).eq('id', req.params.id).select().single()
+    .update(pick(req.body || {}, ['status', 'admin_notes', 'tracking', 'provider'])).eq('id', req.params.id).select().single()
   if (error) throw error
   res.json(data)
+}))
+
+// ── Links: customer accounts (Supabase Auth, same sign-in as the admin but any email) ──
+async function userFrom(req) {
+  const auth = req.headers['authorization'] || ''
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null
+  if (!token) return null
+  const { data: { user } = {}, error } = await supabase.auth.getUser(token)
+  return error ? null : user
+}
+async function requireUser(req, res, next) {
+  const user = await userFrom(req)
+  if (!user) return res.status(401).json({ error: 'Logga in först.' })
+  req.user = user
+  next()
+}
+const hits = new Map()
+function limited(req, key, ms) {            // very small per-IP rate limit
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'local'
+  const k = key + ip, now = Date.now()
+  if (now - (hits.get(k) || 0) < ms) return true
+  hits.set(k, now); return false
+}
+
+// saved designs
+app.get('/api/links/me/designs', requireUser, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_designs').select('id,name,state,total_sek,created_at').eq('user_id', req.user.id).order('created_at', { ascending: false }).limit(100)
+  if (error) throw error
+  res.json(data)
+}))
+app.post('/api/links/me/designs', requireUser, wrap(async (req, res) => {
+  const { name, state, config, total_sek } = req.body || {}
+  if (!state || typeof state !== 'object' || JSON.stringify(state).length > 30000) return res.status(400).json({ error: 'Designen saknas.' })
+  const { count } = await supabase.from('links_designs').select('id', { count: 'exact', head: true }).eq('user_id', req.user.id)
+  if (count >= 100) return res.status(400).json({ error: 'Du har 100 sparade designer. Ta bort någon först.' })
+  const { data, error } = await supabase.from('links_designs').insert({
+    user_id: req.user.id, name: String(name || 'Min design').slice(0, 80), state, config: config || null,
+    total_sek: Number.isFinite(+total_sek) ? +total_sek : null
+  }).select('id,name,state,total_sek,created_at').single()
+  if (error) throw error
+  res.json(data)
+}))
+app.delete('/api/links/me/designs/:id', requireUser, wrap(async (req, res) => {
+  const { error } = await supabase.from('links_designs').delete().eq('id', req.params.id).eq('user_id', req.user.id)
+  if (error) throw error
+  res.json({ ok: true })
+}))
+// the customer's own orders: placed while signed in, or with the same email address
+app.get('/api/links/me/orders', requireUser, wrap(async (req, res) => {
+  const cols = 'id,created_at,total_sek,status,tracking,config'
+  const [a, b] = await Promise.all([
+    supabase.from('links_orders').select(cols).eq('user_id', req.user.id).order('created_at', { ascending: false }).limit(100),
+    supabase.from('links_orders').select(cols).ilike('email', req.user.email || '-').order('created_at', { ascending: false }).limit(100)
+  ])
+  if (a.error) throw a.error; if (b.error) throw b.error
+  const seen = new Set(), out = []
+  for (const o of [...a.data, ...b.data]) if (!seen.has(o.id)) { seen.add(o.id); out.push({ id: o.id, created_at: o.created_at, total_sek: o.total_sek, status: o.status, tracking: o.tracking, links: o.config?.links, kind: o.config?.kind }) }
+  out.sort((x, y) => (x.created_at < y.created_at ? 1 : -1))
+  res.json(out)
+}))
+
+// message to a human (from the support window)
+app.post('/api/links/messages', wrap(async (req, res) => {
+  if (limited(req, 'msg', 20000)) return res.status(429).json({ error: 'Vänta en stund innan du skickar igen.' })
+  const { name, email, message, transcript, lang, website } = req.body || {}
+  if (website) return res.json({ ok: true })
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !message) return res.status(400).json({ error: 'Fyll i e-post och meddelande.' })
+  const { error } = await supabase.from('links_messages').insert({
+    user_id: (await userFrom(req))?.id || null, name: String(name || '').slice(0, 120), email: String(email).slice(0, 200),
+    message: String(message).slice(0, 4000), lang: String(lang || '').slice(0, 8),
+    transcript: Array.isArray(transcript) && JSON.stringify(transcript).length < 40000 ? transcript : null
+  })
+  if (error) throw error
+  res.json({ ok: true })
+}))
+
+// AI support. Needs ANTHROPIC_API_KEY in the environment; without it the page offers the human form only.
+const SUPPORT_SYSTEM = `You are the customer support assistant for Links by Peter Hoff Design, a Swedish jewellery designer in Stockholm.
+
+About Links: bracelets and necklaces built from small links, about 18 x 18 x 6 mm, that click together with a snap joint (a small half-ball on one link clicks into a bowl on the next). The customer designs the piece in a 3D configurator at peterhoffdesign.com/links: bracelet or necklace, length, edge style (sharp, rounded, chamfer), a shape for every link (plus shapes, rings, a bar and H shapes), a material for every link, and optional inlays in links that have holes (gemstones, coloured glass or another material). Extra links can be bought later and clicked in, to change the size or to turn a bracelet into a necklace. The standard material is recycled PETG made from used bottles. Other choices include recycled fishing-net nylon, shell, wood, cork, coffee and hemp filled materials, and metals such as silver, gold, bronze, steel and titanium. Each piece is made to order.
+
+Prices: the configurator shows an estimated price including shipping, and a per-link breakdown when the price is tapped. Prices are estimates until Peter Hoff Design confirms the order. Inlays are priced separately. Ordering currently sends an enquiry; there is no online payment yet, and Peter Hoff Design replies by email. Customers can sign in with their email address to save designs and see the status of their orders. A customer who wants a shape of their own can describe it in the enquiry form and will be contacted about a sketch or a 3D file.
+
+How to answer: reply in the language the customer writes in. Be brief, warm and concrete. Only state what is written above or in the page context that follows. You do not know delivery times, return terms, stock, exact final prices or the status of a specific order: say so plainly and suggest sending a message to the team with the "message to a person" form in this window. Never invent policies, prices or dates, and never promise anything on behalf of Peter Hoff Design. If the customer is unhappy with an answer or asks for a person, point them to that form.`
+let anthropic = null
+app.post('/api/links/support', wrap(async (req, res) => {
+  if (!process.env.ANTHROPIC_API_KEY) return res.json({ available: false })
+  if (limited(req, 'sup', 2500)) return res.status(429).json({ error: 'Vänta ett ögonblick.' })
+  const { messages, context } = req.body || {}
+  if (!Array.isArray(messages) || !messages.length || messages.length > 30) return res.status(400).json({ error: 'Frågan saknas.' })
+  const clean = messages.filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+    .map(m => ({ role: m.role, content: m.content.slice(0, 2000) }))
+  if (!clean.length || clean[clean.length - 1].role !== 'user') return res.status(400).json({ error: 'Frågan saknas.' })
+  if (!anthropic) { const Anthropic = require('@anthropic-ai/sdk'); anthropic = new Anthropic() }
+  const system = [{ type: 'text', text: SUPPORT_SYSTEM, cache_control: { type: 'ephemeral' } }]
+  if (context && typeof context === 'string') system.push({ type: 'text', text: 'Page context (what the customer has on screen right now):\n' + context.slice(0, 1500) })
+  const r = await anthropic.beta.messages.create({
+    model: process.env.LINKS_SUPPORT_MODEL || 'claude-opus-5-5',
+    max_tokens: 4000,
+    betas: ['server-side-fallback-2026-07-01'],
+    fallbacks: 'default',
+    output_config: { effort: 'low' },
+    system, messages: clean
+  })
+  if (r.stop_reason === 'refusal') return res.json({ available: true, reply: null })
+  const reply = r.content.filter(b => b.type === 'text').map(b => b.text).join('\n').trim()
+  res.json({ available: true, reply: reply || null })
+}))
+app.get('/api/links/support', (req, res) => res.json({ available: !!process.env.ANTHROPIC_API_KEY }))
+
+// admin: messages to a human
+app.get('/api/admin/links/messages', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_messages').select('*').order('created_at', { ascending: false }).limit(500)
+  if (error) throw error
+  res.json(data)
+}))
+app.put('/api/admin/links/messages/:id', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_messages').update(pick(req.body || {}, ['status', 'admin_notes'])).eq('id', req.params.id).select().single()
+  if (error) throw error
+  res.json(data)
+}))
+
+// admin: print and CNC companies. Keys are never stored here: each company names the environment variable
+// that holds its key in Vercel, and "connected" only says whether that variable is set.
+const PROVIDER_FIELDS = ['name', 'kind', 'materials', 'api_status', 'docs_url', 'site_url', 'env_key', 'notes', 'active', 'sort']
+const withConn = p => ({ ...p, connected: !!(p.env_key && /^[A-Z][A-Z0-9_]{2,60}$/.test(p.env_key) && process.env[p.env_key]) })
+app.get('/api/admin/links/providers', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_providers').select('*').order('sort')
+  if (error) throw error
+  res.json(data.map(withConn))
+}))
+app.post('/api/admin/links/providers', requireAdmin, wrap(async (req, res) => {
+  const b = req.body || {}
+  const id = String(b.id || b.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40)
+  if (!id || !b.name) return res.status(400).json({ error: 'Namn krävs' })
+  const { data, error } = await supabase.from('links_providers').insert({ id, ...pick(b, PROVIDER_FIELDS) }).select().single()
+  if (error) throw error
+  res.json(withConn(data))
+}))
+app.put('/api/admin/links/providers/:id', requireAdmin, wrap(async (req, res) => {
+  const { data, error } = await supabase.from('links_providers')
+    .update({ ...pick(req.body || {}, PROVIDER_FIELDS), updated_at: new Date().toISOString() }).eq('id', req.params.id).select().single()
+  if (error) throw error
+  res.json(withConn(data))
+}))
+app.delete('/api/admin/links/providers/:id', requireAdmin, wrap(async (req, res) => {
+  const { error } = await supabase.from('links_providers').delete().eq('id', req.params.id)
+  if (error) throw error
+  res.json({ ok: true })
 }))
 
 module.exports = app

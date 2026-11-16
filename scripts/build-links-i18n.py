@@ -7,7 +7,9 @@ langs = re.search(r'export const LANGS=(.*?);\n', src).group(1)
 T = {}
 for l in json.loads(langs):
     L = open(d + f"lang/{l['code']}.txt", encoding='utf8').read().rstrip('\n').split('\n')
-    assert len(L) == len(keys) and all(x.strip() for x in L), (l['code'], len(L), len(keys))
+    # sv and en must be complete; other languages may lag behind and then fall back to English on the page
+    assert all(x.strip() for x in L) and len(L) <= len(keys) and (len(L) == len(keys) or l['code'] not in ('sv', 'en')), (l['code'], len(L), len(keys))
+    if len(L) < len(keys): print(l['code'], 'is missing', len(keys) - len(L), 'texts')
     T[l['code']] = dict(zip(keys, L))
 out = "// Texts for the Links configurator. Built by scripts/build-links-i18n.py from lang/*.txt.\n"
 out += "export const LANGS=" + langs + ";\n"
