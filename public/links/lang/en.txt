@@ -159,3 +159,8 @@ Write to a person
 Didn't get a good answer? Send a message and we will read and reply ourselves. The conversation above is included.
 Thank you! We will reply to your email.
 Your message
+How it is made
+Solid
+Hollow
+Layer height
+Hollow makes the link lighter and cheaper, with 1.2 mm walls in plastic and 1.0 mm in metal. Hollow metal links are 3D printed or cast and cannot be milled. Thin layers give a finer surface. Thick layers show more and print faster.

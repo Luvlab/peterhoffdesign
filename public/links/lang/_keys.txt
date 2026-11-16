@@ -159,3 +159,8 @@ humanTitle
 humanNote
 msgSent
 yourMsg
+mkLegend
+solid
+hollow
+layerH
+mkNote

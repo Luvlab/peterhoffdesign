@@ -230,6 +230,22 @@ dialog.sheet{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;b
     </fieldset>
 
     <fieldset>
+      <legend data-t="mkLegend">Tillverkning</legend>
+      <div class="seg" id="fill">
+        <button type="button" data-v="solid" aria-pressed="true" data-t="solid">Massiv</button>
+        <button type="button" data-v="hollow" aria-pressed="false" data-t="hollow">Ihålig</button>
+      </div>
+      <p class="selinfo"><b data-t="layerH">Lagerhöjd</b></p>
+      <div class="seg" id="layer" role="group" data-t-aria="layerH" aria-label="Lagerhöjd">
+        <button type="button" data-v="0.1" aria-pressed="false">0,10</button>
+        <button type="button" data-v="0.12" aria-pressed="true">0,12</button>
+        <button type="button" data-v="0.2" aria-pressed="false">0,20</button>
+        <button type="button" data-v="0.3" aria-pressed="false">0,30</button>
+      </div>
+      <p class="note" data-t="mkNote"></p>
+    </fieldset>
+
+    <fieldset>
       <legend data-t="showLegend">Visa</legend>
       <label class="chk"><input type="checkbox" id="domes" checked> <span data-t="domes">Kupoler och skålar (klick)</span></label>
     </fieldset>
@@ -446,7 +462,7 @@ function priceFor(volOf,links,matIdOf){
   if(!CATALOG||!CATALOG.showPrices)return null;const s=CATALOG.settings,k=(1+s.markup_percent/100)*(1+s.vat_percent/100),rows=[];
   for(let i=0;i<links;i++){const m=MATS.find(x=>x.id===matIdOf(i));if(!m||!m.cost)return null;const c=m.cost,cross=i%2===0;
     const grams=volOf(i)*(+c.density);
-    rows.push(k*(grams/1000*(+c.cost_per_kg)*(1+s.waste_percent/100)+(c.family==='filament'?(cross?s.minutes_per_cross:s.minutes_per_h)/60*s.machine_sek_per_hour:0)+s.post_minutes_per_link/60*s.labour_sek_per_hour+(+c.fee_per_link||0)))}
+    rows.push(k*(grams/1000*(+c.cost_per_kg)*(1+s.waste_percent/100)+(c.family==='filament'?(cross?s.minutes_per_cross:s.minutes_per_h)*(0.12/state.layer)*(state.fill==='hollow'?0.85:1)/60*s.machine_sek_per_hour:0)+s.post_minutes_per_link/60*s.labour_sek_per_hour+(+c.fee_per_link||0)))}
   const fixed=k*(+s.fixed_per_piece),ship=+s.shipping_sek||0;
   return {rows,fixed,ship,total:rows.reduce((a,b)=>a+b,0)+fixed+ship};
 }
@@ -521,6 +537,14 @@ function safeRadius(def){
   widths.sort((x,y)=>x-y);const w=widths[Math.floor(widths.length*0.04)];   // ignore the very tips of spikes
   return Math.max(0.25,Math.min(0.9,0.38*w));
 }
+const outlineCache={};
+function outlineStats(id){   // area and total edge length of a link shape, holes included
+  if(outlineCache[id])return outlineCache[id];
+  const def=SHAPE_BY_ID[id]||{o:id==='h'?HSHAPE:CROSS,h:[]},m=L=>{let a=0,p=0;for(let i=0;i<L.length;i++){const q=L[(i+1)%L.length],r=L[i];a+=r[0]*q[1]-q[0]*r[1];p+=Math.hypot(q[0]-r[0],q[1]-r[1])}return [Math.abs(a)/2,p]};
+  let [area,perim]=m(def.o);for(const h of def.h){const [a,p]=m(h);area-=a;perim+=p}
+  return outlineCache[id]={area,perim};
+}
+const isMetal=id=>METAL_IDS.has(id)||MATS.find(m=>m.id===id)?.cost?.family==='metal';
 function shapeGeo(def,mode,r){
   const sh=new THREE.Shape(def.o.map(p=>new THREE.Vector2(p[0],p[1])));
   for(const h of def.h)sh.holes.push(new THREE.Path(h.map(p=>new THREE.Vector2(p[0],p[1]))));
@@ -556,7 +580,7 @@ const cam=key.shadow.camera;cam.left=cam.bottom=-200;cam.right=cam.top=200;cam.n
 function bgFromTheme(){const v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e4e2de';scene.background=new THREE.Color(v);}
 bgFromTheme();
 // ---- state ----
-const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'rpetg-grey',domes:true,sel:new Set(),linkMats:[],shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],extra:0,fresh:new Set()};
+const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'rpetg-grey',domes:true,sel:new Set(),linkMats:[],shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],fill:'solid',layer:0.12,extra:0,fresh:new Set()};
 const freshCache={};
 const freshMat=id=>freshCache[id]||(freshCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2fbf71);m.emissiveIntensity=0.45;return m})());
 let linkTotal=0;
@@ -629,6 +653,12 @@ function build(){
   const gh=linkGeo(HSHAPE,state.edge,state.rad),gd=domeGeo(),geos={h:gh},vols={};
   const geoOf=id=>geos[id]||(geos[id]=!SHAPE_BY_ID[id]?linkGeo(CROSS,state.edge,state.rad):shapeGeo(SHAPE_BY_ID[id],state.edge,state.rad));
   const volOf=i=>{const id=shapeFor(i);return vols[id]??(vols[id]=volume(geoOf(id))/1000)};
+  // What the link is actually made of, in cm3. Hollow keeps a shell: 1.2 mm in plastic (3 walls with a 0.4 nozzle, 2 with 0.6), 1.0 mm in metal,
+  // the same top and bottom, and 10 % infill in plastic so the top has something to rest on.
+  const matVolOf=i=>{const v=volOf(i);if(state.fill!=='hollow')return v;
+    const metal=isMetal(matIdFor(i)),w=metal?1.0:1.2,g=outlineStats(shapeFor(i));
+    const inner=Math.max(0,g.area-g.perim*w+4*w*w)*(A-2*w)/1000*(metal?1:0.9);
+    return Math.max(0.3*v,v-inner)};
   const {n:nb}=linkCount();const links=nb+2*state.extra;
   for(let i=0;i<links;i++){
     const isCross=i%2===0,g=new THREE.Group();
@@ -657,18 +687,18 @@ function build(){
   // facts
   linkTotal=links;for(const k of [...state.sel])if(k>=links)state.sel.delete(k);
   const nC=Math.ceil(links/2),nH=Math.floor(links/2);
-  let vol=0;for(let i=0;i<links;i++)vol+=volOf(i);
+  let vol=0;for(let i=0;i<links;i++)vol+=matVolOf(i);
   let wMix=0,len=0;const used=new Set();
-  for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=volOf(i)*MATS.find(m=>m.id===id).rho;len+=spanOf(i);
+  for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=matVolOf(i)*MATS.find(m=>m.id===id).rho;len+=spanOf(i);
     if(hasInlay(i))wMix+=holesOf(i).reduce((a,h)=>a+holeStats(h).area,0)*A/1000*(inlayDef(inlayFor(i).mat)?.rho||2.5)}
   document.getElementById('fLinks').textContent=`${links} (${nC} + ${nH})`+(state.extra?` · +${2*state.extra}`:'');
   document.getElementById('fLen').textContent=`${fmt(len/10,1)} cm`;
   document.getElementById('fW').textContent=`${fmt(wMix,1)} g`;
   document.getElementById('fAg').textContent=`${vol*10.36|0} g`;
-  const parts=priceFor(volOf,links,matIdFor),price=parts?parts.total:null;renderBreakdown(parts,links);document.getElementById('fPriceL').hidden=document.getElementById('fPrice').hidden=price==null;
+  const parts=priceFor(matVolOf,links,matIdFor),price=parts?parts.total:null;renderBreakdown(parts,links);document.getElementById('fPriceL').hidden=document.getElementById('fPrice').hidden=price==null;
   const anyIn=Array.from({length:links},(_,i)=>hasInlay(i)).some(Boolean);
   if(price!=null)document.getElementById('fPrice').textContent=`${Math.round(price/10)*10} kr`+(anyIn?' '+t('plusInlay'):'');
-  lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),shapes:Array.from({length:links},(_,i)=>shapeName(shapeFor(i))),domes:state.domes,lang:LANG,inlays:Array.from({length:links},(_,i)=>hasInlay(i)?`${inlayDef(inlayFor(i).mat)?.name}, ${CUTS[inlayFor(i).cut]}`:null)};lastPrice=price;
+  lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),shapes:Array.from({length:links},(_,i)=>shapeName(shapeFor(i))),domes:state.domes,fill:state.fill,layerMm:state.layer,walls:state.fill==='hollow'?'plast 1,2 mm (3 x 0,4 eller 2 x 0,6 för fiberfyllda), metall 1,0 mm':null,lang:LANG,inlays:Array.from({length:links},(_,i)=>hasInlay(i)?`${inlayDef(inlayFor(i).mat)?.name}, ${CUTS[inlayFor(i).cut]}`:null)};lastPrice=price;
   document.getElementById('extraInfo').textContent=state.extra?t('moreAdded',{n:2*state.extra,cm:fmt(state.extra*(SPAN_C+SPAN_H)/10,1)}):t('moreInfo');
   document.getElementById('removePair').disabled=!state.extra;
   document.getElementById('hLbl').hidden=price==null;
@@ -749,15 +779,18 @@ function syncUI(){
   state.sel.clear();state.fresh.clear();
   document.querySelectorAll('#kind button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===state.kind)));
   document.querySelectorAll('#edge button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===state.edge)));
+  document.querySelectorAll('#fill button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===state.fill)));
+  document.querySelectorAll('#layer button').forEach(x=>x.setAttribute('aria-pressed',String(+x.dataset.v===state.layer)));
   document.getElementById('len').value=state.len;document.getElementById('rad').value=state.rad;document.getElementById('rad').disabled=state.edge==='skarp';document.getElementById('domes').checked=state.domes;
+  layerTex.repeat.set(1,1/(state.layer*8));
   document.getElementById('radv').textContent=`${fmt(state.rad,2)} mm`;updLen();build();frame();
 }
-const STATE_KEYS=['kind','len','edge','rad','mat','domes','shape','shapeH','linkShapes','linkMats','inlay','linkInlays','extra'];
+const STATE_KEYS=['kind','len','edge','rad','mat','domes','shape','shapeH','linkShapes','linkMats','inlay','linkInlays','fill','layer','extra'];
 const getState=()=>JSON.parse(JSON.stringify(Object.fromEntries(STATE_KEYS.map(k=>[k,state[k]]))));
 function applyState(st){
   if(anim||!st||typeof st!=='object')return;
   const ok={kind:v=>['armband','halsband','rakt'].includes(v),len:v=>v>=14&&v<=22,edge:v=>['skarp','rundad','fas'].includes(v),rad:v=>v>=0.2&&v<=0.9,mat:v=>!!MATS.find(m=>m.id===v),domes:v=>typeof v==='boolean',
-    shape:v=>v==='kors'||(SHAPE_BY_ID[v]&&!isFork(v)),shapeH:v=>isFork(v),linkShapes:Array.isArray,linkMats:Array.isArray,inlay:v=>v&&CUTS[v.cut]&&!!inlayDef(v.mat),linkInlays:Array.isArray,extra:v=>Number.isInteger(v)&&v>=0&&v<=40};
+    shape:v=>v==='kors'||(SHAPE_BY_ID[v]&&!isFork(v)),shapeH:v=>isFork(v),linkShapes:Array.isArray,linkMats:Array.isArray,inlay:v=>v&&CUTS[v.cut]&&!!inlayDef(v.mat),linkInlays:Array.isArray,fill:v=>v==='solid'||v==='hollow',layer:v=>[0.1,0.12,0.2,0.3].includes(v),extra:v=>Number.isInteger(v)&&v>=0&&v<=40};
   for(const k of STATE_KEYS)if(k in st&&ok[k](st[k]))state[k]=st[k];
   state.linkShapes=state.linkShapes.map((v,i)=>v&&(v==='kors'||v==='h'||SHAPE_BY_ID[v])&&isFork(v)===(i%2===1)?v:null);
   state.linkMats=state.linkMats.map(v=>v&&MATS.find(m=>m.id===v)?v:null);
@@ -766,7 +799,7 @@ function applyState(st){
 }
 document.getElementById('resetDesign').onclick=()=>{
   if(anim)return;   // back to the design the page starts with
-  Object.assign(state,{kind:'armband',len:18,edge:'rundad',rad:0.5,mat:MATS.find(m=>m.id==='rpetg-grey')?'rpetg-grey':MATS[0].id,domes:true,shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],linkMats:[],extra:0});
+  Object.assign(state,{kind:'armband',len:18,edge:'rundad',rad:0.5,mat:MATS.find(m=>m.id==='rpetg-grey')?'rpetg-grey':MATS[0].id,domes:true,shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],linkMats:[],fill:'solid',layer:0.12,extra:0});
   syncUI();
 };
 document.getElementById('demoWear').onclick=demoWear;
@@ -785,6 +818,8 @@ function seg(id,keyName,after){
   const el=document.getElementById(id);
   el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;state[keyName]=b.dataset.v;el.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));after&&after();build();if(keyName==='kind')frame();});
 }
+seg('fill','fill',()=>{});
+document.querySelectorAll('#layer button').forEach(b=>b.onclick=()=>{state.layer=+b.dataset.v;document.querySelectorAll('#layer button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));layerTex.repeat.set(1,1/(state.layer*8));build()});
 seg('kind','kind',updLen);seg('edge','edge',()=>{document.getElementById('rad').disabled=state.edge==='skarp'});
 function updLen(){const v=state.kind==='halsband'?state.len*2.5:state.len;document.getElementById('lenv').textContent=`${fmt(v,state.kind==='halsband'?0:1)} cm`;}
 document.getElementById('len').addEventListener('input',e=>{state.len=+e.target.value;updLen();build()});
@@ -892,6 +927,7 @@ function applyLang(){
   document.querySelectorAll('[data-t-ph]').forEach(e=>e.placeholder=t(e.dataset.tPh));
   document.querySelectorAll('[data-t-aria]').forEach(e=>{const v=t(e.dataset.tAria);e.setAttribute('aria-label',v);if(e.hasAttribute('title'))e.title=v});
   document.getElementById('langBtn').textContent=LANGS.find(l=>l.code===LANG).ab;
+  document.querySelectorAll('#layer button').forEach(b=>b.textContent=fmt(+b.dataset.v,2));
   document.querySelectorAll('#langGrid button').forEach(b=>b.setAttribute('aria-current',String(b.dataset.code===LANG)));
   renderSwatches();renderInlaySw();updLen();document.getElementById('radv').textContent=`${fmt(state.rad,2)} mm`;
 }
