@@ -78,7 +78,13 @@ canvas{display:block;width:100%;height:100%}
   .app{grid-template-columns:1fr;grid-template-rows:58vh auto;height:auto}
   main{order:-1;height:58vh}
   aside{border-right:0;border-top:1px solid var(--line);padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .app.r43{grid-template-rows:min(75vw,58vh) auto}
+  .app.r43 main{height:min(75vw,58vh)}
+  .app.pin main{position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
+  .hud{gap:6px;right:max(10px,env(safe-area-inset-right,0px));bottom:10px}
+  .hud button{width:36px;height:36px}
 }
+@media (min-width:761px){.hud .mob{display:none}}
 @media (prefers-reduced-motion: reduce){.hud [data-spin]{display:none}}
 </style>
 
@@ -184,6 +190,8 @@ canvas{display:block;width:100%;height:100%}
       <button type="button" class="ic" id="demoWear" title="Ta av och på" aria-label="Ta av och på"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M17 3v3h-3"/></svg></button>
       <button type="button" class="ic" id="randomize" title="Slumpa färger och material" aria-label="Slumpa färger och material"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.3"/><circle cx="16" cy="8" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="8" cy="16" r="1.3"/><circle cx="16" cy="16" r="1.3"/></svg></button>
       <button type="button" class="ic" id="spin" data-spin aria-pressed="true" title="Snurra" aria-label="Snurra"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg></button>
+      <button type="button" class="ic mob" id="pin" aria-pressed="true" title="Lås vyn överst" aria-label="Lås 3D-vyn överst när du scrollar"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button>
+      <button type="button" class="ic mob" id="r43" aria-pressed="true" title="Format 4:3" aria-label="Lägre 3D-vy i format 4:3"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M8 10v4M16 10v4"/></svg></button>
       <button type="button" class="ic" id="reset" title="Centrera" aria-label="Centrera"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
     </div>
   </main>
@@ -615,6 +623,11 @@ canvas.addEventListener('pointerup',e=>{
 });
 document.getElementById('spin').onclick=e=>{controls.autoRotate=!controls.autoRotate;e.target.setAttribute('aria-pressed',String(controls.autoRotate))};
 document.getElementById('reset').onclick=frame;
+{const app=document.querySelector('.app');
+ for(const k of ['pin','r43']){const b=document.getElementById(k);let on=true;
+  try{const v=localStorage.getItem('links_'+k);if(v!==null)on=v==='1'}catch{}
+  const set=v=>{on=v;app.classList.toggle(k,on);b.setAttribute('aria-pressed',String(on));try{localStorage.setItem('links_'+k,on?'1':'0')}catch{}};
+  set(on);b.onclick=()=>set(!on);}}
 
 resize();build();frame();loadCatalog();
 renderer.setAnimationLoop(now=>{tick(now);controls.update();renderer.render(scene,camera)});
