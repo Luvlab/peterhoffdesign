@@ -1,0 +1,122 @@
+Peter Hoff Design · eslabones en cruz y en H con bisagras de clic, tamaño real 18 × 18 × 6 mm.
+Tipo
+Pulsera
+Collar
+Extendido
+Longitud
+Bordes
+Vivo
+Redondeado
+Chaflán
+Máximo 0,9 mm, para que la cúpula y el cuenco queden siempre sobre caras planas y los eslabones se puedan unir.
+Radio
+Forma de los eslabones
+Elige una forma para todos los eslabones del mismo tipo. Selecciona antes un eslabón para cambiar solo ese.
+Eslabones seleccionados: {n}. Elige su forma.
+La pulsera de Peter
+Mezclar formas
+Cruces, anillos y barra
+Eslabones en H
+(un eslabón de cada dos)
+Material y color
+Haz clic en un eslabón para darle su propio material. Mayús-clic selecciona varios.
+Eslabones seleccionados: {n}. Elige su material.
+Todas las cruces
+Todas las H
+Todos los eslabones
+Deseleccionar
+Incrustación en los huecos
+Aquí no hay eslabones con huecos. Elige una forma con agujero o ranura.
+Eslabones con huecos: {n}. Elige una talla y una piedra, vidrio o material.
+Ninguna
+Plana
+Abombada
+Facetada
+Piedras preciosas
+Vidrio de color
+Otro material
+Más eslabones
+Añade eslabones cuando quieras. Encajan con un clic en la última articulación.
+Eslabones añadidos: {n} (+{cm} cm). Encajan con un clic en la última articulación.
++ 2 eslabones
+− 2 eslabones
+Una talla mayor, o para otra persona
+Sustituir un eslabón perdido
+Añadir un metal o un color nuevo
+Convertir la pulsera en collar
+Un eslabón nuevo por cada recuerdo o regalo
+Mostrar
+Cúpulas y cuencos (clic)
+Eslabones
+Peso en el material elegido
+Peso en plata 925
+Precio con IVA
++ incrustación
+Enviar consulta
+Nombre
+Correo electrónico
+Mensaje (opcional)
+Enviar mi configuración
+Enviando…
+¡Gracias! Peter Hoff Design se pondrá en contacto.
+Algo ha salido mal
+Vista previa para elegir forma, bordes y material. Los archivos de impresión con bisagras se preparan aparte. El peso se calcula a partir del volumen del modelo. Las incrustaciones se presupuestan aparte.
+Vista 3D de los eslabones. Arrastra para girar, pellizca o desplaza para ampliar, haz clic en un eslabón para seleccionarlo.
+Mostrar el montaje
+Quitar y poner
+Eslabones, colores y materiales al azar
+Girar
+Fijar la vista arriba
+Centrar
+Elegir idioma
+Cerrar
+mezclado
+Los eslabones están sueltos: cruz y H alternadas.
+El brazo de la cruz entra en la H. La cúpula encaja en el cuenco.
+Enrolla la cadena en un anillo.
+La última articulación hace clic. Listo.
+Separa una articulación, la cúpula sale del cuenco.
+La cadena se abre.
+Colócala alrededor de la muñeca o del cuello.
+Ciérrala.
+Clic. Queda sujeta.
+Abre la última articulación.
+Dos eslabones nuevos, una cruz y una H, encajan con un clic.
+Cierra de nuevo.
+Clic. 2,7 cm más larga.
+Plata 925
+Oro 18k
+Oro rosa
+Rodio negro
+Acero inoxidable
+Bronce
+Titanio
+Ostra
+Concha de mejillón
+Madera
+Bambú
+Corcho
+Café
+Cáñamo
+Fibra de carbono
+rojo
+azul
+amarillo
+verde
+blanco
+negro
+naranja
+transparente
+Diamante
+Rubí
+Zafiro
+Esmeralda
+Amatista
+Topacio azul
+Citrino
+Ónix
+Turquesa
+Nácar
+Cobalto
+Ámbar
+Ahumado

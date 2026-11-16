@@ -1,0 +1,122 @@
+Peter Hoff Design · elos em cruz e em H com dobradiças de clique, tamanho real 18 × 18 × 6 mm.
+Tipo
+Pulseira
+Colar
+Estendido
+Comprimento
+Arestas
+Viva
+Arredondada
+Chanfro
+Máximo 0,9 mm, para que a cúpula e a taça fiquem sempre em faces planas e os elos se possam unir.
+Raio
+Forma dos elos
+Escolha uma forma para todos os elos do mesmo tipo. Selecione primeiro um elo para alterar só esse.
+Elos selecionados: {n}. Escolha a forma deles.
+A pulseira do Peter
+Misturar formas
+Cruzes, anéis e barra
+Elos em H
+(um elo sim, um não)
+Material e cor
+Clique num elo para lhe dar um material próprio. Shift-clique seleciona vários.
+Elos selecionados: {n}. Escolha o material deles.
+Todas as cruzes
+Todos os H
+Todos os elos
+Desmarcar
+Incrustação nas aberturas
+Não há elos com aberturas aqui. Escolha uma forma com furo ou ranhura.
+Elos com aberturas: {n}. Escolha uma lapidação e uma pedra, vidro ou material.
+Nenhuma
+Plana
+Abaulada
+Facetada
+Pedras preciosas
+Vidro colorido
+Outro material
+Mais elos
+Acrescente elos quando quiser. Encaixam com um clique na última articulação.
+Elos acrescentados: {n} (+{cm} cm). Encaixam com um clique na última articulação.
++ 2 elos
+− 2 elos
+Um tamanho maior, ou para outra pessoa
+Substituir um elo perdido
+Juntar um novo metal ou uma nova cor
+Transformar a pulseira em colar
+Um novo elo para cada memória ou presente
+Mostrar
+Cúpulas e taças (clique)
+Elos
+Peso no material escolhido
+Peso em prata 925
+Preço com IVA
++ incrustação
+Enviar pedido
+Nome
+E-mail
+Mensagem (opcional)
+Enviar a minha configuração
+A enviar…
+Obrigado! A Peter Hoff Design entrará em contacto.
+Algo correu mal
+Pré-visualização para escolher forma, arestas e material. Os ficheiros de impressão com dobradiças são preparados à parte. O peso é calculado a partir do volume do modelo. As incrustações têm preço à parte.
+Vista 3D dos elos. Arraste para rodar, belisque ou desloque para ampliar, clique num elo para o selecionar.
+Mostrar a montagem
+Tirar e pôr
+Elos, cores e materiais ao acaso
+Rodar
+Fixar a vista no topo
+Centrar
+Escolher idioma
+Fechar
+misto
+Os elos estão soltos: cruz e H alternados.
+O braço da cruz entra no H. A cúpula encaixa na taça.
+Enrole a corrente num anel.
+A última articulação faz clique. Pronto.
+Separe uma articulação, a cúpula sai da taça.
+A corrente abre-se.
+Coloque-a à volta do pulso ou do pescoço.
+Feche-a.
+Clique. Fica presa.
+Abra a última articulação.
+Dois elos novos, uma cruz e um H, encaixam.
+Feche de novo.
+Clique. 2,7 cm mais comprida.
+Prata 925
+Ouro 18k
+Ouro rosa
+Ródio negro
+Aço inoxidável
+Bronze
+Titânio
+Ostra
+Concha de mexilhão
+Madeira
+Bambu
+Cortiça
+Café
+Cânhamo
+Fibra de carbono
+vermelho
+azul
+amarelo
+verde
+branco
+preto
+laranja
+transparente
+Diamante
+Rubi
+Safira
+Esmeralda
+Ametista
+Topázio azul
+Citrino
+Ónix
+Turquesa
+Madrepérola
+Cobalto
+Âmbar
+Fumado

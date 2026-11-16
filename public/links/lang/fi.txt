@@ -1,0 +1,122 @@
+Peter Hoff Design · risti- ja H-lenkit napsautussaranoilla, todellinen koko 18 × 18 × 6 mm.
+Tyyppi
+Rannekoru
+Kaulakoru
+Suorana
+Pituus
+Reunat
+Terävä
+Pyöristetty
+Viiste
+Enintään 0,9 mm, jotta kupu ja kuppi ovat aina tasaisella pinnalla ja lenkit voi liittää yhteen.
+Säde
+Lenkkien muoto
+Valitse muoto kaikille samanlaisille lenkeille. Valitse ensin lenkki, jos haluat muuttaa vain sitä.
+Valittuja lenkkejä: {n}. Valitse niille muoto.
+Peterin rannekoru
+Sekoita muodot
+Ristit, renkaat ja sauva
+H-lenkit
+(joka toinen lenkki)
+Materiaali ja väri
+Napsauta lenkkiä antaaksesi sille oman materiaalin. Vaihto-napsautus valitsee useita.
+Valittuja lenkkejä: {n}. Valitse niille materiaali.
+Kaikki ristit
+Kaikki H
+Kaikki lenkit
+Poista valinta
+Upotus reikiin
+Ei reiällisiä lenkkejä. Valitse muoto, jossa on reikä tai rako.
+Reiällisiä lenkkejä: {n}. Valitse hionta ja kivi, lasi tai materiaali.
+Ei mitään
+Tasainen
+Kupera
+Viistehiottu
+Jalokivet
+Värillinen lasi
+Muu materiaali
+Lisää lenkkejä
+Osta lisää lenkkejä milloin haluat. Ne napsautetaan viimeiseen niveleen.
+Lisättyjä lenkkejä: {n} (+{cm} cm). Ne napsautetaan viimeiseen niveleen.
++ 2 lenkkiä
+− 2 lenkkiä
+Suurempi koko tai jollekulle toiselle
+Korvaa kadonnut lenkki
+Lisää uusi metalli tai väri
+Tee rannekorusta kaulakoru
+Uusi lenkki jokaiselle muistolle tai lahjalle
+Näytä
+Kuvut ja kupit (napsautus)
+Lenkit
+Paino valitussa materiaalissa
+Paino hopeassa 925
+Hinta sis. alv
++ upotus
+Lähetä tiedustelu
+Nimi
+Sähköposti
+Viesti (valinnainen)
+Lähetä kokoonpanoni
+Lähetetään…
+Kiitos! Peter Hoff Design ottaa yhteyttä.
+Jokin meni vikaan
+Esikatselu muodon, reunojen ja materiaalin valintaan. Saranalliset tulostustiedostot tehdään erikseen. Paino on laskettu mallin tilavuudesta. Upotukset hinnoitellaan erikseen.
+Lenkkien 3D-näkymä. Kierrä vetämällä, zoomaa nipistämällä tai vierittämällä, valitse lenkki napsauttamalla.
+Näytä kokoaminen
+Riisu ja pue
+Arvo lenkit, värit ja materiaalit
+Pyöritä
+Lukitse näkymä ylös
+Keskitä
+Valitse kieli
+Sulje
+sekoitus
+Lenkit ovat irrallaan: risti ja H vuorotellen.
+Ristin varsi työnnetään H:n sisään. Kupu napsahtaa kuppiin.
+Kierrä ketju renkaaksi.
+Viimeinen nivel napsahtaa. Valmis.
+Paina nivel auki, kupu irtoaa kupista.
+Ketju aukeaa.
+Aseta se ranteen tai kaulan ympärille.
+Sulje se.
+Naps. Pysyy kiinni.
+Avaa viimeinen nivel.
+Kaksi uutta lenkkiä, risti ja H, napsautetaan paikalleen.
+Sulje uudelleen.
+Naps. 2,7 cm pidempi.
+Hopea 925
+Kulta 18k
+Ruusukulta
+Musta rodium
+Ruostumaton teräs
+Pronssi
+Titaani
+Osteri
+Simpukankuori
+Puu
+Bambu
+Korkki
+Kahvi
+Hamppu
+Hiilikuitu
+punainen
+sininen
+keltainen
+vihreä
+valkoinen
+musta
+oranssi
+kirkas
+Timantti
+Rubiini
+Safiiri
+Smaragdi
+Ametisti
+Sininen topaasi
+Sitriini
+Onyksi
+Turkoosi
+Helmiäinen
+Koboltti
+Meripihka
+Savu

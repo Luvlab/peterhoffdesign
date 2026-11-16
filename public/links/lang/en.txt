@@ -1,0 +1,122 @@
+Peter Hoff Design · cross and H links with click hinges, true scale 18 × 18 × 6 mm.
+Type
+Bracelet
+Necklace
+Laid flat
+Length
+Edges
+Sharp
+Rounded
+Chamfer
+Max 0.9 mm, so the dome and bowl always sit on flat faces and the links can be joined.
+Radius
+Link shape
+Choose a shape for all links of the same kind. Select a link first to change only that one.
+Selected links: {n}. Choose a shape for them.
+Peter's bracelet
+Mix shapes
+Crosses, rings and bar
+H links
+(every other link)
+Material and colour
+Click a link to give it its own material. Shift-click selects several.
+Selected links: {n}. Choose a material for them.
+All crosses
+All H
+All links
+Deselect
+Inlay in the holes
+No links with holes here. Choose a shape with a hole or a slit.
+Links with holes: {n}. Choose a cut and a stone, glass or material.
+None
+Flat
+Domed
+Faceted
+Gemstones
+Coloured glass
+Other material
+More links
+Add links whenever you like. They click into the last joint.
+Added links: {n} (+{cm} cm). They click into the last joint.
++ 2 links
+− 2 links
+A larger size, or for someone else
+Replace a lost link
+Mix in a new metal or colour
+Turn the bracelet into a necklace
+A new link for every memory or gift
+Show
+Domes and bowls (click)
+Links
+Weight in chosen material
+Weight in silver 925
+Price incl. VAT
++ inlay
+Send enquiry
+Name
+Email
+Message (optional)
+Send my configuration
+Sending…
+Thank you! Peter Hoff Design will be in touch.
+Something went wrong
+Preview for choosing shape, edges and material. The print files with hinges are built separately. Weight is calculated from the model's volume. Inlays are priced separately.
+3D view of the links. Drag to rotate, pinch or scroll to zoom, click a link to select it.
+Show assembly
+Take off and put on
+Randomise links, colours and materials
+Spin
+Lock the view on top
+Centre
+Choose language
+Close
+mixed
+The links lie loose: cross and H in turn.
+The arm of the cross slides into the H. The dome clicks into the bowl.
+Roll the chain into a ring.
+The last joint clicks. Done.
+Press a joint apart, the dome leaves the bowl.
+The chain opens.
+Put it around the wrist or neck.
+Close it.
+Click. It holds.
+Open the last joint.
+Two new links, a cross and an H, click in.
+Close again.
+Click. 2.7 cm longer.
+Silver 925
+Gold 18k
+Rose gold
+Black rhodium
+Stainless steel
+Bronze
+Titanium
+Oyster
+Mussel shell
+Wood
+Bamboo
+Cork
+Coffee
+Hemp
+Carbon fibre
+red
+blue
+yellow
+green
+white
+black
+orange
+clear
+Diamond
+Ruby
+Sapphire
+Emerald
+Amethyst
+Blue topaz
+Citrine
+Onyx
+Turquoise
+Mother of pearl
+Cobalt
+Amber
+Smoke
