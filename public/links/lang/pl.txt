@@ -124,5 +124,12 @@ Zamów
 Cena na zapytanie
 Dostępna nowa wersja
 Odśwież
-Szacowana cena, bez wysyłki
+Szacowana cena, z wysyłką
 Przywróć projekt
+szary
+Sieci rybackie (nylon z recyklingu)
+Montaż i opakowanie
+Wysyłka
+Razem
+Standardowy materiał to PETG z recyklingu, wykonany ze zużytych butelek. Do wyboru są też sieci rybackie z recyklingu, muszle, drewno i korek.
+Własny kształt? Opisz pomysł w formularzu, a odezwiemy się w sprawie szkicu lub pliku 3D.

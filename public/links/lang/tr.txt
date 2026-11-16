@@ -124,5 +124,12 @@ Sipariş ver
 Fiyat için sorun
 Yeni sürüm hazır
 Güncelle
-Tahmini fiyat, kargo hariç
+Tahmini fiyat, kargo dahil
 Tasarımı sıfırla
+gri
+Balık ağları (geri dönüştürülmüş naylon)
+Montaj ve paketleme
+Kargo
+Toplam
+Standart malzeme, kullanılmış şişelerden yapılan geri dönüştürülmüş PETG'dir. Geri dönüştürülmüş balık ağları, kabuk, ahşap ve mantar da seçebilirsiniz.
+Kendi şekliniz mi? Fikrinizi formda anlatın, eskiz veya 3B dosya için size dönelim.

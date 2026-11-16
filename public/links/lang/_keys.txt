@@ -126,3 +126,10 @@ newVer
 update
 estPrice
 tReset
+c_grey
+m_fishnet
+pFixed
+pShip
+pTotal
+ecoNote
+customNote

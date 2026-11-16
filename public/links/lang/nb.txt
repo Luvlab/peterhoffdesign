@@ -124,5 +124,12 @@ Bestill
 Pris på forespørsel
 Ny versjon er tilgjengelig
 Oppdater
-Anslått pris, uten frakt
+Anslått pris, inkl. frakt
 Tilbakestill designet
+grå
+Fiskegarn (resirkulert nylon)
+Montering og emballasje
+Frakt
+Totalt
+Standardmaterialet er resirkulert PETG, laget av brukte flasker. Du kan også velge resirkulerte fiskegarn, skjell, tre og kork.
+Egen form? Beskriv ideen i skjemaet, så tar vi kontakt om skisse eller 3D-fil.

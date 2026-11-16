@@ -124,5 +124,12 @@ Pedir
 Precio a consultar
 Nueva versión disponible
 Actualizar
-Precio estimado, sin envío
+Precio estimado, envío incluido
 Restablecer el diseño
+gris
+Redes de pesca (nailon reciclado)
+Montaje y embalaje
+Envío
+Total
+El material estándar es PETG reciclado, hecho de botellas usadas. También puedes elegir redes de pesca recicladas, concha, madera y corcho.
+¿Una forma propia? Describe tu idea en el formulario y te contactaremos para un boceto o un archivo 3D.

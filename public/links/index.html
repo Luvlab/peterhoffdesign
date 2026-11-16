@@ -72,7 +72,16 @@ canvas{display:block;width:100%;height:100%}
 .hud button[disabled]{opacity:.4;cursor:default}
 .buy{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:10px;z-index:2;display:flex;align-items:center;gap:10px;max-width:calc(100% - 84px);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 12px;min-height:34px;box-sizing:border-box}
 
-.buy .pr{display:flex;flex-direction:column;min-width:0;line-height:1.2}.buy small{font-size:10px;color:var(--muted)}
+.buy .pr{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0;line-height:1.2}.buy .pr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bd{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:54px;z-index:3;width:min(330px,calc(100% - 28px));max-height:calc(100% - 120px);overflow-y:auto;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.14);animation:bdIn .18s ease-out}
+@keyframes bdIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.bd{animation:none}}
+.bd ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.bd li,.bd .sum{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:baseline}
+.bd li i{font-style:normal;color:var(--muted);font-family:var(--f-mono)}
+.bd b{font-family:var(--f-mono);font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bd .sum{grid-template-columns:1fr auto;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
+.bd .sum.tot{font-weight:600}.bd .sum.tot b{font-weight:600}.buy small{font-size:10px;color:var(--muted)}
 .buy span{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--fg);min-width:0}
 .buy button{all:unset;cursor:pointer;background:var(--fg);color:var(--panel);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap}
 .buy button:focus-visible,#upd button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -152,6 +161,7 @@ canvas{display:block;width:100%;height:100%}
       <div class="shapes" id="shapes"></div>
       <p class="selinfo"><b data-t="hGroup">H-länkar</b> <span data-t="every">(varannan länk)</span></p>
       <div class="shapes" id="shapesH"></div>
+      <p class="note" data-t="customNote">Egen form? Beskriv din idé i formuläret, så hör vi av oss om skiss eller 3D-fil.</p>
     </fieldset>
 
     <fieldset>
@@ -164,6 +174,7 @@ canvas{display:block;width:100%;height:100%}
         <button type="button" id="selNone" data-t="deselect">Avmarkera</button>
       </div>
       <div class="swatches" id="mat"></div>
+      <p class="note" data-t="ecoNote">Standardmaterialet är återvunnen PETG, gjord av använda flaskor.</p>
     </fieldset>
 
     <fieldset>
@@ -225,7 +236,8 @@ canvas{display:block;width:100%;height:100%}
   <main>
     <div class="cap" id="cap" hidden aria-live="polite"></div>
     <button type="button" class="langbtn" id="langBtn" aria-haspopup="dialog" data-t-aria="chooseLang" title="">SV</button>
-    <div class="buy" id="buy"><div class="pr"><small id="hLbl" data-t="estPrice" hidden>Uppskattat pris, utan frakt</small><span id="hPrice" aria-live="polite"></span></div><button type="button" id="hOrder" data-t="order">Beställ</button></div>
+    <div class="buy" id="buy"><button type="button" class="pr" id="hPriceBtn" aria-expanded="false" aria-controls="bd"><small id="hLbl" data-t="estPrice" hidden>Uppskattat pris, inkl. frakt</small><span id="hPrice" aria-live="polite"></span></button><button type="button" id="hOrder" data-t="order">Beställ</button></div>
+    <div class="bd" id="bd" hidden></div>
     <canvas id="c" data-t-aria="canvas" aria-label="3D-vy av länkarna. Dra för att rotera, nyp eller scrolla för att zooma, klicka på en länk för att välja den."></canvas>
     <div class="hud" role="toolbar" aria-label="Visning">
       <button type="button" class="ic" id="demoBuild" data-t-aria="tBuild" title="Visa ihopsättning" aria-label="Visa ihopsättning"><svg viewBox="0 0 24 24"><path d="M3 12h5M16 12h5M8 8v8M16 8v8M8 12h8"/><path d="M11 9l1-1 1 1M11 15l1 1 1-1"/></svg></button>
@@ -266,7 +278,7 @@ const GLASS_KEY={'g-klar':'c_clear','g-bla':'c_cobalt','g-gron':'c_green','g-rod
 // Name of a material or inlay in the current language. Shape names stay as Peter named them.
 function matLabel(d){const id=d.id;
   if(LANG==='sv'&&!GLASS_KEY[id])return d.name;   // Swedish keeps the names set in the admin
-  if(id.startsWith('pla-'))return 'PLA '+t('c_'+id.slice(4));if(id==='rpetg-clear')return 'rPETG '+t('c_clear');
+  if(id.startsWith('pla-'))return 'PLA '+t('c_'+id.slice(4));if(id==='rpetg-clear')return 'rPETG '+t('c_clear');if(id==='rpetg-grey')return 'rPETG '+t('c_grey');
   if(GLASS_KEY[id])return up(t(GLASS_KEY[id]));const k=(INLAY_BY_ID[id]?'i_':'m_')+id;return T.sv[k]?t(k):d.name}
 const HIDDEN=new Set(['storth']),SHAPES=ALL_SHAPES.filter(d=>!HIDDEN.has(d.id));   // hidden shapes stay in shapes.js, just not offered
 
@@ -292,13 +304,14 @@ function grainTex(base,line){
 }
 const plaMat=c=>new THREE.MeshStandardMaterial({color:c,roughness:0.55});
 const MATS=[
-  {id:'silver',name:'Silver 925',sw:'#cfd1d4',rho:10.36,m:()=>new THREE.MeshPhysicalMaterial({color:0xdcdee1,metalness:1,roughness:0.2})},
-  {id:'gold',name:'Guld 18k',sw:'#e2bd64',rho:15.5,m:()=>new THREE.MeshPhysicalMaterial({color:0xe8c26a,metalness:1,roughness:0.22})},
-  {id:'rose',name:'Roséguld',sw:'#e0a48c',rho:15.1,m:()=>new THREE.MeshPhysicalMaterial({color:0xe6a68e,metalness:1,roughness:0.24})},
-  {id:'black',name:'Svart rodium',sw:'#34353a',rho:10.36,m:()=>new THREE.MeshPhysicalMaterial({color:0x3a3b40,metalness:1,roughness:0.3})},
-  {id:'steel',name:'Rostfritt stål',sw:'#b9bcbf',rho:7.9,m:()=>new THREE.MeshPhysicalMaterial({color:0xc2c5c8,metalness:1,roughness:0.32})},
-  {id:'bronze',name:'Brons',sw:'#a9824f',rho:8.8,m:()=>new THREE.MeshPhysicalMaterial({color:0xb48a55,metalness:1,roughness:0.3})},
-  {id:'titanium',name:'Titan',sw:'#8e8f93',rho:4.5,m:()=>new THREE.MeshPhysicalMaterial({color:0x9a9ba0,metalness:1,roughness:0.38})},
+  {id:'rpetg-grey',name:'Återvunnen PETG grå',sw:'#9a9da1',rho:1.27,m:()=>new THREE.MeshPhysicalMaterial({color:0x9a9da1,roughness:0.2,clearcoat:0.7,clearcoatRoughness:0.15})},
+  {id:'silver',name:'Silver 925',sw:'#cfd1d4',rho:10.36,m:()=>new THREE.MeshPhysicalMaterial({color:0xdcdee1,metalness:0.92,roughness:0.2,envMapIntensity:1.9})},
+  {id:'gold',name:'Guld 18k',sw:'#e2bd64',rho:15.5,m:()=>new THREE.MeshPhysicalMaterial({color:0xe8c26a,metalness:0.92,roughness:0.22,envMapIntensity:1.9})},
+  {id:'rose',name:'Roséguld',sw:'#e0a48c',rho:15.1,m:()=>new THREE.MeshPhysicalMaterial({color:0xe6a68e,metalness:0.92,roughness:0.24,envMapIntensity:1.9})},
+  {id:'black',name:'Svart rodium',sw:'#34353a',rho:10.36,m:()=>new THREE.MeshPhysicalMaterial({color:0x3a3b40,metalness:0.92,roughness:0.3,envMapIntensity:1.9})},
+  {id:'steel',name:'Rostfritt stål',sw:'#b9bcbf',rho:7.9,m:()=>new THREE.MeshPhysicalMaterial({color:0xc2c5c8,metalness:0.92,roughness:0.32,envMapIntensity:1.9})},
+  {id:'bronze',name:'Brons',sw:'#a9824f',rho:8.8,m:()=>new THREE.MeshPhysicalMaterial({color:0xb48a55,metalness:0.92,roughness:0.3,envMapIntensity:1.9})},
+  {id:'titanium',name:'Titan',sw:'#8e8f93',rho:4.5,m:()=>new THREE.MeshPhysicalMaterial({color:0x9a9ba0,metalness:0.92,roughness:0.38,envMapIntensity:1.9})},
   {id:'oyster',name:'Ostron',sw:'#e8e3d8',rho:1.3,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#e9e4d9',['#b9b2a3','#8f887a','#f7f5ef'],2600),roughness:0.85})},
   {id:'mussel',name:'Musselskal',sw:'#3c414c',rho:1.3,m:()=>new THREE.MeshStandardMaterial({map:speckleTex('#3d424d',['#7a8396','#20232a','#9aa2b3'],2600),roughness:0.8})},
   {id:'wood',name:'Trä',sw:'#a8794c',rho:1.15,m:()=>new THREE.MeshStandardMaterial({map:grainTex('#a87a4f','#5b3b20'),roughness:0.75})},
@@ -374,11 +387,13 @@ async function loadCatalog(){
   }catch(e){}
 }
 function priceFor(volOf,links,matIdOf){
-  if(!CATALOG||!CATALOG.showPrices)return null;const s=CATALOG.settings;let cost=+s.fixed_per_piece;
+  // Returns what the customer pays, link by link, or null when a material has no cost yet.
+  if(!CATALOG||!CATALOG.showPrices)return null;const s=CATALOG.settings,k=(1+s.markup_percent/100)*(1+s.vat_percent/100),rows=[];
   for(let i=0;i<links;i++){const m=MATS.find(x=>x.id===matIdOf(i));if(!m||!m.cost)return null;const c=m.cost,cross=i%2===0;
     const grams=volOf(i)*(+c.density);
-    cost+=grams/1000*(+c.cost_per_kg)*(1+s.waste_percent/100)+(c.family==='filament'?(cross?s.minutes_per_cross:s.minutes_per_h)/60*s.machine_sek_per_hour:0)+s.post_minutes_per_link/60*s.labour_sek_per_hour+(+c.fee_per_link||0)}
-  return cost*(1+s.markup_percent/100)*(1+s.vat_percent/100);
+    rows.push(k*(grams/1000*(+c.cost_per_kg)*(1+s.waste_percent/100)+(c.family==='filament'?(cross?s.minutes_per_cross:s.minutes_per_h)/60*s.machine_sek_per_hour:0)+s.post_minutes_per_link/60*s.labour_sek_per_hour+(+c.fee_per_link||0)))}
+  const fixed=k*(+s.fixed_per_piece),ship=+s.shipping_sek||0;
+  return {rows,fixed,ship,total:rows.reduce((a,b)=>a+b,0)+fixed+ship};
 }
 // ---- outline helpers ----
 function inset(pts,d){
@@ -486,7 +501,7 @@ const cam=key.shadow.camera;cam.left=cam.bottom=-200;cam.right=cam.top=200;cam.n
 function bgFromTheme(){const v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e4e2de';scene.background=new THREE.Color(v);}
 bgFromTheme();
 // ---- state ----
-const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[],shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],extra:0,fresh:new Set()};
+const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'rpetg-grey',domes:true,sel:new Set(),linkMats:[],shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],extra:0,fresh:new Set()};
 const freshCache={};
 const freshMat=id=>freshCache[id]||(freshCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2fbf71);m.emissiveIntensity=0.45;return m})());
 let linkTotal=0;
@@ -595,7 +610,7 @@ function build(){
   document.getElementById('fLen').textContent=`${fmt(len/10,1)} cm`;
   document.getElementById('fW').textContent=`${fmt(wMix,1)} g`;
   document.getElementById('fAg').textContent=`${vol*10.36|0} g`;
-  const price=priceFor(volOf,links,matIdFor);document.getElementById('fPriceL').hidden=document.getElementById('fPrice').hidden=price==null;
+  const parts=priceFor(volOf,links,matIdFor),price=parts?parts.total:null;renderBreakdown(parts,links);document.getElementById('fPriceL').hidden=document.getElementById('fPrice').hidden=price==null;
   const anyIn=Array.from({length:links},(_,i)=>hasInlay(i)).some(Boolean);
   if(price!=null)document.getElementById('fPrice').textContent=`${Math.round(price/10)*10} kr`+(anyIn?' '+t('plusInlay'):'');
   lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),shapes:Array.from({length:links},(_,i)=>shapeName(shapeFor(i))),domes:state.domes,lang:LANG,inlays:Array.from({length:links},(_,i)=>hasInlay(i)?`${inlayDef(inlayFor(i).mat)?.name}, ${CUTS[inlayFor(i).cut]}`:null)};lastPrice=price;
@@ -676,7 +691,7 @@ document.getElementById('randomize').onclick=()=>{
 };
 document.getElementById('resetDesign').onclick=()=>{
   if(anim)return;   // back to the design the page starts with
-  Object.assign(state,{kind:'armband',len:18,edge:'rundad',rad:0.5,mat:MATS.find(m=>m.id==='silver')?'silver':MATS[0].id,domes:true,shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],linkMats:[],extra:0});
+  Object.assign(state,{kind:'armband',len:18,edge:'rundad',rad:0.5,mat:MATS.find(m=>m.id==='rpetg-grey')?'rpetg-grey':MATS[0].id,domes:true,shape:'kors',shapeH:'h',linkShapes:[],inlay:{cut:'none',mat:'rubin'},linkInlays:[],linkMats:[],extra:0});
   state.sel.clear();state.fresh.clear();
   document.querySelectorAll('#kind button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v==='armband')));
   document.querySelectorAll('#edge button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v==='rundad')));
@@ -814,7 +829,18 @@ function applyLang(){
   b.onclick=()=>{LANG=l.code;try{localStorage.setItem('links_lang',LANG)}catch{};applyLang();build();dlg.close()};grid.appendChild(b)}
  document.getElementById('langBtn').onclick=()=>{dlg.showModal();(grid.querySelector('[aria-current=true]')||grid.firstChild).focus()};
  document.getElementById('langClose').onclick=()=>dlg.close();}
-document.getElementById('hOrder').onclick=()=>{const f=document.getElementById('orderForm');f.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>document.getElementById('oName').focus({preventScroll:true}),450)};
+function renderBreakdown(parts,links){
+  const bd=document.getElementById('bd'),btn=document.getElementById('hPriceBtn');
+  if(!parts){bd.hidden=true;btn.setAttribute('aria-expanded','false');bd.innerHTML='';return}
+  const kr=v=>`${fmt(Math.round(v),0)} kr`,esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  bd.innerHTML='<ol>'+parts.rows.map((v,i)=>`<li><i>${i+1}</i><span>${esc(shapeName(shapeFor(i)))} · ${esc(matLabel(MATS.find(m=>m.id===matIdFor(i))))}</span><b>${kr(v)}</b></li>`).join('')+'</ol>'
+    +`<div class="sum"><span>${esc(t('pFixed'))}</span><b>${kr(parts.fixed)}</b></div><div class="sum"><span>${esc(t('pShip'))}</span><b>${kr(parts.ship)}</b></div><div class="sum tot"><span>${esc(t('pTotal'))}</span><b>${kr(Math.round(parts.total/10)*10)}</b></div>`;
+}
+document.getElementById('hPriceBtn').onclick=e=>{const bd=document.getElementById('bd');if(!bd.innerHTML)return;bd.hidden=!bd.hidden;e.currentTarget.setAttribute('aria-expanded',String(!bd.hidden))};
+document.getElementById('hOrder').onclick=()=>{
+  if(document.querySelector('.app').classList.contains('pin'))document.getElementById('pin').click();   // unlock the 3D view so the form is visible above the keyboard
+  document.getElementById('bd').hidden=true;document.getElementById('hPriceBtn').setAttribute('aria-expanded','false');
+  const f=document.getElementById('orderForm');f.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>document.getElementById('oName').focus({preventScroll:true}),450)};
 // ---- installable app + "new version" prompt ----
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/links/sw.js').catch(()=>{});
 {const files=['/links/index.html','/links/shapes.js','/links/i18n.js'];let sig=null;

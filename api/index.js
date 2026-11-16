@@ -194,7 +194,7 @@ app.put('/api/admin/projects/:id/images', requireAdmin, wrap(async (req, res) =>
 
 // ── Links (cross + H link configurator) ─────────────────────────────────────
 const LINK_MATERIAL_FIELDS = ['name','family','swatch','density','cost_per_kg','fee_per_link','supplier','url','notes','estimated','active','sort']
-const LINK_SETTING_FIELDS  = ['machine_sek_per_hour','minutes_per_cross','minutes_per_h','labour_sek_per_hour','post_minutes_per_link','waste_percent','fixed_per_piece','markup_percent','vat_percent','show_prices']
+const LINK_SETTING_FIELDS  = ['machine_sek_per_hour','minutes_per_cross','minutes_per_h','labour_sek_per_hour','post_minutes_per_link','waste_percent','fixed_per_piece','markup_percent','vat_percent','shipping_sek','show_prices']
 const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] !== undefined).map(k => [k, obj[k]]))
 
 // public: active materials + pricing settings (prices only when show_prices is on)

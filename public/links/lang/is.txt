@@ -124,5 +124,12 @@ Panta
 Verð eftir fyrirspurn
 Ný útgáfa er tilbúin
 Uppfæra
-Áætlað verð, án sendingar
+Áætlað verð, með sendingu
 Endurstilla hönnun
+grátt
+Fiskinet (endurunnið nælon)
+Samsetning og umbúðir
+Sending
+Samtals
+Staðalefnið er endurunnið PETG úr notuðum flöskum. Einnig má velja endurunnin fiskinet, skel, við og kork.
+Eigin lögun? Lýstu hugmyndinni í forminu og við höfum samband um skissu eða þrívíddarskrá.

@@ -124,5 +124,12 @@ Order
 Price on request
 New version available
 Update
-Estimated price, excl. shipping
+Estimated price, incl. shipping
 Reset design
+grey
+Fishing nets (recycled nylon)
+Assembly and packaging
+Shipping
+Total
+The standard material is recycled PETG, made from used bottles. You can also choose recycled fishing nets, shell, wood and cork.
+Your own shape? Describe your idea in the form and we will get back to you about a sketch or a 3D file.
