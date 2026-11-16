@@ -112,13 +112,16 @@ canvas{display:block;width:100%;height:100%}
     </fieldset>
 
     <fieldset>
-      <legend>Form på korslänken</legend>
-      <p class="selinfo" id="shapeInfo">Välj form för alla kors. Markera en korslänk först för att bara ändra den.</p>
+      <legend>Form på länkarna</legend>
+      <p class="selinfo" id="shapeInfo">Välj form för alla länkar av samma sort. Markera en länk först för att bara ändra den.</p>
       <div class="btnrow">
         <button type="button" id="shapePeter">Peters armband</button>
         <button type="button" id="shapeMix">Blanda former</button>
       </div>
+      <p class="selinfo"><b>Kors, ringar och stav</b> (varannan länk)</p>
       <div class="shapes" id="shapes"></div>
+      <p class="selinfo"><b>H-länkar</b> (varannan länk)</p>
+      <div class="shapes" id="shapesH"></div>
     </fieldset>
 
     <fieldset>
@@ -314,13 +317,13 @@ function linkGeo(poly,mode,r){
 function shapeGeo(def,mode,r){
   const sh=new THREE.Shape(def.o.map(p=>new THREE.Vector2(p[0],p[1])));
   for(const h of def.h)sh.holes.push(new THREE.Path(h.map(p=>new THREE.Vector2(p[0],p[1]))));
-  let geo;const rr=Math.min(r,0.25);
+  let geo;const rr=Math.min(r,def.rmax||0.25);
   if(mode==='skarp')geo=new THREE.ExtrudeGeometry(sh,{depth:A,bevelEnabled:false});
   else{geo=new THREE.ExtrudeGeometry(sh,{depth:A-2*rr,bevelEnabled:true,bevelThickness:rr,bevelSize:rr,bevelOffset:-rr,bevelSegments:mode==='fas'?1:4});geo.translate(0,0,rr)}
   geo.translate(-S/2,-1.5*A,-A/2);geo.computeVertexNormals();return geo;
 }
 const SHAPE_BY_ID=Object.fromEntries(SHAPES.map(d=>[d.id,d]));
-const shapeName=id=>id==='kors'?'Kors':(SHAPE_BY_ID[id]?.name||id);
+const shapeName=id=>id==='kors'?'Kors':id==='h'?'H':(SHAPE_BY_ID[id]?.name||id);
 function volume(geo){
   const g=geo.index?geo.toNonIndexed():geo,p=g.attributes.position.array;let v=0;
   for(let i=0;i<p.length;i+=9){
@@ -346,14 +349,15 @@ const cam=key.shadow.camera;cam.left=cam.bottom=-200;cam.right=cam.top=200;cam.n
 function bgFromTheme(){const v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e4e2de';scene.background=new THREE.Color(v);}
 bgFromTheme();
 // ---- state ----
-const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[],shape:'kors',linkShapes:[],extra:0,fresh:new Set()};
+const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[],shape:'kors',shapeH:'h',linkShapes:[],extra:0,fresh:new Set()};
 const freshCache={};
 const freshMat=id=>freshCache[id]||(freshCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2fbf71);m.emissiveIntensity=0.45;return m})());
 let linkTotal=0;
 const selCache={};
 const selMat=id=>selCache[id]||(selCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2f6bff);m.emissiveIntensity=0.35;return m})());
 const matIdFor=i=>state.linkMats[i]||state.mat;
-const shapeFor=i=>i%2?'h':(state.linkShapes[i]||state.shape);
+const shapeFor=i=>state.linkShapes[i]||(i%2?state.shapeH:state.shape);
+const lenOf=i=>SHAPE_BY_ID[shapeFor(i)]?.len??S;   // length along the chain
 const METAL_IDS=new Set(['silver','gold','rose','black','steel','bronze','titanium']);
 const layerTex=(()=>{const c=document.createElement('canvas');c.width=4;c.height=64;const g=c.getContext('2d');
   for(let y=0;y<64;y++){const v=Math.round(128+110*Math.cos(y/8*2*Math.PI));g.fillStyle=`rgb(${v},${v},${v})`;g.fillRect(0,y,4,1)}
@@ -371,13 +375,14 @@ function domeGeo(){
 }
 function linkCount(){
   const cm=state.kind==='halsband'?state.len*2.5:state.len; // halsband slider 14–22 → 35–55 cm
-  const per=(SPAN_C+SPAN_H)/2;let n=Math.round(cm*10/per);if(n%2)n++;return {n,cm};
+  let n=0,sum=0;while(n<400&&sum+(spanOf(n)+spanOf(n+1))/2<cm*10){sum+=spanOf(n)+spanOf(n+1);n+=2}return {n:Math.max(n,4),cm};
 }
 function ringRadius(n){
-  const f=R=>(n/2)*(2*Math.asin(Math.min(1,SPAN_C/(2*R)))+2*Math.asin(Math.min(1,SPAN_H/(2*R))))-2*Math.PI;
-  let lo=SPAN_C/2+1e-6,hi=2000;for(let i=0;i<80;i++){const m=(lo+hi)/2;f(m)>0?lo=m:hi=m}return (lo+hi)/2;
+  const sp=Array.from({length:n},(_,i)=>spanOf(i));
+  const f=R=>sp.reduce((a,L)=>a+2*Math.asin(Math.min(1,L/(2*R))),0)-2*Math.PI;
+  let lo=Math.max(...sp)/2+1e-6,hi=2000;for(let i=0;i<80;i++){const m=(lo+hi)/2;f(m)>0?lo=m:hi=m}return (lo+hi)/2;
 }
-const spanOf=i=>i%2?SPAN_H:SPAN_C;
+const spanOf=i=>lenOf(i)-2*(i%2?XH:XK);   // pivot to pivot
 let linkObjs=[],anim=null,poseState={s:1,gaps:null};
 function poseChain(n,sv,gaps){
   const R=ringRadius(n),al=Array.from({length:n},(_,i)=>2*Math.asin(spanOf(i)/(2*R)));
@@ -402,7 +407,7 @@ function applyPose(sv,gaps){
 function build(){
   scene.remove(chain);(chain.userData.geos||[]).forEach(g=>g.dispose());chain=new THREE.Group();linkObjs=[];
   const gh=linkGeo(HSHAPE,state.edge,state.rad),gd=domeGeo(),geos={h:gh},vols={};
-  const geoOf=id=>geos[id]||(geos[id]=id==='kors'||!SHAPE_BY_ID[id]?linkGeo(CROSS,state.edge,state.rad):shapeGeo(SHAPE_BY_ID[id],state.edge,state.rad));
+  const geoOf=id=>geos[id]||(geos[id]=!SHAPE_BY_ID[id]?linkGeo(CROSS,state.edge,state.rad):shapeGeo(SHAPE_BY_ID[id],state.edge,state.rad));
   const volOf=i=>{const id=shapeFor(i);return vols[id]??(vols[id]=volume(geoOf(id))/1000)};
   const {n:nb}=linkCount();const links=nb+2*state.extra;
   for(let i=0;i<links;i++){
@@ -410,7 +415,7 @@ function build(){
     const id=matIdFor(i),mat=state.fresh.has(i)?freshMat(id):state.sel.has(i)?selMat(id):getMat(id);
     const mesh=new THREE.Mesh(geoOf(shapeFor(i)),meshMat(id,mat));mesh.castShadow=true;mesh.userData.idx=i;g.add(mesh);g.userData.idx=i;
     if(isCross&&state.domes){
-      for(const xk of [XK-S/2,S/2-XK])for(const side of [-1,1]){
+      const hl=lenOf(i)/2;for(const xk of [XK-hl,hl-XK])for(const side of [-1,1]){
         const d=new THREE.Mesh(gd,mat);d.userData.idx=i;d.position.set(xk,side*A/2,ZC-A/2);d.rotation.z=side>0?0:Math.PI;g.add(d);
       }
     }
@@ -425,17 +430,17 @@ function build(){
   let wMix=0,len=0;const used=new Set();
   for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=volOf(i)*MATS.find(m=>m.id===id).rho;len+=spanOf(i)}
   const fmt=(v,d)=>v.toFixed(d).replace('.',',');
-  document.getElementById('fLinks').textContent=`${links} (${nC} kors, ${nH} H)`+(state.extra?` · +${2*state.extra}`:'');
+  document.getElementById('fLinks').textContent=`${links} (${nC} + ${nH})`+(state.extra?` · +${2*state.extra}`:'');
   document.getElementById('fLen').textContent=`${fmt(len/10,1)} cm`;
   document.getElementById('fW').textContent=`${fmt(wMix,1)} g`;
   document.getElementById('fAg').textContent=`${vol*10.36|0} g`;
   const price=priceFor(volOf,links,matIdFor);document.getElementById('fPriceL').hidden=document.getElementById('fPrice').hidden=price==null;
   if(price!=null)document.getElementById('fPrice').textContent=`${Math.round(price/10)*10} kr`;
-  lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),shapes:Array.from({length:links},(_,i)=>i%2?'H':shapeName(shapeFor(i))),domes:state.domes};lastPrice=price;
+  lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),shapes:Array.from({length:links},(_,i)=>shapeName(shapeFor(i))),domes:state.domes};lastPrice=price;
   document.getElementById('extraInfo').innerHTML=state.extra?`<b>${2*state.extra} länkar tillagda</b> (+${fmt(state.extra*(SPAN_C+SPAN_H)/10,1)} cm). De klickas in i sista leden.`:'Köp till länkar när du vill. De klickas in i sista leden.';
   document.getElementById('removePair').disabled=!state.extra;
-  const usedShapes=new Set(Array.from({length:links},(_,i)=>shapeFor(i)).filter(x=>x!=='h'));
-  document.getElementById('tag').textContent=`${usedShapes.size>1?'blandade kors':shapeName([...usedShapes][0]).toLowerCase()} + H · ${state.edge}${state.edge==='skarp'?'':' '+fmt(state.rad,2)+' mm'} · ${used.size>1?'blandade material':MATS.find(m=>m.id===[...used][0]).name}`;
+  const usedShapes=new Set(Array.from({length:links},(_,i)=>shapeFor(i)).filter((x,i)=>i%2===0));const usedH=new Set(Array.from({length:links},(_,i)=>shapeFor(i)).filter((x,i)=>i%2===1));
+  document.getElementById('tag').textContent=`${usedShapes.size>1?'blandade kors':shapeName([...usedShapes][0]).toLowerCase()} + ${usedH.size>1?'blandade H':shapeName([...usedH][0])} · ${state.edge}${state.edge==='skarp'?'':' '+fmt(state.rad,2)+' mm'} · ${used.size>1?'blandade material':MATS.find(m=>m.id===[...used][0]).name}`;
   updSelUI();updShapeUI();
 }
 // ---- animations ----
@@ -537,32 +542,34 @@ document.getElementById('orderForm').addEventListener('submit',async e=>{
   }catch(err){st.textContent=err.message}finally{btn.disabled=false}
 });
 // ---- cross shapes ----
-const shw=document.getElementById('shapes');
-function thumb(def){
-  if(!def)return `<svg viewBox="-1 -1 ${S+2} ${S+2}" aria-hidden="true"><path d="M${CROSS.map(p=>p.join(' ')).join('L')}Z"/></svg>`;
-  const ys=def.o.map(p=>p[1]),y0=Math.min(...ys),y1=Math.max(...ys),h=y1-y0,side=Math.max(h,S)+2,ox=(side-S)/2,oy=(side-h)/2-y0;
-  const d=[def.o,...def.h].map(l=>'M'+l.map(p=>`${(p[0]+ox).toFixed(2)} ${(p[1]+oy).toFixed(2)}`).join('L')+'Z').join('');
+const shw=document.getElementById('shapes'),shwH=document.getElementById('shapesH');
+function thumb(o,h){
+  const xs=o.map(p=>p[0]),ys=o.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),side=Math.max(x1-x0,y1-y0)+2,ox=(side-(x1-x0))/2-x0,oy=(side-(y1-y0))/2-y0;
+  const d=[o,...h].map(l=>'M'+l.map(p=>`${(p[0]+ox).toFixed(2)} ${(p[1]+oy).toFixed(2)}`).join('L')+'Z').join('');
   return `<svg viewBox="0 0 ${side} ${side}" aria-hidden="true"><path fill-rule="evenodd" d="${d}"/></svg>`;
 }
+const isFork=id=>id==='h'||SHAPE_BY_ID[id]?.kind==='f';
 function setShape(id){
-  const crossSel=[...state.sel].filter(i=>i%2===0);
-  if(crossSel.length){for(const i of crossSel)state.linkShapes[i]=id}else{state.shape=id;state.linkShapes=[]}
+  const par=isFork(id)?1:0,sel=[...state.sel].filter(i=>i%2===par);
+  if(sel.length){for(const i of sel)state.linkShapes[i]=id}
+  else{state[par?'shapeH':'shape']=id;for(let i=par;i<state.linkShapes.length;i+=2)delete state.linkShapes[i]}
   build();
 }
-for(const d of [{id:'kors',name:'Kors'},...SHAPES]){
+for(const d of [{id:'kors',name:'Kors',o:CROSS,h:[]},{id:'h',name:'H',o:HSHAPE,h:[]},...SHAPES]){
   const b=document.createElement('button');b.type='button';b.className='shp';b.dataset.id=d.id;b.setAttribute('aria-pressed','false');
-  b.innerHTML=thumb(d.id==='kors'?null:d)+d.name;b.onclick=()=>setShape(d.id);shw.appendChild(b);
+  b.innerHTML=thumb(d.o,d.h)+d.name;b.onclick=()=>setShape(d.id);(isFork(d.id)?shwH:shw).appendChild(b);
 }
 function updShapeUI(){
-  const crossSel=[...state.sel].filter(i=>i%2===0),n=crossSel.length;
-  const all=new Set(Array.from({length:linkTotal},(_,i)=>shapeFor(i)).filter(x=>x!=='h'));
-  const cur=n?(new Set(crossSel.map(shapeFor)).size===1?shapeFor(crossSel[0]):null):(all.size===1?[...all][0]:null);
-  shw.querySelectorAll('.shp').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.id===cur)));
-  document.getElementById('shapeInfo').innerHTML=n?`<b>${n} ${n===1?'korslänk vald':'korslänkar valda'}</b>. Välj form för ${n===1?'den':'dem'}.`:'Välj form för alla kors. Markera en korslänk först för att bara ändra den.';
+  const n=state.sel.size;
+  for(const [par,wrap] of [[0,shw],[1,shwH]]){
+    const sel=[...state.sel].filter(i=>i%2===par),ids=new Set((sel.length?sel:Array.from({length:linkTotal},(_,i)=>i).filter(i=>i%2===par)).map(shapeFor));
+    const cur=ids.size===1?[...ids][0]:null;wrap.querySelectorAll('.shp').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.id===cur)));
+  }
+  document.getElementById('shapeInfo').innerHTML=n?`<b>${n} ${n===1?'länk vald':'länkar valda'}</b>. Välj form för ${n===1?'den':'dem'}.`:'Välj form för alla länkar av samma sort. Markera en länk först för att bara ändra den.';
 }
-const PETER=['halvmane','tinnar','pil','oval','krona','spira'];
-document.getElementById('shapePeter').onclick=()=>{state.linkShapes=[];for(let i=0,k=0;i<linkTotal;i+=2,k++)state.linkShapes[i]=PETER[k%PETER.length];state.sel.clear();build()};
-document.getElementById('shapeMix').onclick=()=>{state.linkShapes=[];for(let i=0;i<linkTotal;i+=2)state.linkShapes[i]=SHAPES[Math.floor(Math.random()*SHAPES.length)].id;state.sel.clear();build()};
+const PETER=['halvmane','tinnar','pil','oval','krona','spira'],ARM_SHAPES=SHAPES.filter(d=>d.kind!=='f');
+document.getElementById('shapePeter').onclick=()=>{state.shape='kors';state.shapeH='h';state.linkShapes=[];for(let i=0,k=0;i<linkTotal;i+=2,k++)state.linkShapes[i]=PETER[k%PETER.length];state.sel.clear();build();if(state.kind!=='rakt')frame()};
+document.getElementById('shapeMix').onclick=()=>{state.linkShapes=[];for(let i=0;i<linkTotal;i+=2)state.linkShapes[i]=ARM_SHAPES[Math.floor(Math.random()*ARM_SHAPES.length)].id;state.sel.clear();build();if(state.kind!=='rakt')frame()};
 function updSelUI(){
   const n=state.sel.size,info=document.getElementById('selinfo');
   info.innerHTML=n?`<b>${n} ${n===1?'länk vald':'länkar valda'}</b>. Välj material för ${n===1?'den':'dem'}.`:'Klicka på en länk för att ge den eget material. Skift-klick väljer flera.';
