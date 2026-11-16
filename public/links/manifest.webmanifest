@@ -1,0 +1,14 @@
+{
+  "name": "Links — Peter Hoff Design",
+  "short_name": "Links",
+  "description": "Design your own bracelet or necklace of click-together links.",
+  "start_url": "/links/",
+  "scope": "/links/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {"src": "/links/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "/links/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

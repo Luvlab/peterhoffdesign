@@ -120,3 +120,7 @@ Helmiäinen
 Koboltti
 Meripihka
 Savu
+Tilaa
+Hinta pyynnöstä
+Uusi versio saatavilla
+Päivitä

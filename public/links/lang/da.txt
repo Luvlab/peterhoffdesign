@@ -120,3 +120,7 @@ Perlemor
 Kobolt
 Rav
 Røg
+Bestil
+Pris på forespørgsel
+Ny version er klar
+Opdater

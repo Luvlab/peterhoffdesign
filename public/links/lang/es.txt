@@ -120,3 +120,7 @@ Nácar
 Cobalto
 Ámbar
 Ahumado
+Pedir
+Precio a consultar
+Nueva versión disponible
+Actualizar

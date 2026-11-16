@@ -120,3 +120,7 @@ Perlemor
 Kobolt
 Rav
 Røyk
+Bestill
+Pris på forespørsel
+Ny versjon er tilgjengelig
+Oppdater

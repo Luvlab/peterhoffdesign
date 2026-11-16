@@ -120,3 +120,7 @@ Sedef
 Kobalt
 Kehribar
 Füme
+Sipariş ver
+Fiyat için sorun
+Yeni sürüm hazır
+Güncelle

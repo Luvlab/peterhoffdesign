@@ -6,6 +6,11 @@
 <title>Links — Peter Hoff Design</title>
 <meta name="description" content="Peter Hoff Design Links: armband och halsband av kors- och H-länkar. Välj längd, kantform och material i 3D.">
 <meta name="robots" content="noindex">
+<link rel="manifest" href="/links/manifest.webmanifest">
+<meta name="theme-color" content="#ffffff">
+<link rel="apple-touch-icon" href="/links/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Links">
 <link rel="icon" href="/phd-logo.png">
 <style>*,*::before,*::after{box-sizing:border-box}body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -65,7 +70,12 @@ canvas{display:block;width:100%;height:100%}
 .hud button[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
 .hud button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .hud button[disabled]{opacity:.4;cursor:default}
-.tag{position:absolute;left:14px;top:12px;font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.buy{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:10px;z-index:2;display:flex;align-items:center;gap:10px;max-width:calc(100% - 84px);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 12px;min-height:34px;box-sizing:border-box}
+.buy span{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--fg);min-width:0}
+.buy button{all:unset;cursor:pointer;background:var(--fg);color:var(--panel);border-radius:6px;padding:6px 12px;font-size:13px;font-weight:600;white-space:nowrap}
+.buy button:focus-visible,#upd button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#upd{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:50;display:flex;flex-direction:column;align-items:center;gap:12px;background:var(--panel);color:var(--fg);border:1px solid var(--fg);border-radius:10px;padding:18px 22px;font-size:15px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.25);max-width:calc(100vw - 48px)}
+#upd button{all:unset;cursor:pointer;background:var(--fg);color:var(--panel);border-radius:6px;padding:10px 18px;font-size:14px;font-weight:600}
 .cap{position:absolute;left:max(14px,env(safe-area-inset-left,0px));bottom:14px;max-width:calc(100% - 260px);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;font-size:13px;line-height:1.35}
 .btnrow{display:flex;flex-wrap:wrap;gap:8px}
 .btnrow button{all:unset;cursor:pointer;border:1px solid var(--fg);border-radius:6px;padding:7px 12px;font-size:13px;color:var(--fg)}
@@ -87,7 +97,6 @@ canvas{display:block;width:100%;height:100%}
 @media (min-width:761px){.hud .mob{display:none}}
 .langbtn{all:unset;cursor:pointer;position:absolute;top:10px;right:max(14px,env(safe-area-inset-right,0px));z-index:2;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;min-width:40px;height:34px;display:grid;place-items:center;font-size:12.5px;font-weight:600;letter-spacing:.06em}
 .langbtn:focus-visible,#langDlg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.tag{max-width:calc(100% - 84px)}
 #langDlg{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;border:0;box-sizing:border-box;background:var(--bg);color:var(--fg);padding:max(20px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
 .langhead{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:900px;margin:0 auto 18px}
 .langhead h2{font-family:var(--f-display);font-weight:400;font-size:22px;margin:0}
@@ -214,7 +223,7 @@ canvas{display:block;width:100%;height:100%}
   <main>
     <div class="cap" id="cap" hidden aria-live="polite"></div>
     <button type="button" class="langbtn" id="langBtn" aria-haspopup="dialog" data-t-aria="chooseLang" title="">SV</button>
-    <span class="tag" id="tag">kors + H · rundad 0,50 mm</span>
+    <div class="buy" id="buy"><span id="hPrice" aria-live="polite"></span><button type="button" id="hOrder" data-t="order">Beställ</button></div>
     <canvas id="c" data-t-aria="canvas" aria-label="3D-vy av länkarna. Dra för att rotera, nyp eller scrolla för att zooma, klicka på en länk för att välja den."></canvas>
     <div class="hud" role="toolbar" aria-label="Visning">
       <button type="button" class="ic" id="demoBuild" data-t-aria="tBuild" title="Visa ihopsättning" aria-label="Visa ihopsättning"><svg viewBox="0 0 24 24"><path d="M3 12h5M16 12h5M8 8v8M16 8v8M8 12h8"/><path d="M11 9l1-1 1 1M11 15l1 1 1-1"/></svg></button>
@@ -227,6 +236,7 @@ canvas{display:block;width:100%;height:100%}
     </div>
   </main>
 </div>
+<div id="upd" role="alert" hidden><span data-t="newVer">Ny version finns</span><button type="button" id="updBtn" data-t="update">Uppdatera</button></div>
 <dialog id="langDlg" aria-labelledby="langTitle">
   <div class="langhead"><h2 id="langTitle" data-t="chooseLang">Välj språk</h2><button type="button" id="langClose" data-t="close">Stäng</button></div>
   <div class="langgrid" id="langGrid"></div>
@@ -561,8 +571,7 @@ function build(){
   lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),shapes:Array.from({length:links},(_,i)=>shapeName(shapeFor(i))),domes:state.domes,lang:LANG,inlays:Array.from({length:links},(_,i)=>hasInlay(i)?`${inlayDef(inlayFor(i).mat)?.name}, ${CUTS[inlayFor(i).cut]}`:null)};lastPrice=price;
   document.getElementById('extraInfo').textContent=state.extra?t('moreAdded',{n:2*state.extra,cm:fmt(state.extra*(SPAN_C+SPAN_H)/10,1)}):t('moreInfo');
   document.getElementById('removePair').disabled=!state.extra;
-  const usedShapes=new Set(Array.from({length:links},(_,i)=>shapeFor(i)).filter((x,i)=>i%2===0));const usedH=new Set(Array.from({length:links},(_,i)=>shapeFor(i)).filter((x,i)=>i%2===1));
-  document.getElementById('tag').textContent=`${usedShapes.size>1?t('mixed'):shapeName([...usedShapes][0])} + ${usedH.size>1?t('mixed'):shapeName([...usedH][0])} · ${t({skarp:'sharp',rundad:'round',fas:'chamfer'}[state.edge]).toLocaleLowerCase(LANG)}${state.edge==='skarp'?'':' '+fmt(state.rad,2)+' mm'} · ${used.size>1?t('mixed'):matLabel(MATS.find(m=>m.id===[...used][0]))}`;
+  document.getElementById('hPrice').textContent=price!=null?`${fmt(Math.round(price/10)*10,0)} kr`+(anyIn?' '+t('plusInlay'):''):t('onRequest');
   updSelUI();updShapeUI();updInlayUI();
 }
 // ---- animations ----
@@ -752,7 +761,7 @@ document.getElementById('reset').onclick=frame;
   set(on);b.onclick=()=>set(!on);}}
 
 function applyLang(){
-  document.documentElement.lang=LANG;for(const q of ['aside','#langDlg','#cap','#tag'])document.querySelector(q).dir=LANG==='ar'?'rtl':'ltr';   // right-to-left for the text panels only, the 3D view keeps its place
+  document.documentElement.lang=LANG;for(const q of ['aside','#langDlg','#cap','#buy','#upd'])document.querySelector(q).dir=LANG==='ar'?'rtl':'ltr';   // right-to-left for the text panels only, the 3D view keeps its place
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
   document.querySelectorAll('[data-t-ph]').forEach(e=>e.placeholder=t(e.dataset.tPh));
   document.querySelectorAll('[data-t-aria]').forEach(e=>{const v=t(e.dataset.tAria);e.setAttribute('aria-label',v);if(e.hasAttribute('title'))e.title=v});
@@ -765,6 +774,14 @@ function applyLang(){
   b.onclick=()=>{LANG=l.code;try{localStorage.setItem('links_lang',LANG)}catch{};applyLang();build();dlg.close()};grid.appendChild(b)}
  document.getElementById('langBtn').onclick=()=>{dlg.showModal();(grid.querySelector('[aria-current=true]')||grid.firstChild).focus()};
  document.getElementById('langClose').onclick=()=>dlg.close();}
+document.getElementById('hOrder').onclick=()=>{const f=document.getElementById('orderForm');f.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>document.getElementById('oName').focus({preventScroll:true}),450)};
+// ---- installable app + "new version" prompt ----
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/links/sw.js').catch(()=>{});
+{const files=['/links/index.html','/links/shapes.js','/links/i18n.js'];let sig=null;
+ const read=async()=>(await Promise.all(files.map(f=>fetch(f,{method:'HEAD',cache:'no-store'}).then(r=>r.ok?(r.headers.get('etag')||r.headers.get('last-modified')||''):'')))).join('|');
+ const check=async()=>{try{const now=await read();if(!now.replace(/\|/g,''))return;if(sig===null)sig=now;else if(now!==sig)document.getElementById('upd').hidden=false}catch{}};
+ check();setInterval(check,120000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
+ document.getElementById('updBtn').onclick=()=>location.reload();}
 applyLang();
 resize();build();frame();loadCatalog();
 renderer.setAnimationLoop(now=>{tick(now);controls.update();renderer.render(scene,camera)});

@@ -120,3 +120,7 @@ Perlumóðir
 Kóbalt
 Raf
 Reykur
+Panta
+Verð eftir fyrirspurn
+Ný útgáfa er tilbúin
+Uppfæra
