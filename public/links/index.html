@@ -73,7 +73,7 @@ canvas{display:block;width:100%;height:100%}
 .buy{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:10px;z-index:2;display:flex;align-items:center;gap:10px;max-width:calc(100% - 84px);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 12px;min-height:34px;box-sizing:border-box}
 
 .buy .pr{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0;line-height:1.2}.buy .pr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.bd{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:54px;z-index:3;width:min(330px,calc(100% - 28px));max-height:calc(100% - 120px);overflow-y:auto;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.14);animation:bdIn .18s ease-out}
+.bd{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:54px;z-index:3;width:min(330px,calc(100% - 28px));max-height:calc(100dvh - 70px);overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.14);animation:bdIn .18s ease-out}
 @keyframes bdIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.bd{animation:none}}
 .bd ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
@@ -835,8 +835,12 @@ function renderBreakdown(parts,links){
   const kr=v=>`${fmt(Math.round(v),0)} kr`,esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   bd.innerHTML='<ol>'+parts.rows.map((v,i)=>`<li><i>${i+1}</i><span>${esc(shapeName(shapeFor(i)))} · ${esc(matLabel(MATS.find(m=>m.id===matIdFor(i))))}</span><b>${kr(v)}</b></li>`).join('')+'</ol>'
     +`<div class="sum"><span>${esc(t('pFixed'))}</span><b>${kr(parts.fixed)}</b></div><div class="sum"><span>${esc(t('pShip'))}</span><b>${kr(parts.ship)}</b></div><div class="sum tot"><span>${esc(t('pTotal'))}</span><b>${kr(Math.round(parts.total/10)*10)}</b></div>`;
+  fitBreakdown();
 }
-document.getElementById('hPriceBtn').onclick=e=>{const bd=document.getElementById('bd');if(!bd.innerHTML)return;bd.hidden=!bd.hidden;e.currentTarget.setAttribute('aria-expanded',String(!bd.hidden))};
+// The list may hang down over the settings; it only scrolls when it would pass the bottom of the screen.
+const fitBreakdown=()=>{const bd=document.getElementById('bd');if(bd.hidden)return;bd.style.maxHeight='none';bd.style.maxHeight=Math.max(160,innerHeight-bd.getBoundingClientRect().top-10)+'px'};
+addEventListener('resize',fitBreakdown);
+document.getElementById('hPriceBtn').onclick=e=>{const bd=document.getElementById('bd');if(!bd.innerHTML)return;bd.hidden=!bd.hidden;e.currentTarget.setAttribute('aria-expanded',String(!bd.hidden));fitBreakdown()};
 document.getElementById('hOrder').onclick=()=>{
   if(document.querySelector('.app').classList.contains('pin'))document.getElementById('pin').click();   // unlock the 3D view so the form is visible above the keyboard
   document.getElementById('bd').hidden=true;document.getElementById('hPriceBtn').setAttribute('aria-expanded','false');
