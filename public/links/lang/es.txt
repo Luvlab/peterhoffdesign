@@ -124,3 +124,5 @@ Pedir
 Precio a consultar
 Nueva versión disponible
 Actualizar
+Precio estimado, sin envío
+Restablecer el diseño

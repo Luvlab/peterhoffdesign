@@ -124,3 +124,5 @@ Commander
 Prix sur demande
 Nouvelle version disponible
 Mettre à jour
+Prix estimé, hors livraison
+Réinitialiser le design

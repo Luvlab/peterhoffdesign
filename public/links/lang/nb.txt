@@ -124,3 +124,5 @@ Bestill
 Pris på forespørsel
 Ny versjon er tilgjengelig
 Oppdater
+Anslått pris, uten frakt
+Tilbakestill designet

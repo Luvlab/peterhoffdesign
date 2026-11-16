@@ -124,3 +124,5 @@ Panta
 Verð eftir fyrirspurn
 Ný útgáfa er tilbúin
 Uppfæra
+Áætlað verð, án sendingar
+Endurstilla hönnun

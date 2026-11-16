@@ -124,3 +124,5 @@ Zamów
 Cena na zapytanie
 Dostępna nowa wersja
 Odśwież
+Szacowana cena, bez wysyłki
+Przywróć projekt

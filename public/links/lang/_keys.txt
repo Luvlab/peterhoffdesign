@@ -124,3 +124,5 @@ order
 onRequest
 newVer
 update
+estPrice
+tReset

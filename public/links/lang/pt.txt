@@ -124,3 +124,5 @@ Encomendar
 Preço sob consulta
 Nova versão disponível
 Atualizar
+Preço estimado, sem envio
+Repor o design

@@ -124,3 +124,5 @@ Bestellen
 Prijs op aanvraag
 Nieuwe versie beschikbaar
 Bijwerken
+Geschatte prijs, excl. verzending
+Ontwerp herstellen

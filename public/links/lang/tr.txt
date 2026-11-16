@@ -124,3 +124,5 @@ Sipariş ver
 Fiyat için sorun
 Yeni sürüm hazır
 Güncelle
+Tahmini fiyat, kargo hariç
+Tasarımı sıfırla
