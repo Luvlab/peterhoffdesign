@@ -38,6 +38,12 @@ legend{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--
 .sw i{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:block}
 .sw[aria-pressed="true"]{color:var(--fg);font-weight:600}
 .sw[aria-pressed="true"] i{outline:2px solid var(--fg);outline-offset:2px}
+.shapes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.shp{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted);text-align:center;line-height:1.2}
+.shp svg{width:44px;height:44px;border:1px solid var(--line);border-radius:6px;background:var(--panel);fill:var(--fg)}
+.shp[aria-pressed="true"]{color:var(--fg);font-weight:600}
+.shp[aria-pressed="true"] svg{outline:2px solid var(--fg);outline-offset:2px}
+.shp:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .chk{display:flex;gap:8px;align-items:center;font-size:13px}
 .selbar{display:flex;flex-wrap:wrap;gap:6px}
 .selbar button{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--fg)}
@@ -103,6 +109,16 @@ canvas{display:block;width:100%;height:100%}
       </div>
       <p class="selinfo">Max 0,9 mm, så att kupol och skål alltid sitter på plana ytor och länkarna kan kopplas ihop.</p>
       <div class="row"><input type="range" id="rad" min="0.2" max="0.9" step="0.05" value="0.5" aria-label="Radie"><span class="val" id="radv">0,50 mm</span></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Form på korslänken</legend>
+      <p class="selinfo" id="shapeInfo">Välj form för alla kors. Markera en korslänk först för att bara ändra den.</p>
+      <div class="btnrow">
+        <button type="button" id="shapePeter">Peters armband</button>
+        <button type="button" id="shapeMix">Blanda former</button>
+      </div>
+      <div class="shapes" id="shapes"></div>
     </fieldset>
 
     <fieldset>
@@ -177,6 +193,7 @@ canvas{display:block;width:100%;height:100%}
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {SHAPES} from '/links/shapes.js';
 
 // ---- Peter's link, real scale (mm) ----
 const S=17.952, A=5.984, XK=2.166, XH=2.435, ZC=2.974;
@@ -243,10 +260,10 @@ async function loadCatalog(){
     renderSwatches();build();
   }catch(e){}
 }
-function priceFor(volC,volH,links,matIdOf){
+function priceFor(volOf,links,matIdOf){
   if(!CATALOG||!CATALOG.showPrices)return null;const s=CATALOG.settings;let cost=+s.fixed_per_piece;
   for(let i=0;i<links;i++){const m=MATS.find(x=>x.id===matIdOf(i));if(!m||!m.cost)return null;const c=m.cost,cross=i%2===0;
-    const grams=(cross?volC:volH)*(+c.density);
+    const grams=volOf(i)*(+c.density);
     cost+=grams/1000*(+c.cost_per_kg)*(1+s.waste_percent/100)+(c.family==='filament'?(cross?s.minutes_per_cross:s.minutes_per_h)/60*s.machine_sek_per_hour:0)+s.post_minutes_per_link/60*s.labour_sek_per_hour+(+c.fee_per_link||0)}
   return cost*(1+s.markup_percent/100)*(1+s.vat_percent/100);
 }
@@ -293,6 +310,17 @@ function linkGeo(poly,mode,r){
   geo.computeVertexNormals();
   return geo;
 }
+// Peter's ornament shapes: exact outline, edges softened on top and bottom only (thin details limit the radius)
+function shapeGeo(def,mode,r){
+  const sh=new THREE.Shape(def.o.map(p=>new THREE.Vector2(p[0],p[1])));
+  for(const h of def.h)sh.holes.push(new THREE.Path(h.map(p=>new THREE.Vector2(p[0],p[1]))));
+  let geo;const rr=Math.min(r,0.25);
+  if(mode==='skarp')geo=new THREE.ExtrudeGeometry(sh,{depth:A,bevelEnabled:false});
+  else{geo=new THREE.ExtrudeGeometry(sh,{depth:A-2*rr,bevelEnabled:true,bevelThickness:rr,bevelSize:rr,bevelOffset:-rr,bevelSegments:mode==='fas'?1:4});geo.translate(0,0,rr)}
+  geo.translate(-S/2,-1.5*A,-A/2);geo.computeVertexNormals();return geo;
+}
+const SHAPE_BY_ID=Object.fromEntries(SHAPES.map(d=>[d.id,d]));
+const shapeName=id=>id==='kors'?'Kors':(SHAPE_BY_ID[id]?.name||id);
 function volume(geo){
   const g=geo.index?geo.toNonIndexed():geo,p=g.attributes.position.array;let v=0;
   for(let i=0;i<p.length;i+=9){
@@ -318,13 +346,14 @@ const cam=key.shadow.camera;cam.left=cam.bottom=-200;cam.right=cam.top=200;cam.n
 function bgFromTheme(){const v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e4e2de';scene.background=new THREE.Color(v);}
 bgFromTheme();
 // ---- state ----
-const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[],extra:0,fresh:new Set()};
+const state={kind:'armband',len:18,edge:'rundad',rad:0.5,mat:'silver',domes:true,sel:new Set(),linkMats:[],shape:'kors',linkShapes:[],extra:0,fresh:new Set()};
 const freshCache={};
 const freshMat=id=>freshCache[id]||(freshCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2fbf71);m.emissiveIntensity=0.45;return m})());
 let linkTotal=0;
 const selCache={};
 const selMat=id=>selCache[id]||(selCache[id]=(()=>{const m=getMat(id).clone();m.emissive=new THREE.Color(0x2f6bff);m.emissiveIntensity=0.35;return m})());
 const matIdFor=i=>state.linkMats[i]||state.mat;
+const shapeFor=i=>i%2?'h':(state.linkShapes[i]||state.shape);
 const METAL_IDS=new Set(['silver','gold','rose','black','steel','bronze','titanium']);
 const layerTex=(()=>{const c=document.createElement('canvas');c.width=4;c.height=64;const g=c.getContext('2d');
   for(let y=0;y<64;y++){const v=Math.round(128+110*Math.cos(y/8*2*Math.PI));g.fillStyle=`rgb(${v},${v},${v})`;g.fillRect(0,y,4,1)}
@@ -372,12 +401,14 @@ function applyPose(sv,gaps){
 }
 function build(){
   scene.remove(chain);(chain.userData.geos||[]).forEach(g=>g.dispose());chain=new THREE.Group();linkObjs=[];
-  const gc=linkGeo(CROSS,state.edge,state.rad),gh=linkGeo(HSHAPE,state.edge,state.rad),gd=domeGeo();
+  const gh=linkGeo(HSHAPE,state.edge,state.rad),gd=domeGeo(),geos={h:gh},vols={};
+  const geoOf=id=>geos[id]||(geos[id]=id==='kors'||!SHAPE_BY_ID[id]?linkGeo(CROSS,state.edge,state.rad):shapeGeo(SHAPE_BY_ID[id],state.edge,state.rad));
+  const volOf=i=>{const id=shapeFor(i);return vols[id]??(vols[id]=volume(geoOf(id))/1000)};
   const {n:nb}=linkCount();const links=nb+2*state.extra;
   for(let i=0;i<links;i++){
     const isCross=i%2===0,g=new THREE.Group();
     const id=matIdFor(i),mat=state.fresh.has(i)?freshMat(id):state.sel.has(i)?selMat(id):getMat(id);
-    const mesh=new THREE.Mesh(isCross?gc:gh,meshMat(id,mat));mesh.castShadow=true;mesh.userData.idx=i;g.add(mesh);g.userData.idx=i;
+    const mesh=new THREE.Mesh(geoOf(shapeFor(i)),meshMat(id,mat));mesh.castShadow=true;mesh.userData.idx=i;g.add(mesh);g.userData.idx=i;
     if(isCross&&state.domes){
       for(const xk of [XK-S/2,S/2-XK])for(const side of [-1,1]){
         const d=new THREE.Mesh(gd,mat);d.userData.idx=i;d.position.set(xk,side*A/2,ZC-A/2);d.rotation.z=side>0?0:Math.PI;g.add(d);
@@ -385,26 +416,27 @@ function build(){
     }
     linkObjs.push(g);chain.add(g);
   }
-  scene.add(chain);chain.userData.geos=[gc,gh,gd];
+  scene.add(chain);chain.userData.geos=[...Object.values(geos),gd];
   applyPose(anim?poseState.s:1,anim?poseState.gaps:null);
   // facts
   linkTotal=links;for(const k of [...state.sel])if(k>=links)state.sel.delete(k);
   const nC=Math.ceil(links/2),nH=Math.floor(links/2);
-  const vC=volume(gc)/1000,vH=volume(gh)/1000,vol=nC*vC+nH*vH;
+  let vol=0;for(let i=0;i<links;i++)vol+=volOf(i);
   let wMix=0,len=0;const used=new Set();
-  for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=(i%2?vH:vC)*MATS.find(m=>m.id===id).rho;len+=spanOf(i)}
+  for(let i=0;i<links;i++){const id=matIdFor(i);used.add(id);wMix+=volOf(i)*MATS.find(m=>m.id===id).rho;len+=spanOf(i)}
   const fmt=(v,d)=>v.toFixed(d).replace('.',',');
   document.getElementById('fLinks').textContent=`${links} (${nC} kors, ${nH} H)`+(state.extra?` · +${2*state.extra}`:'');
   document.getElementById('fLen').textContent=`${fmt(len/10,1)} cm`;
   document.getElementById('fW').textContent=`${fmt(wMix,1)} g`;
   document.getElementById('fAg').textContent=`${vol*10.36|0} g`;
-  const price=priceFor(vC,vH,links,matIdFor);document.getElementById('fPriceL').hidden=document.getElementById('fPrice').hidden=price==null;
+  const price=priceFor(volOf,links,matIdFor);document.getElementById('fPriceL').hidden=document.getElementById('fPrice').hidden=price==null;
   if(price!=null)document.getElementById('fPrice').textContent=`${Math.round(price/10)*10} kr`;
-  lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),domes:state.domes};lastPrice=price;
+  lastConfig={kind:state.kind,lengthCm:+(len/10).toFixed(1),links,extra:2*state.extra,edge:state.edge,radius:state.edge==='skarp'?0:state.rad,materials:[...used].map(id=>MATS.find(m=>m.id===id)?.name).join(', '),perLink:Array.from({length:links},(_,i)=>matIdFor(i)),shapes:Array.from({length:links},(_,i)=>i%2?'H':shapeName(shapeFor(i))),domes:state.domes};lastPrice=price;
   document.getElementById('extraInfo').innerHTML=state.extra?`<b>${2*state.extra} länkar tillagda</b> (+${fmt(state.extra*(SPAN_C+SPAN_H)/10,1)} cm). De klickas in i sista leden.`:'Köp till länkar när du vill. De klickas in i sista leden.';
   document.getElementById('removePair').disabled=!state.extra;
-  document.getElementById('tag').textContent=`kors + H · ${state.edge}${state.edge==='skarp'?'':' '+fmt(state.rad,2)+' mm'} · ${used.size>1?'blandade material':MATS.find(m=>m.id===[...used][0]).name}`;
-  updSelUI();
+  const usedShapes=new Set(Array.from({length:links},(_,i)=>shapeFor(i)).filter(x=>x!=='h'));
+  document.getElementById('tag').textContent=`${usedShapes.size>1?'blandade kors':shapeName([...usedShapes][0]).toLowerCase()} + H · ${state.edge}${state.edge==='skarp'?'':' '+fmt(state.rad,2)+' mm'} · ${used.size>1?'blandade material':MATS.find(m=>m.id===[...used][0]).name}`;
+  updSelUI();updShapeUI();
 }
 // ---- animations ----
 const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
@@ -504,6 +536,33 @@ document.getElementById('orderForm').addEventListener('submit',async e=>{
     st.textContent='Tack! Peter Hoff Design hör av sig.';f.reset();
   }catch(err){st.textContent=err.message}finally{btn.disabled=false}
 });
+// ---- cross shapes ----
+const shw=document.getElementById('shapes');
+function thumb(def){
+  if(!def)return `<svg viewBox="-1 -1 ${S+2} ${S+2}" aria-hidden="true"><path d="M${CROSS.map(p=>p.join(' ')).join('L')}Z"/></svg>`;
+  const ys=def.o.map(p=>p[1]),y0=Math.min(...ys),y1=Math.max(...ys),h=y1-y0,side=Math.max(h,S)+2,ox=(side-S)/2,oy=(side-h)/2-y0;
+  const d=[def.o,...def.h].map(l=>'M'+l.map(p=>`${(p[0]+ox).toFixed(2)} ${(p[1]+oy).toFixed(2)}`).join('L')+'Z').join('');
+  return `<svg viewBox="0 0 ${side} ${side}" aria-hidden="true"><path fill-rule="evenodd" d="${d}"/></svg>`;
+}
+function setShape(id){
+  const crossSel=[...state.sel].filter(i=>i%2===0);
+  if(crossSel.length){for(const i of crossSel)state.linkShapes[i]=id}else{state.shape=id;state.linkShapes=[]}
+  build();
+}
+for(const d of [{id:'kors',name:'Kors'},...SHAPES]){
+  const b=document.createElement('button');b.type='button';b.className='shp';b.dataset.id=d.id;b.setAttribute('aria-pressed','false');
+  b.innerHTML=thumb(d.id==='kors'?null:d)+d.name;b.onclick=()=>setShape(d.id);shw.appendChild(b);
+}
+function updShapeUI(){
+  const crossSel=[...state.sel].filter(i=>i%2===0),n=crossSel.length;
+  const all=new Set(Array.from({length:linkTotal},(_,i)=>shapeFor(i)).filter(x=>x!=='h'));
+  const cur=n?(new Set(crossSel.map(shapeFor)).size===1?shapeFor(crossSel[0]):null):(all.size===1?[...all][0]:null);
+  shw.querySelectorAll('.shp').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.id===cur)));
+  document.getElementById('shapeInfo').innerHTML=n?`<b>${n} ${n===1?'korslänk vald':'korslänkar valda'}</b>. Välj form för ${n===1?'den':'dem'}.`:'Välj form för alla kors. Markera en korslänk först för att bara ändra den.';
+}
+const PETER=['halvmane','tinnar','pil','oval','krona','spira'];
+document.getElementById('shapePeter').onclick=()=>{state.linkShapes=[];for(let i=0,k=0;i<linkTotal;i+=2,k++)state.linkShapes[i]=PETER[k%PETER.length];state.sel.clear();build()};
+document.getElementById('shapeMix').onclick=()=>{state.linkShapes=[];for(let i=0;i<linkTotal;i+=2)state.linkShapes[i]=SHAPES[Math.floor(Math.random()*SHAPES.length)].id;state.sel.clear();build()};
 function updSelUI(){
   const n=state.sel.size,info=document.getElementById('selinfo');
   info.innerHTML=n?`<b>${n} ${n===1?'länk vald':'länkar valda'}</b>. Välj material för ${n===1?'den':'dem'}.`:'Klicka på en länk för att ge den eget material. Skift-klick väljer flera.';
