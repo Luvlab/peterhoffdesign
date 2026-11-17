@@ -90,7 +90,8 @@ tr.dirty td{background:#fffbe6}
       <label>Spill och misslyckade printar, %<input type="number" step="1" name="waste_percent"></label>
       <label>Fast kostnad per smycke, kr (förpackning, lås)<input type="number" step="5" name="fixed_per_piece"></label>
       <label>Frakt per beställning, kr (läggs på priset)<input type="number" step="1" name="shipping_sek"></label>
-      <label>Påslag, %<input type="number" step="5" name="markup_percent"></label>
+      <label>Vinstfaktor × (kostnad × faktor = pris före moms, t.ex. 2,6)<input type="number" step="0.1" min="1" id="priceFactor"></label>
+      <input type="hidden" name="markup_percent">
       <label>Moms, %<input type="number" step="1" name="vat_percent"></label>
     </form>
     <label class="toggle"><input type="checkbox" id="showPrices"> Visa priser för besökare på /links</label>
@@ -188,9 +189,9 @@ $('#addMat').onclick=()=>$('#matBody').appendChild(matRow({family:'filament',den
 function renderMats(){const b=$('#matBody');b.innerHTML='';mats.forEach(m=>b.appendChild(matRow(m,false)));if(!mats.length)b.innerHTML='<tr><td colspan="12" class="empty">Inga material än.</td></tr>'}
 
 // ---- settings ----
-function fillSettings(){const f=$('#setForm');for(const el of f.elements)if(el.name&&settings[el.name]!=null)el.value=settings[el.name];$('#showPrices').checked=!!settings.show_prices}
+function fillSettings(){const f=$('#setForm');for(const el of f.elements)if(el.name&&settings[el.name]!=null)el.value=settings[el.name];$('#priceFactor').value=(1+(+settings.markup_percent||0)/100).toFixed(2).replace(/\.?0+$/,'');$('#showPrices').checked=!!settings.show_prices}
 $('#saveSet').onclick=async()=>{
-  const body={show_prices:$('#showPrices').checked};for(const el of $('#setForm').elements)if(el.name)body[el.name]=+el.value
+  $('#setForm').elements.markup_percent.value=Math.round(((+$('#priceFactor').value||2.6)-1)*1000)/10;const body={show_prices:$('#showPrices').checked};for(const el of $('#setForm').elements)if(el.name)body[el.name]=+el.value
   try{settings=await api('/api/admin/links/settings',{method:'PUT',body:JSON.stringify(body)});toast('Kostnader sparade')}catch(e){toast(e.message,true)}
 }
 
