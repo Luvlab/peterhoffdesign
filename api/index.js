@@ -209,6 +209,22 @@ app.get('/api/links/catalog', wrap(async (req, res) => {
   res.json({ showPrices: true, settings: pick(set, LINK_SETTING_FIELDS), materials: mats.map(m => pick({ id: m.id, ...m }, ['id', ...LINK_MATERIAL_FIELDS])) })
 }))
 
+// public: live exchange rates (ECB reference rates via Frankfurter, base SEK) and the visitor's country for the currency guess.
+// Cached 6 hours in memory; if the source is down the last good rates are used; with none, only SEK is offered.
+let ratesCache = { at: 0, date: null, rates: null }
+app.get('/api/links/rates', wrap(async (req, res) => {
+  if (!ratesCache.rates || Date.now() - ratesCache.at > 6 * 3600 * 1000) {
+    try {
+      const r = await fetch('https://api.frankfurter.dev/v1/latest?base=SEK', { signal: AbortSignal.timeout(5000) })
+      const j = await r.json()
+      if (r.ok && j && j.rates && typeof j.rates === 'object') ratesCache = { at: Date.now(), date: j.date || null, rates: j.rates }
+    } catch (e) { /* keep stale */ }
+  }
+  const country = (req.headers['x-vercel-ip-country'] || req.headers['cf-ipcountry'] || '').toUpperCase().slice(0, 2)
+  res.set('Cache-Control', 'private, max-age=600')
+  res.json({ base: 'SEK', date: ratesCache.date, rates: ratesCache.rates || {}, country })
+}))
+
 // public: send an enquiry / order request from the configurator
 const recentOrders = new Map()
 app.post('/api/links/orders', wrap(async (req, res) => {
