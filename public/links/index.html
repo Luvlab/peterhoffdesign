@@ -6,6 +6,12 @@
 <title>Links — Peter Hoff Design</title>
 <meta name="description" content="Peter Hoff Design Links: armband och halsband av kors- och H-länkar. Välj längd, kantform och material i 3D.">
 <meta name="robots" content="noindex">
+<link rel="canonical" href="https://www.peterhoffdesign.com/links">
+<meta property="og:site_name" content="Peter Hoff Design"><meta property="og:type" content="website"><meta property="og:title" content="Links, Peter Hoff Design">
+<meta property="og:description" content="Design your own bracelet or necklace of cross and H links in 3D. Choose length, edges and material.">
+<meta property="og:url" content="https://www.peterhoffdesign.com/links"><meta property="og:image" content="https://www.peterhoffdesign.com/links/og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Links by Peter Hoff Design: cross and H links in rose gold, silver and cork">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="https://www.peterhoffdesign.com/links/og.jpg">
 <link rel="manifest" href="/links/manifest.webmanifest">
 <meta name="theme-color" content="#ffffff">
 <link rel="apple-touch-icon" href="/links/icon-180.png">
@@ -72,11 +78,11 @@ canvas{display:block;width:100%;height:100%}
 .hud button[disabled]{opacity:.4;cursor:default}
 .buy{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:10px;z-index:2;display:flex;align-items:center;gap:10px;max-width:calc(100% - 168px);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 12px;min-height:34px;box-sizing:border-box}
 
-.buy .pr{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0;line-height:1.2}.buy .pr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.buy .pr{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0;line-height:1.2;border:2px solid var(--fg);border-radius:8px;padding:3px 26px 3px 9px;position:relative;box-sizing:border-box;min-height:34px;justify-content:center;transition:background-color .12s}.buy .pr:hover{background:rgba(0,0,0,.05)}.buy .pr::after{content:'';position:absolute;right:9px;top:50%;width:7px;height:7px;margin-top:-6px;border-right:2px solid var(--fg);border-bottom:2px solid var(--fg);transform:rotate(45deg);transition:transform .15s}.buy .pr[aria-expanded=true]::after{transform:rotate(225deg);margin-top:-2px}.buy .pr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .bd{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:54px;z-index:3;width:min(330px,calc(100% - 28px));max-height:calc(100dvh - 70px);overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.14);animation:bdIn .18s ease-out}
 @keyframes bdIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.bd{animation:none}}
-.bd ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.bd .curRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line);font-size:12px}.bd .curRow select{font:inherit;padding:6px 8px;border:1.5px solid var(--fg);border-radius:6px;background:var(--panel);color:var(--fg);max-width:60%;min-height:34px}.bd ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
 .bd li,.bd .sum{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:baseline}
 .bd li i{font-style:normal;color:var(--muted);font-family:var(--f-mono)}
 .bd b{font-family:var(--f-mono);font-weight:400;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -958,9 +964,11 @@ function applyLang(){
 function renderBreakdown(parts,links){
   const bd=document.getElementById('bd'),btn=document.getElementById('hPriceBtn');
   if(!parts){bd.hidden=true;btn.setAttribute('aria-expanded','false');bd.innerHTML='';return}
+  const curRow=()=>{const nm=(()=>{try{return new Intl.DisplayNames([LANG],{type:'currency'})}catch{return null}})();return `<div class="curRow"><label for="bdCur">${esc(t('chooseCur'))}</label><select id="bdCur">${Object.keys(RATES).sort((a,b)=>a==='SEK'?-1:b==='SEK'?1:a.localeCompare(b)).map(c=>`<option value="${c}"${c===CUR?' selected':''}>${c}${nm?' · '+esc(nm.of(c)):''}</option>`).join('')}</select></div>`};
   const kr=v=>money(v),esc=x=>String(x).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  bd.innerHTML='<ol>'+parts.rows.map((v,i)=>`<li><i>${i+1}</i><span>${esc(shapeName(shapeFor(i)))} · ${esc(matLabel(MATS.find(m=>m.id===matIdFor(i))))}</span><b>${kr(v)}</b></li>`).join('')+'</ol>'
+  bd.innerHTML=curRow()+'<ol>'+parts.rows.map((v,i)=>`<li><i>${i+1}</i><span>${esc(shapeName(shapeFor(i)))} · ${esc(matLabel(MATS.find(m=>m.id===matIdFor(i))))}</span><b>${kr(v)}</b></li>`).join('')+'</ol>'
     +`<div class="sum"><span>${esc(t('pFixed'))}</span><b>${kr(parts.fixed)}</b></div><div class="sum"><span>${esc(t('pShip'))}</span><b>${kr(parts.ship)}</b></div><div class="sum tot"><span>${esc(t('pTotal'))}</span><b>${money(parts.total,10)}</b></div>`;
+  const sel=document.getElementById('bdCur');if(sel)sel.onchange=()=>{CUR=sel.value;try{localStorage.setItem('links_cur',CUR)}catch{};applyLang();build();const s2=document.getElementById('bdCur');if(s2)s2.focus()};
   fitBreakdown();
 }
 // The list may hang down over the settings; it only scrolls when it would pass the bottom of the screen.
