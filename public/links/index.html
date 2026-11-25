@@ -76,10 +76,10 @@ canvas{display:block;width:100%;height:100%}
 .hud button[aria-pressed="true"]{background:var(--fg);color:var(--panel)}
 .hud button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .hud button[disabled]{opacity:.4;cursor:default}
-.buy{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:10px;z-index:2;display:flex;align-items:center;gap:10px;max-width:calc(100% - 168px);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 12px;min-height:34px;box-sizing:border-box}
+.buy{order:1;flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 4px 4px 12px;min-height:34px;box-sizing:border-box}
 
 .buy .pr{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0;line-height:1.2;border:2px solid var(--fg);border-radius:8px;padding:3px 26px 3px 9px;position:relative;box-sizing:border-box;min-height:34px;justify-content:center;transition:background-color .12s}.buy .pr:hover{background:rgba(0,0,0,.05)}.buy .pr::after{content:'';position:absolute;right:9px;top:50%;width:7px;height:7px;margin-top:-6px;border-right:2px solid var(--fg);border-bottom:2px solid var(--fg);transform:rotate(45deg);transition:transform .15s}.buy .pr[aria-expanded=true]::after{transform:rotate(225deg);margin-top:-2px}.buy .pr:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.bd{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:54px;z-index:3;width:min(330px,calc(100% - 28px));max-height:calc(100dvh - 70px);overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.14);animation:bdIn .18s ease-out}
+.bd{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:64px;z-index:3;width:min(330px,calc(100% - 28px));max-height:calc(100dvh - 70px);overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.14);animation:bdIn .18s ease-out}
 @keyframes bdIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.bd{animation:none}}
 .bd .curRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line);font-size:12px}.bd .curRow select{font:inherit;padding:6px 8px;border:1.5px solid var(--fg);border-radius:6px;background:var(--panel);color:var(--fg);max-width:60%;min-height:34px}.bd ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
@@ -112,7 +112,7 @@ canvas{display:block;width:100%;height:100%}
   .hud button{width:36px;height:36px}
 }
 @media (min-width:761px){.hud .mob{display:none}}
-.topr{position:absolute;top:10px;right:max(14px,env(safe-area-inset-right,0px));z-index:2;display:flex;gap:6px}
+.hdr{position:absolute;top:10px;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));z-index:2;display:flex;align-items:center;gap:10px}.topr{order:2;flex:none;display:flex;align-items:center;gap:6px}.buy>button:last-child{margin-left:auto}
 .langbtn.ic2{min-width:34px}.langbtn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .langbtn[data-on="1"]{background:var(--fg);color:var(--panel)}
 .langbtn{all:unset;cursor:pointer;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;min-width:40px;height:34px;display:grid;place-items:center;font-size:12.5px;font-weight:600;letter-spacing:.06em}
@@ -276,13 +276,13 @@ dialog.sheet{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;b
   </aside>
   <main>
     <div class="cap" id="cap" hidden aria-live="polite"></div>
-    <div class="topr">
+    <div class="hdr"><div class="topr">
       <button type="button" class="langbtn ic2" id="supBtn" aria-haspopup="dialog" data-t-aria="tSupport" title=""><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10h.01M12 10h.01M15 10h.01"/></svg></button>
       <button type="button" class="langbtn ic2" id="accBtn" aria-haspopup="dialog" data-t-aria="tAccount" title=""><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></button>
       <button type="button" class="langbtn" id="curBtn" aria-haspopup="dialog" data-t-aria="chooseCur" title="">SEK</button>
       <button type="button" class="langbtn" id="langBtn" aria-haspopup="dialog" data-t-aria="chooseLang" title="">SV</button>
     </div>
-    <div class="buy" id="buy"><button type="button" class="pr" id="hPriceBtn" aria-expanded="false" aria-controls="bd"><small id="hLbl" data-t="estPrice" hidden>Uppskattat pris, inkl. frakt</small><span id="hPrice" aria-live="polite"></span></button><button type="button" id="hOrder" data-t="order">Beställ</button></div>
+    <div class="buy" id="buy"><button type="button" class="pr" id="hPriceBtn" aria-expanded="false" aria-controls="bd"><small id="hLbl" data-t="estPrice" hidden>Uppskattat pris, inkl. frakt</small><span id="hPrice" aria-live="polite"></span></button><button type="button" id="hOrder" data-t="order">Beställ</button></div></div>
     <div class="bd" id="bd" hidden></div>
     <canvas id="c" data-t-aria="canvas" aria-label="3D-vy av länkarna. Dra för att rotera, nyp eller scrolla för att zooma, klicka på en länk för att välja den."></canvas>
     <div class="hud" role="toolbar" aria-label="Visning">
