@@ -522,7 +522,7 @@ function cornered(pts,r,mode){
   return shape;
 }
 function linkGeo(poly,mode,r){
-  let geo;
+  let geo;r=Math.min(r,0.3*A);   // never deep enough for the top and bottom rounding to meet or the inset outline to fold over
   if(mode==='skarp'){
     geo=new THREE.ExtrudeGeometry(cornered(poly,0,'skarp'),{depth:A,bevelEnabled:false});
   }else{
@@ -598,8 +598,7 @@ const camera=new THREE.PerspectiveCamera(32,1,1,5000);
 const controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.autoRotate=!matchMedia('(prefers-reduced-motion: reduce)').matches;controls.autoRotateSpeed=0.9;
 const key=new THREE.DirectionalLight(0xffffff,1.4);key.position.set(80,140,100);scene.add(key);
 scene.add(new THREE.HemisphereLight(0xffffff,0x888071,0.5));
-const ground=new THREE.Mesh(new THREE.CircleGeometry(600,64),new THREE.ShadowMaterial({opacity:0.12}));ground.rotation.x=-Math.PI/2;scene.add(ground);
-renderer.shadowMap.enabled=true;key.castShadow=true;key.shadow.mapSize.set(2048,2048);ground.receiveShadow=true;
+renderer.shadowMap.enabled=true;key.castShadow=true;key.shadow.mapSize.set(2048,2048);
 const cam=key.shadow.camera;cam.left=cam.bottom=-200;cam.right=cam.top=200;cam.near=1;cam.far=600;
 
 function bgFromTheme(){const v=getComputedStyle(document.documentElement).getPropertyValue('--stage').trim()||'#e4e2de';scene.background=new THREE.Color(v);}
